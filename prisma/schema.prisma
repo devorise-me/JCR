@@ -1,0 +1,123 @@
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+} 
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SUPERVISOR
+  USER
+}
+
+enum Sex {
+  Male
+  Female
+}
+
+enum Age {
+  GradeOne
+  GradeTwo
+  GradeThree
+  GradeFour
+  GradeFive
+  GradeSixMale
+  GradeSixFemale
+}
+
+enum Time {
+  Morning
+  Evening
+}
+
+model User {
+  id              String   @id @default(cuid())
+  FirstName       String?
+  FatherName      String?
+  GrandFatherName String?
+  FamilyName      String?
+  username        String   @unique
+  email           String   @unique
+  NationalID      String?  @unique
+  BDate           DateTime?
+  MobileNumber    String?
+  password        String
+  image           String?
+  role            Role?    @default(USER)
+  camels          Camel[]  
+  swiftCode        String?   @unique
+  bankName         String?
+  IBAN             String?   @unique
+
+  RaceResult RaceResult[]
+}
+
+model Camel {
+  id        Int     @id @default(autoincrement())
+  name      String
+  camelID   String  @unique
+  age       Age
+  sex       Sex
+  ownerId   String  
+  owner     User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  loops     CamelLoop[] 
+  RaceResult RaceResult[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  StartDate   DateTime
+  EndDate     DateTime
+  loops       Loop[] 
+
+  RaceResult RaceResult[]
+}
+
+model Loop {
+  id            String   @id @default(cuid())
+  capacity      Int
+  registered    Int      @default(autoincrement())
+  age           Age 
+  sex           Sex  
+  time          Time  
+  startRegister DateTime
+  endRegister   DateTime
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  CamelLoop     CamelLoop[]  
+
+  RaceResult RaceResult[]
+}
+
+model CamelLoop {
+  id      String   @id @default(cuid())
+  camelId Int
+  loopId  String
+  camel   Camel   @relation(fields: [camelId], references: [id], onDelete: Cascade)
+  loop    Loop    @relation(fields: [loopId], references: [id], onDelete: Cascade)
+
+  @@unique([camelId, loopId], name: "camel_unique_in_event")  
+}
+
+model RaceResult {
+  id              String   @id @default(cuid())
+  rank            Int      
+  eventId         String   
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ownerId         String   
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  camelId         Int      
+  camel           Camel    @relation(fields: [camelId], references: [id], onDelete: Cascade)
+  loopId          String   
+  loop            Loop     @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  IBAN            String   
+  bankName        String   
+  swiftCode       String
+  ownerName       String
+  NationalID      String?
+  camelID         String?
+}
