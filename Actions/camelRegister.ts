@@ -20,6 +20,17 @@ export const registerCamelInLoop = async (values: {
     });
     const loop = await db.loop.findUnique({
       where: { id: loopId },
+      include: {
+        event: {
+          select: {
+            loops: {
+              select: {
+                id: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!camel) {
@@ -50,6 +61,27 @@ export const registerCamelInLoop = async (values: {
 
     if (existingRegistration) {
       return { error: "Camel is already registered in this loop" };
+    }
+
+    const otherLoops = loop.event.loops.filter((l) => l.id !== loop.id);
+
+    const otherLoopsRegistered = await db.camelLoop.findMany({
+      where: {
+        loopId: {
+          in: otherLoops.map((l) => l.id),
+        },
+        camelId,
+      },
+    })
+
+    if (otherLoopsRegistered.length > 0) {
+      await Promise.all(otherLoopsRegistered.map(async (reg) => {
+        await db.camelLoop.delete({
+          where: {
+            id: reg.id,
+          },
+        });
+      }));
     }
 
     await db.camelLoop.create({

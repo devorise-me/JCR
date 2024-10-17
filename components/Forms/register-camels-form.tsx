@@ -21,6 +21,7 @@ interface Loop {
   time: string;
   startRegister: Date;
   endRegister: Date;
+  number: number;
 }
 
 interface Camel {
@@ -105,16 +106,25 @@ export default function RegisterCamelForm({
                 camel.sex === selectedLoopDetails.sex
             );
 
+            console.log("filteredCamels: ", filteredCamels);
+
             const registeredResponse = await fetch(
               `/api/events/${selectedEvent}/getLoops/${selectedLoop}/registeredCamels`
             );
             const registeredData = await registeredResponse.json();
+            console.log("registeredData: ", registeredData)
             setRegisteredCamels(registeredData);
 
             if (registeredData.length >= selectedLoopDetails.capacity) {
               setMessage("! هذا السباق وصل الحد الاقصى في التسجيل");
               setAvailableCamels([]);
             } else {
+              // const availableCamels = filteredCamels.filter(
+              //   (camel: Camel) =>
+              //     !registeredData.some(
+              //       (registered: Camel) => registered.id === camel.id
+              //     )
+              // );
               const availableCamels = filteredCamels.filter(
                 (camel: Camel) =>
                   !registeredData.some(
@@ -279,6 +289,8 @@ export default function RegisterCamelForm({
                   {translateTime(loop.time)}) - {
                     loopRegistrations[loop.id]
                   }/{loop.capacity}
+                  {" "}
+                  {`شوط ${loop.number}`}
                 </option>
               ))}
             </select>

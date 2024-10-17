@@ -73,6 +73,7 @@ export async function GET(
 
     const camels = registeredCamels.map((camelLoop) => ({
       id: camelLoop.camel.id,
+      camelLoopId: camelLoop.id,
       name: camelLoop.camel.name,
       age: camelLoop.camel.age,
       sex: camelLoop.camel.sex,
