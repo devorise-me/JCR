@@ -7,9 +7,10 @@ interface UpdateLoopFormProps {
   eventEndDate: Date; // Add this line
   onClose: () => void;
   onLoopUpdated: () => void;
+  loopsNumbers: number[];
 }
 
-const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onClose, onLoopUpdated }) => {
+const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onClose, onLoopUpdated, loopsNumbers }) => {
   const [capacity, setCapacity] = useState<number>(loop.capacity);
   const [age, setAge] = useState<string>(loop.age);
   const [sex, setSex] = useState<string>(loop.sex);
@@ -17,9 +18,15 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
   const [startRegister, setStartRegister] = useState<Date>(new Date(loop.startRegister));
   const [endRegister, setEndRegister] = useState<Date>(new Date(loop.endRegister));
   const [error, setError] = useState<string | null>(null);
+  const [number, setNumber] = useState<number>(loop.number);
 
   const handleUpdateLoop = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if(loopsNumbers.includes(number)) {
+      setError("رقم الشوط موجود بالفعل.");
+      return;
+    }
 
     // Validate endRegister date
     if (new Date(endRegister) > new Date(eventEndDate)) {
@@ -69,6 +76,19 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
               type="number"
               value={capacity}
               onChange={(e) => setCapacity(parseInt(e.target.value, 10) || 0)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4 text-end">
+            <label htmlFor="number" className="block text-sm font-bold mb-1">
+              رقم الشوط
+            </label>
+            <input
+              id="number"
+              type="number"
+              value={number}
+              onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
               className="w-full p-2 border rounded"
               required
             />

@@ -29,6 +29,7 @@ interface Loop {
   time: string;
   startRegister: Date;
   endRegister: Date;
+  number: number;
 }
 
 interface EventDetailsProps {
@@ -180,6 +181,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
     }
   }
 
+  console.log("loops: ", loops)
+
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-auto">
@@ -228,6 +231,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
             <Table className="container text-right mt-4">
               <TableHeader>
                 <TableRow>
+                  <TableHead>الرقم</TableHead>
                   <TableHead>السعة</TableHead>
                   <TableHead>الفئة</TableHead>
                   <TableHead>النوع</TableHead>
@@ -241,6 +245,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                 {loops.length > 0 ? (
                   loops.map((loop) => (
                     <TableRow key={loop.id}>
+                      <TableCell>{loop.number}</TableCell>
                       <TableCell>{loop.capacity}</TableCell>
                       <TableCell className="font-medium">
                         {translateAge(loop.age)}
@@ -312,7 +317,10 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
             onAddLoop={(newLoop: Loop) => {
               setLoops((prevLoops) => [...prevLoops, newLoop]);
               fetchEventAndLoopsData();
-            } } eventStartDate={""}     />
+            } } 
+            eventStartDate={""}   
+            loopsNumbers={loops.map((loop) => loop.number)}
+        />
       
         )}
      {isUpdateLoopModalOpen && editingLoop && (
@@ -321,6 +329,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
     eventEndDate={new Date(event.EndDate)}
     onClose={() => setIsUpdateLoopModalOpen(false)}
     onLoopUpdated={fetchEventAndLoopsData}
+    loopsNumbers={loops.filter(loopFiltered => loopFiltered.id !== editingLoop?.id).map((loop) => loop.number)}
   />
 )}
 

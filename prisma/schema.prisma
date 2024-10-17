@@ -1,7 +1,7 @@
 datasource db {
   provider  = "postgresql"
   url  	    = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  // directUrl = env("DATABASE_URL_UNPOOLED")
 } 
 generator client {
   provider = "prisma-client-js"
@@ -88,7 +88,8 @@ model Loop {
   endRegister   DateTime
   eventId       String
   event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  CamelLoop     CamelLoop[]  
+  CamelLoop     CamelLoop[]
+  number        Int
 
   RaceResult RaceResult[]
 }

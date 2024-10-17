@@ -201,6 +201,7 @@ export const createLoopSchema = z
       ),
     startRegister: z.string().transform((str) => new Date(str)),
     endRegister: z.string().transform((str) => new Date(str)),
+    number: z.number().min(1),
   })
   .superRefine((data, ctx) => {
     if (data.endRegister <= data.startRegister) {

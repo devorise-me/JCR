@@ -228,7 +228,7 @@ const Profile = () => {
           </div>
         </div>
         <div className="container w-full text-right mt-28 max-sm:text-center">
-          <h1 className="text-5xl font-semibold">أهلا {user.username}</h1>
+          <h1 className="text-5xl font-semibold">أهلا {user?.username}</h1>
         </div>
 
         <div className="container w-full text-right mt-10 max-sm:text-center">
@@ -238,7 +238,7 @@ const Profile = () => {
                 <label className="block text-gray-400 mb-1">الاسم الأول:</label>
                 <input
                   type="text"
-                  value={user.FirstName}
+                  value={user?.FirstName}
                   readOnly
                   className=" outline-none input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 />
@@ -247,7 +247,7 @@ const Profile = () => {
                 <label className="block text-gray-400 mb-1">اسم الأب:</label>
                 <input
                   type="text"
-                  value={user.FatherName}
+                  value={user?.FatherName}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -258,7 +258,7 @@ const Profile = () => {
                 <label className="block text-gray-400 mb-1">اسم الجد:</label>
                 <input
                   type="text"
-                  value={user.GrandFatherName}
+                  value={user?.GrandFatherName}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -267,7 +267,7 @@ const Profile = () => {
                 <label className="block text-gray-400 mb-1">اسم العائلة:</label>
                 <input
                   type="text"
-                  value={user.FamilyName}
+                  value={user?.FamilyName}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -280,7 +280,7 @@ const Profile = () => {
                 </label>
                 <input
                   type="text"
-                  value={user.username}
+                  value={user?.username}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -291,7 +291,7 @@ const Profile = () => {
                 </label>
                 <input
                   type="text"
-                  value={user.email}
+                  value={user?.email}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none  text-right"
                 />
@@ -304,7 +304,7 @@ const Profile = () => {
                 </label>
                 <input
                   type="text"
-                  value={user.NationalID}
+                  value={user?.NationalID}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -315,7 +315,7 @@ const Profile = () => {
                 </label>
                 <input
                   type="text"
-                  value={user.BDate.split("T")[0]}
+                  value={user?.BDate?.split("T")[0]}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -324,7 +324,7 @@ const Profile = () => {
                 <label className="block text-gray-400 mb-1">رقم الهاتف:</label>
                 <input
                   type="text"
-                  value={user.MobileNumber}
+                  value={user?.MobileNumber}
                   readOnly
                   className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
                 />
@@ -374,7 +374,7 @@ const Profile = () => {
         </Table>
       </div>
       {camelRegister && (
-        <RegisterCamelForm userId={user.id} onClose={handleRegisterForm} />
+        <RegisterCamelForm userId={user?.id} onClose={handleRegisterForm} />
       )}
     </>
   );

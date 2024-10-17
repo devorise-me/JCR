@@ -10,6 +10,7 @@ interface Loop {
   time: string;
   startRegister: Date;
   endRegister: Date;
+  number: number;
 }
 
 interface CreateLoopFormProps {
@@ -18,6 +19,7 @@ interface CreateLoopFormProps {
   eventEndDate: string; // Add event end date as a prop
   onClose: () => void;
   onAddLoop: (newLoop: Loop) => void;
+  loopsNumbers: number[];
 }
 
 const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
@@ -26,6 +28,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   eventEndDate,
   onClose,
   onAddLoop,
+  loopsNumbers
 }) => {
   const [capacity, setCapacity] = useState<number>(0);
   const [age, setAge] = useState<string>("GradeOne");
@@ -35,15 +38,22 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   const [endRegister, setEndRegister] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [number, setNumber] = useState<number>(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate that all fields are filled
-    if (!capacity || !age || !sex || !time || !startRegister || !endRegister) {
+    if (!capacity || !age || !sex || !time || !startRegister || !endRegister || !number) {
       setError("جميع الحقول مطلوبة.");
       return;
     }
+
+    if(loopsNumbers.includes(number)) {
+      setError("رقم الشوط موجود بالفعل.");
+      return;
+    }
+
+    // Validate that all fields are filled
 
     const startDate = new Date(startRegister);
     const endDate = new Date(endRegister);
@@ -78,6 +88,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
       time,
       startRegister: startDate,
       endRegister: endDate,
+      number: number,
     };
 
     setIsLoading(true);
@@ -126,6 +137,19 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
               type="number"
               value={capacity}
               onChange={(e) => setCapacity(parseInt(e.target.value, 10) || 0)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4 text-end">
+            <label htmlFor="number" className="block text-sm font-bold mb-1">
+              رقم الشوط
+            </label>
+            <input
+              id="number"
+              type="number"
+              value={number}
+              onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
               className="w-full p-2 border rounded"
               required
             />
