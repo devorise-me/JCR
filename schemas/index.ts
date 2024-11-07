@@ -148,6 +148,7 @@ export const EventsSchema = z
       .refine((date) => date > new Date(), {
         message: "تاريخ الانتهاء يجب أن يكون في المستقبل",
       }),
+    type: z.enum(["International", "National"]),
   })
   .superRefine((data, ctx) => {
     if (data.EndDate <= data.StartDate) {
@@ -173,7 +174,8 @@ export const camelSchema = z.object({
       "GradeSixFemale",
     ],
     {
-      invalid_type_error: "العمر غير صحيح",    }
+      invalid_type_error: "العمر غير صحيح",
+    }
   ),
   sex: z.enum(["Male", "Female"], {
     invalid_type_error: "الجنس غير صحيح",
@@ -202,6 +204,7 @@ export const createLoopSchema = z
     startRegister: z.string().transform((str) => new Date(str)),
     endRegister: z.string().transform((str) => new Date(str)),
     number: z.number().min(1),
+    timeInHours: z.string().min(1),
   })
   .superRefine((data, ctx) => {
     if (data.endRegister <= data.startRegister) {

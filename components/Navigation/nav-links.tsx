@@ -1,6 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport
+} from "@/components/ui/navigation-menu"
 
 interface Props {
   className?: string;
@@ -46,23 +55,39 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
           </li>
         )}
       <li onClick={enablescroll}>
+        <Link href="/Results"></Link>
+      </li>
+      <NavigationMenu>
+        <NavigationMenuList>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>النتائج</NavigationMenuTrigger>
+            <NavigationMenuContent className="min-w-[150px]">
+              <div className="flex flex-col gap-4 w-full text-right p-4">
+                <NavigationMenuLink href="/Results">النتائج</NavigationMenuLink>
+                <NavigationMenuLink href="/profile/myCamels">المطايا المسجلة</NavigationMenuLink>
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
+      <li onClick={enablescroll}>
         <Link href="mailto:info@jocrc.com">تواصل معنا</Link>
       </li>
       {hide && token && (
         <>
           <li onClick={enablescroll}>
-            <Link href="/profile/myCamels">المطايا المسجلة</Link>
-          </li>
-          <li onClick={enablescroll}>
             <Link href="/profile">الملف الشخصي</Link>
           </li>
         </>
       )}
+      {/* <li onClick={enablescroll}>
+        <Link href="/registeredCamels">المطايا المشاركة</Link>
+      </li> */}
       <li onClick={enablescroll}>
-        <Link href="/Results">النتائج</Link>
+        <Link href="#">الأخبار</Link>
       </li>
       <li onClick={enablescroll}>
-        <Link href="/registeredCamels">المطايا المشاركة</Link>
+        <Link href="#">الإعلانات</Link>
       </li>
       <li onClick={enablescroll}>
         <Link href="/">الصفحة الرئيسية</Link>

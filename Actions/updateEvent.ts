@@ -5,6 +5,8 @@ interface UpdateEventData {
   name?: string;
   StartDate?: string; // Assuming this is a string in ISO format
   EndDate?: string;   // Same as above
+  disabled?: boolean;
+  type?: string;
 }
 
 export const updateEvent = async (id: string, data: UpdateEventData) => {
@@ -34,6 +36,14 @@ export const updateEvent = async (id: string, data: UpdateEventData) => {
     }
     if (data.name) {
       updatedData.name = data.name; // Keep the name if provided
+    }
+
+    if (data.disabled !== undefined) {
+      updatedData.disabled = data.disabled;
+    }
+
+    if (data.type !== undefined) {
+      updatedData.type = data.type;
     }
 
     const updatedEvent = await db.event.update({

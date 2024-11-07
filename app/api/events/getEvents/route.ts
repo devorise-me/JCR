@@ -6,7 +6,11 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const users = await db.event.findMany();
+    const users = await db.event.findMany({
+      where: {
+        disabled: false,
+      }
+    });
 
     return NextResponse.json(users);
   } catch (error) {

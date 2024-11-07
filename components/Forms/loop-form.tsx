@@ -11,6 +11,7 @@ interface Loop {
   startRegister: Date;
   endRegister: Date;
   number: number;
+  timeInHours: string;
 }
 
 interface CreateLoopFormProps {
@@ -19,7 +20,7 @@ interface CreateLoopFormProps {
   eventEndDate: string; // Add event end date as a prop
   onClose: () => void;
   onAddLoop: (newLoop: Loop) => void;
-  loopsNumbers: number[];
+  loops: Loop[];
 }
 
 const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
@@ -28,7 +29,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   eventEndDate,
   onClose,
   onAddLoop,
-  loopsNumbers
+  loops
 }) => {
   const [capacity, setCapacity] = useState<number>(0);
   const [age, setAge] = useState<string>("GradeOne");
@@ -39,6 +40,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [number, setNumber] = useState<number>(0);
+  const [timeInHours, setTimeInHours] = useState<string>("12:00");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +50,8 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
       return;
     }
 
-    if(loopsNumbers.includes(number)) {
+    if (loops.find(l => (l.sex === sex && l.number === number)) !== undefined) {
+      console.log("test")
       setError("رقم الشوط موجود بالفعل.");
       return;
     }
@@ -89,6 +92,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
       startRegister: startDate,
       endRegister: endDate,
       number: number,
+      timeInHours: timeInHours,
     };
 
     setIsLoading(true);
@@ -200,6 +204,18 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
               <option value="Morning">صباحي</option>
               <option value="Evening">مسائي</option>
             </select>
+          </div>
+          <div className="mb-4 text-end ">
+            <label htmlFor="timeInHours" className="block text-sm font-bold mb-1">
+              (UTC) الساعة
+            </label>
+            <input
+              id="timeInHours"
+              type="time"
+              value={timeInHours}
+              onChange={(e) => setTimeInHours(e.target.value)}
+              className="w-full p-2 border rounded "
+            />
           </div>
           <div className="mb-4 text-end">
             <label htmlFor="startRegister" className="block text-sm font-bold mb-1">

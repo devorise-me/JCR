@@ -15,16 +15,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createEventAction } from "@/Actions/Events";
 import { FaTimes } from "react-icons/fa";
-import { useState } from "react";
 
 export const CreateEventForm = ({
   className,
   onClose,
-  onEventAdded,  
+  onEventAdded,
 }: {
   className?: string;
   onClose: () => void;
-  onEventAdded: () => void; 
+  onEventAdded: () => void;
 }) => {
 
   const form = useForm<z.infer<typeof EventsSchema>>({
@@ -33,14 +32,15 @@ export const CreateEventForm = ({
       name: "",
       StartDate: new Date(),
       EndDate: new Date(),
+      type: "International",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof EventsSchema>) => {
     try {
-      const event = await createEventAction(values);
+      await createEventAction(values);
       onEventAdded();
-    }catch(error){
+    } catch (error) {
     }
   };
 
@@ -77,6 +77,27 @@ export const CreateEventForm = ({
                         placeholder="اسم الفعالية"
                         className="outline-none border-t-0 border-r-0 border-l-0 text-right focus:outline-none focus:ring-0 focus:border-transparent"
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center justify-end">
+                      : نوع الفعالية
+                    </FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="outline-none border-t-0 border-b w-full pb-2 border-r-0 border-l-0 text-right focus:outline-none focus:ring-0 focus:border-transparent"
+                      >
+                        <option value="International">الدولية</option>
+                        <option value="National">الوطنية</option>
+                      </select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

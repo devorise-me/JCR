@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useInView } from "react-intersection-observer";
 import UserDetails from "../admin/ShowUserDetails";
-import { Button } from "../ui/button"; // استخدام مكون Button إذا كان لديك
+import { Button } from "../ui/button";
 
 interface User {
   id: string;
@@ -29,29 +29,32 @@ export const ShowUsers = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [showDeletePopup, setShowDeletePopup] = useState<string | null>(null); // للتحكم في إظهار نافذة التأكيد
+  const [showDeletePopup, setShowDeletePopup] = useState<string | null>(null);
 
   const { ref, inView } = useInView({
-    threshold: 1,
-    triggerOnce: false,
+    threshold: 0.5,
+    rootMargin: '100px'
   });
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (pageNum: number) => {
     if (loading || !hasMore) return;
 
     setLoading(true);
-
     try {
-      const response = await fetch(`/api/users/getUsers?page=${page}&limit=6`);
+      const response = await fetch(`/api/users/getUsers?page=${pageNum}&limit=6`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
       const data = await response.json();
 
       if (data.error) {
         setError(data.error);
       } else {
-        setUsers((prevUsers) => {
-          const existingUserIds = new Set(prevUsers.map((user) => user.id));
+        setUsers(prevUsers => {
+          // Deduplicate users based on ID
           const newUsers = data.users.filter(
-            (user: User) => !existingUserIds.has(user.id)
+            (newUser: User) => !prevUsers.some(existingUser => existingUser.id === newUser.id)
           );
           return [...prevUsers, ...newUsers];
         });
@@ -63,17 +66,22 @@ export const ShowUsers = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, hasMore, loading]);
+  }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchUsers(1);
+  }, []);
 
   useEffect(() => {
-    if (inView && hasMore) {
-      setPage((prevPage) => prevPage + 1);
+    // Load more when scrolling to bottom
+    if (inView && hasMore && !loading) {
+      setPage(prevPage => {
+        const nextPage = prevPage + 1;
+        fetchUsers(nextPage);
+        return nextPage;
+      });
     }
-  }, [inView, hasMore]);
+  }, [inView, hasMore, loading, fetchUsers]);
 
   const handleUserClick = (userId: string) => {
     setSelectedUserId(userId);
@@ -93,8 +101,8 @@ export const ShowUsers = () => {
       });
 
       if (response.ok) {
-        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-        setShowDeletePopup(null); // إغلاق الـ popup بعد الحذف
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+        setShowDeletePopup(null);
       } else {
         const data = await response.json();
         setError(data.error || "Error deleting user.");
@@ -105,15 +113,16 @@ export const ShowUsers = () => {
     }
   };
 
-  const confirmDeleteUser = (userId: string) => {
-    setShowDeletePopup(userId); // عرض نافذة التأكيد
+  const confirmDeleteUser = (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation();
+    setShowDeletePopup(userId);
   };
 
   const cancelDelete = () => {
-    setShowDeletePopup(null); // إلغاء عملية الحذف
+    setShowDeletePopup(null);
   };
 
-  if (error) return <p>{error}</p>;
+  if (error) return <p className="text-red-500 p-4">{error}</p>;
 
   return (
     <div className="overflow-auto">
@@ -134,11 +143,8 @@ export const ShowUsers = () => {
             <span className="font-semibold">{user.username}</span>
           </div>
           <button
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={(e) => {
-              e.stopPropagation(); // منع فتح تفاصيل المستخدم عند الضغط على زر الحذف
-              confirmDeleteUser(user.id); // فتح نافذة التأكيد
-            }}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            onClick={(e) => confirmDeleteUser(e, user.id)}
           >
             حذف
           </button>
@@ -149,28 +155,27 @@ export const ShowUsers = () => {
         <UserDetails userId={selectedUserId} onClose={handleCloseUserDetails} />
       )}
 
-      <div ref={ref} className="loading-indicator text-center">
-        {loading
-          ? "Loading more users..."
-          : hasMore
-          ? "Scroll down for more"
-          : ""}
+      <div ref={ref} className="h-10 flex items-center justify-center">
+        {loading && <p>Loading more users...</p>}
       </div>
 
-      {/* نافذة تأكيد الحذف */}
       {showDeletePopup && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-            <p className="text-lg text-center">هل أنت متأكد أنك تريد حذف هذا المستخدم ؟</p>
-            <div className="mt-4 flex justify-between ">
-              <Button 
-                variant="destructive"            
-                onClick={() => handleDeleteUser(showDeletePopup)}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <p className="text-lg text-center mb-4">
+              هل أنت متأكد أنك تريد حذف هذا المستخدم ؟
+            </p>
+            <div className="flex justify-between gap-4">
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteUser(showDeletePopup)}
+              >
                 نعم ، حذف
               </Button>
-              <Button onClick={cancelDelete} 
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            >
+              <Button
+                variant="secondary"
+                onClick={cancelDelete}
+              >
                 إلغاء
               </Button>
             </div>

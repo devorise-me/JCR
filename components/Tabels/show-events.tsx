@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import EventDetails from "../event/event-details";
 import { Button } from "../ui/button";
+import { getAllEvents } from "@/lib/events";
 
 interface Event {
   id: string;
   name: string;
   StartDate: string;
   EndDate: string;
+  disabled: boolean;
+  type: string;
 }
 
 interface ShowEventsProps {
@@ -26,14 +29,8 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/events/getEvents");
-      const data = await response.json();
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setEvents(data);
-        setError(null);
-      }
+      const data = await getAllEvents()
+      setEvents(data as unknown as Event[])
     } catch (err) {
       console.error("Error fetching events:", err);
       setError("حدث خطأ أثناء جلب الفعاليات.");
@@ -78,7 +75,7 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
         setShowConfirm(false); // إغلاق نافذة التأكيد بعد الحذف
       } else {
         const data = await response.json();
-        setError(data.error );
+        setError(data.error);
       }
     } catch (error) {
       setError("حدث خطأ أثناء حذف الفعالية.");
@@ -114,7 +111,7 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
           </Button>
         </div>
       </div>
-     
+
     </div>
   );
 
@@ -139,8 +136,8 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
             </div>
           </div>
           <button
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={(e) => {
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            onClick={(e) => {
               e.stopPropagation();
               handleConfirmDelete(event.id); // طلب تأكيد الحذف بدلاً من الحذف مباشرةً
             }}
@@ -152,7 +149,7 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
       {selectedEventId && (
         <EventDetails eventId={selectedEventId} onClose={handleCloseEventDetails} />
       )}
-      {showConfirm && confirmDeletePopup()} 
+      {showConfirm && confirmDeletePopup()}
     </>
   );
 };

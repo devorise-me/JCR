@@ -12,6 +12,7 @@ import {
 import UpdateLoopForm from "../Forms/UpdateLoopForm";
 import CreateLoopForm from "../Forms/loop-form";
 import { IoIosClose } from "react-icons/io";
+import { Checkbox } from "../ui/checkbox";
 
 interface Event {
   id: string;
@@ -30,6 +31,7 @@ interface Loop {
   startRegister: Date;
   endRegister: Date;
   number: number;
+  timeInHours: string;
 }
 
 interface EventDetailsProps {
@@ -49,10 +51,12 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
   const [name, setName] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const [eventType, setEventType] = useState<string>('');
 
   useEffect(() => {
     fetchEventAndLoopsData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
   const fetchEventAndLoopsData = async () => {
@@ -66,35 +70,37 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       setName(eventData.name);
       setStartDate(new Date(eventData.StartDate).toISOString().split('T')[0]);
       setEndDate(new Date(eventData.EndDate).toISOString().split('T')[0]);
-  
+      setDisabled(eventData.disabled);
+      setEventType(eventData.type);
+
       // Fetch loops data
       const loopsResponse = await fetch(`/api/events/${eventId}/getLoops`);
       if (!loopsResponse.ok) {
         throw new Error(`Loops fetch error: ${loopsResponse.statusText}`);
       }
       const loopsData = await loopsResponse.json();
-  
+
       // Ensure that startRegister and endRegister are parsed as Date
       const formattedLoops = loopsData.map((loop: Loop) => ({
         ...loop,
         startRegister: new Date(loop.startRegister).toISOString().split('T')[0],
         endRegister: new Date(loop.endRegister).toISOString().split('T')[0],
       })).filter((loop: Loop) => loop.eventId === eventId);
-  
+
       setLoops(formattedLoops);
     } catch (error: any) {
       setError(`An error occurred while fetching event details: ${error.message}`);
     }
   };
-  
+
 
   const handleEditLoop = (loop: Loop) => {
     setEditingLoop(loop);
     setIsUpdateLoopModalOpen(true);
   };
 
-  
-  
+
+
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -107,11 +113,13 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
           name,
           StartDate: startDate,
           EndDate: endDate,
+          disabled,
+          type: eventType,
         }),
       });
       if (response.ok) {
         setIsEditEventModalOpen(false);
-        await fetchEventAndLoopsData(); 
+        await fetchEventAndLoopsData();
       } else {
         const error = await response.json();
         alert(`Error: ${error.error}`);
@@ -181,46 +189,71 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
     }
   }
 
+  function getEventType(eventType: string) {
+    switch (eventType) {
+      case "International":
+        return "دولية";
+      case "National":
+        return "محلية";
+      default:
+        return "";
+    }
+  }
+
   console.log("loops: ", loops)
+
+  const convertToArabicTime = (time: string) => {
+    // Arabic numerals ٠١٢٣٤٥٦٧٨٩
+    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+    // Convert each digit to Arabic
+    return time?.split('').map(char => {
+      if (char >= '0' && char <= '9') {
+        return arabicNumerals[parseInt(char)];
+      }
+      return char === ':' ? ':' : char;
+    }).join('');
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-auto">
-      <div className=" items-center mb-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] overflow-auto">
+        <div className=" items-center mb-4">
           <div className="flex space-x-2 justify-between items-center">
-          <button
-            onClick={onClose}
-            className="mt-4 bg-gray-500 text-white p-2 rounded mb-5"
-          >
-            <IoIosClose size={24} />
-          </button>
+            <button
+              onClick={onClose}
+              className="mt-4 bg-gray-500 text-white p-2 rounded mb-5"
+            >
+              <IoIosClose size={24} />
+            </button>
 
             <div className="flex gap-4">
-            <Button
-              onClick={() => setIsEditEventModalOpen(true)}
-              variant="outline"
-            >
-              <MdEdit className="mr-2" size={18} /> تعديل فعالية
-            </Button>
-        
+              <Button
+                onClick={() => setIsEditEventModalOpen(true)}
+                variant="outline"
+              >
+                <MdEdit className="mr-2" size={18} /> تعديل فعالية
+              </Button>
+
             </div>
           </div>
-          </div>
-          <hr className="mt-4 mb-4"/>
-          <h2 className="text-xl font-bold  text-center ">
-          تفاصيل الفعالية 
-          </h2>
-          <hr className="mt-4 mb-4"/>
+        </div>
+        <hr className="mt-4 mb-4" />
+        <h2 className="text-xl font-bold  text-center ">
+          تفاصيل الفعالية
+        </h2>
+        <hr className="mt-4 mb-4" />
 
         {event ? (
           <div className="text-end pb-4 pt-4">
             <h3 className="text-xl font-semibold mb-4 text-center ">{event.name}</h3>
             <div className="flex justify-between items-center">
-            <p>تاريخ البداية: {event.StartDate.toString().split('T')[0]}</p>
-            <span className="mx-2">→</span>
-            <p>تاريخ النهاية: {event.EndDate.toString().split('T')[0]}</p>
+              <p>تاريخ البداية: {event.StartDate.toString().split('T')[0]}</p>
+              <span className="mx-2">→</span>
+              <p>تاريخ النهاية: {event.EndDate.toString().split('T')[0]}</p>
             </div>
-            <hr  className="mt-4"/>
+            <p>نوع الفعالية: {getEventType(event.type)}</p>
+            <hr className="mt-4" />
 
             <Button
               onClick={() => setIsCreateLoopModalOpen(true)}
@@ -236,6 +269,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                   <TableHead>الفئة</TableHead>
                   <TableHead>النوع</TableHead>
                   <TableHead>الوقت</TableHead>
+                  <TableHead>الساعة</TableHead>
                   <TableHead>تاريخ البدء</TableHead>
                   <TableHead>تاريخ الانتهاء</TableHead>
                   <TableHead>الإجراءات</TableHead>
@@ -243,34 +277,37 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
               </TableHeader>
               <TableBody>
                 {loops.length > 0 ? (
-                  loops.map((loop) => (
-                    <TableRow key={loop.id}>
-                      <TableCell>{loop.number}</TableCell>
-                      <TableCell>{loop.capacity}</TableCell>
-                      <TableCell className="font-medium">
-                        {translateAge(loop.age)}
-                      </TableCell>
-                      <TableCell>{translateSex(loop.sex)} </TableCell>
-                      <TableCell>{translateTime(loop.time)} </TableCell>
-                      <TableCell>{new Date(loop.startRegister).toLocaleDateString('ar-EG')}</TableCell>
-                      <TableCell>{new Date(loop.endRegister).toLocaleDateString('ar-EG')}</TableCell>
+                  loops
+                    .sort((a, b) => a.number - b.number)
+                    .map((loop) => (
+                      <TableRow key={loop.id}>
+                        <TableCell>{loop.number}</TableCell>
+                        <TableCell>{loop.capacity}</TableCell>
+                        <TableCell className="font-medium">
+                          {translateAge(loop.age)}
+                        </TableCell>
+                        <TableCell>{translateSex(loop.sex)} </TableCell>
+                        <TableCell>{translateTime(loop.time)} </TableCell>
+                        <TableCell>{convertToArabicTime(loop.timeInHours)}</TableCell>
+                        <TableCell>{new Date(loop.startRegister).toLocaleDateString('ar-EG')}</TableCell>
+                        <TableCell>{new Date(loop.endRegister).toLocaleDateString('ar-EG')}</TableCell>
 
-                      <TableCell>
-                        <button
-                          onClick={() => handleEditLoop(loop)}
-                          className="text-blue-950"
-                        >
-                          <MdEdit size={20} />
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteLoop(loop.id)}
-                          className="text-red-500 ml-2"
-                        >
-                          <MdDelete size={20} />
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        <TableCell>
+                          <button
+                            onClick={() => handleEditLoop(loop)}
+                            className="text-blue-950"
+                          >
+                            <MdEdit size={20} />
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteLoop(loop.id)}
+                            className="text-red-500 ml-2"
+                          >
+                            <MdDelete size={20} />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
@@ -280,7 +317,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                 )}
               </TableBody>
             </Table>
-            
+
 
             {confirmDeleteLoop && (
               <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
@@ -295,9 +332,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     >
                       حذف
                     </Button>
-                    <Button 
-                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                    onClick={() => setConfirmDeleteLoop(null)}>
+                    <Button
+                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                      onClick={() => setConfirmDeleteLoop(null)}>
                       إلغاء
                     </Button>
                   </div>
@@ -310,28 +347,28 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
         )}
 
         {isCreateLoopModalOpen && (
-       <CreateLoopForm
+          <CreateLoopForm
             eventId={eventId}
             eventEndDate={event.EndDate}
             onClose={() => setIsCreateLoopModalOpen(false)}
             onAddLoop={(newLoop: Loop) => {
               setLoops((prevLoops) => [...prevLoops, newLoop]);
               fetchEventAndLoopsData();
-            } } 
-            eventStartDate={""}   
-            loopsNumbers={loops.map((loop) => loop.number)}
-        />
-      
+            }}
+            eventStartDate={""}
+            loops={loops}
+          />
+
         )}
-     {isUpdateLoopModalOpen && editingLoop && (
-  <UpdateLoopForm
-    loop={editingLoop}
-    eventEndDate={new Date(event.EndDate)}
-    onClose={() => setIsUpdateLoopModalOpen(false)}
-    onLoopUpdated={fetchEventAndLoopsData}
-    loopsNumbers={loops.filter(loopFiltered => loopFiltered.id !== editingLoop?.id).map((loop) => loop.number)}
-  />
-)}
+        {isUpdateLoopModalOpen && editingLoop && (
+          <UpdateLoopForm
+            loop={editingLoop}
+            eventEndDate={new Date(event.EndDate)}
+            onClose={() => setIsUpdateLoopModalOpen(false)}
+            onLoopUpdated={fetchEventAndLoopsData}
+            loops={loops.filter(loopFiltered => loopFiltered.id !== editingLoop?.id)}
+          />
+        )}
 
         {isEditEventModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
@@ -349,6 +386,20 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     className="border border-gray-300 rounded-md p-2 w-full"
                     required
                   />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    نوع الفعالية
+                  </label>
+                  <select
+                    value={eventType}
+                    onChange={(e) => setEventType(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 w-full"
+                    required
+                  >
+                    <option value="International">دولية</option>
+                    <option value="National">محلية</option>
+                  </select>
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">
@@ -374,10 +425,16 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     required
                   />
                 </div>
+                <div className="mb-4 flex items-center justify-start gap-2 w-full">
+                  <label htmlFor="disabled" className="block text-sm font-medium text-gray-700">
+                    اخفاء
+                  </label>
+                  <Checkbox id="disabled" checked={disabled} onCheckedChange={(checked) => setDisabled(!!checked)} />
+                </div>
                 <div className="flex justify-between">
-                <Button
+                  <Button
                     type="submit"
-                    
+
                   >
                     حفظ التعديلات
                   </Button>

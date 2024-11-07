@@ -11,10 +11,10 @@ export const createEventAction = async (values: z.infer<typeof EventsSchema>) =>
     return { error: "! حقل غير صالح" };
   }
 
-  const { name, StartDate, EndDate } = validatedFields.data;
+  const { name, StartDate, EndDate, type } = validatedFields.data;
 
   const existingEvent = await db.event.findFirst({
-    where: { name, StartDate, EndDate },
+    where: { name, StartDate, EndDate, type },
   });
   if (existingEvent) {
     return { error: "فعالية موجود بالفعل" };
@@ -25,6 +25,7 @@ export const createEventAction = async (values: z.infer<typeof EventsSchema>) =>
       name,
       StartDate,
       EndDate,
+      type
     },
   });
 
