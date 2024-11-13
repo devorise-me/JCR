@@ -24,6 +24,7 @@ interface Loop {
   sex: string;
   capacity: number;
   time: string;
+  number: number;
 }
 
 interface Event {
@@ -166,7 +167,10 @@ const ResultsTabel = () => {
                       ` - ` +
                       translateSex(loop.sex) +
                       ` - ` +
-                      translateTime(loop.time)}
+                      translateTime(loop.time) +
+                      ` - ` +
+                      'رقم الشوط: ' + loop.number}
+
                   </SelectItem>
                 ))}
               </SelectContent>
