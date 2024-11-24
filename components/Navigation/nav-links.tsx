@@ -39,7 +39,7 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
   }, []);
 
   return (
-    <ul className={className || `flex items-center gap-5 max-lg:hidden`}>
+    <ul className={className || `flex items-center text-nowrap gap-5 max-lg:hidden`}>
       {hide &&
         user &&
         (user.role === "ADMIN" || user.role === "SUPERVISOR") && (
@@ -63,11 +63,11 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu> */}
-      <Select open={open} onOpenChange={setOpen}>
-        <SelectTrigger>
+      <Select dir="rtl" open={open} onOpenChange={setOpen}>
+        <SelectTrigger className='bg-transparent max-w-20 !outline-none border-none shadow-none'>
           <SelectValue placeholder="النتائج" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className='max-w-20 outline-none border-none'>
           <SelectGroup>
             <Link href="/Results">النتائج</Link>
           </SelectGroup>
