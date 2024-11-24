@@ -1,15 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport
-} from "@/components/ui/navigation-menu"
+import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "../ui/select";
 
 interface Props {
   className?: string;
@@ -24,6 +16,7 @@ interface UserProfile {
 const NavLinks = ({ className, enablescroll, hide }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
@@ -57,7 +50,7 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
       <li onClick={enablescroll}>
         <Link href="/Results"></Link>
       </li>
-      <NavigationMenu>
+      {/* <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger>النتائج</NavigationMenuTrigger>
@@ -69,7 +62,17 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
             </NavigationMenuContent>
           </NavigationMenuItem>
         </NavigationMenuList>
-      </NavigationMenu>
+      </NavigationMenu> */}
+      <Select open={open} onOpenChange={setOpen}>
+        <SelectTrigger>
+          <SelectValue placeholder="النتائج" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <Link href="/Results">النتائج</Link>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <li onClick={enablescroll}>
         <Link href="mailto:info@jocrc.com">تواصل معنا</Link>
       </li>
