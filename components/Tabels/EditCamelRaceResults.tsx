@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { ReportForm } from "./CamelsResultsTabe";
+import ReportForm from "./CamelsResultsTabe";
 
 const EditRaceResultPage = () => {
   const router = useRouter();
@@ -39,7 +39,7 @@ const EditRaceResultPage = () => {
   return (
     <div>
       <h1>Edit Race Result</h1>
-      <ReportForm/>
+      <ReportForm />
     </div>
   );
 };
