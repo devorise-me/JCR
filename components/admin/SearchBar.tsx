@@ -1,65 +1,29 @@
-import React, { useState } from 'react';
-import UserDetails from './ShowUserDetails';
+"use client";
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
-const SearchBar: React.FC = () => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ id: string; username: string; email: string; role: string }[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+interface SearchBarProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}
 
-  const handleCloseUserDetails = () => {
-    setSelectedUserId(null);
-  };
-
-  const handleSearch = async () => {
-    setError(null);
-    const lowerCaseQuery = query.toLowerCase();
-
-    if (lowerCaseQuery.length > 0) {
-      const res = await fetch(`/api/search?query=${lowerCaseQuery}`);
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        setResults(data);
-        setSelectedUserId(data[0].id); // Set the selected user ID
-      } else {
-        setResults([]);
-        setError('المستخدم غير موجود');
-      }
-    } else {
-      setResults([]);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
+const SearchBar = ({
+  value,
+  onChange,
+  placeholder = "ابحث عن طريق الاسم، البريد الإلكتروني، رقم الجوال، أو رقم الهوية"
+}: SearchBarProps) => {
   return (
-    <div className='w-full'>
-      <div className="flex w-full items-center ">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder=" ... ابحث عن المستخدمين أو المسؤولين"
-          className="border p-2 w-full rounded flex-grow"
-        />
-        <button
-          onClick={handleSearch}
-          className="ml-2 p-2 bg-gray-500 hover:bg-[#0F172A] text-white rounded"
-        >
-          بحث
-        </button>
-      </div>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-
-      {selectedUserId && (
-        <UserDetails userId={selectedUserId} onClose={handleCloseUserDetails} />
-      )}
+    <div className="relative flex-1">
+      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+      <Input
+        type="search"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full pr-10 text-right"
+      />
     </div>
   );
 };

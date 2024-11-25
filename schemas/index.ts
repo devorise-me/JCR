@@ -86,7 +86,7 @@ export const RegisterSchema = z
         message: "صيغة رقم الهاتف غير صحيحة",
       })
       .optional(),
-    role: z.enum(["USER", "ADMIN", "SUPERVISOR"]).default("USER"),
+    role: z.enum(["USER", "ADMIN", "SUPERVISOR", "RESULTS_EDITOR"]).default("USER"),
     password: z.string().min(6, {
       message: "الطول 6 حروف على الاقل",
     }),
@@ -204,7 +204,6 @@ export const createLoopSchema = z
     startRegister: z.string().transform((str) => new Date(str)),
     endRegister: z.string().transform((str) => new Date(str)),
     number: z.number().min(1),
-    timeInHours: z.string().min(1),
   })
   .superRefine((data, ctx) => {
     if (data.endRegister <= data.startRegister) {

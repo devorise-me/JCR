@@ -1,14 +1,15 @@
 "use client";
+import { useState } from "react";
 import SearchBar from "@/components/admin/SearchBar";
 import { RedirectButton } from "@/components/auth/redirect-button";
 import { ShowUsers } from "@/components/Tabels/usersTabel";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
-const Page = () => {
+const UsersPage = () => {
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const exportToExcel = () => {
     const table = document.getElementById("myUsers");
@@ -36,11 +37,14 @@ const Page = () => {
                 <FaPlus /> انشاء مستخدم
               </Button>
             </RedirectButton>
-            <SearchBar />
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+            />
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 h-full">
+        <div className="flex flex-col gap-2 flex-1 min-h-0">
           <div className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col py-1 px-4">
             <div className="flex flex-row-reverse items-center justify-between">
               <h2 className="w-full flex justify-end text-3xl font-semibold my-2">
@@ -54,8 +58,8 @@ const Page = () => {
                 طباعة البيانات
               </Button>
             </div>
-            <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-auto">
-              <ShowUsers />
+            <div className="flex-1 min-h-0 bg-gray-200 dark:bg-neutral-700 rounded-lg p-2">
+              <ShowUsers searchTerm={searchTerm} />
             </div>
           </div>
         </div>
@@ -64,4 +68,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default UsersPage;

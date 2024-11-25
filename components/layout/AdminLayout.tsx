@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/side-bar";
 import { MdInsertDriveFile } from "react-icons/md";
 import { GrCertificate } from "react-icons/gr";
@@ -31,6 +31,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname()
 
   useEffect(() => {
     async function fetchUserProfile() {
@@ -91,9 +92,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     );
   }
 
-  if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
+  if (user.role !== "ADMIN" && user.role !== "SUPERVISOR" && user.role !== "RESULTS_EDITOR") {
     router.push("/error");
     return null;
+  }
+
+  if (user.role === "RESULTS_EDITOR" && (pathname.includes("/admin/dashboard") || pathname.includes("/admin/users") || pathname.includes("/admin/registeredCamels"))) {
+    router.push("/admin/Results/");
   }
 
   const handleSignOut = async () => {
@@ -110,22 +115,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       label: "اللائحة",
       href: "/admin/dashboard/",
       icon: (
-        <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconBrandTabler className={cn("text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0", user.role === 'RESULTS_EDITOR' && 'opacity-50 cursor-default')} />
       ),
+      disabled: user.role === 'RESULTS_EDITOR'
     },
     {
       label: "المستخدمين",
       href: "/admin/users/",
       icon: (
-        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconUserBolt className={cn("text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0", user.role === 'RESULTS_EDITOR' && 'opacity-50 cursor-default')} />
       ),
+      disabled: user.role === 'RESULTS_EDITOR'
     },
     {
       label: "المطايا المسجلة",
       href: "/admin/registeredCamels/",
       icon: (
-        <MdInsertDriveFile className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <MdInsertDriveFile className={cn("text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0", user.role === 'RESULTS_EDITOR' && 'opacity-50 cursor-default')} />
       ),
+      disabled: user.role === 'RESULTS_EDITOR'
     },
     {
       label: "النتائج",
@@ -165,12 +173,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             {open ? <Logo /> : <LogoIcon />}
-            <div className="mt-8 flex flex-col gap-2">
+            <div className={"mt-8 flex flex-col gap-2"}>
               {links.map((link, idx) => (
                 <SidebarLink
                   key={idx}
                   link={link}
-                  onClick={link.onClick ? (e) => link.onClick(e) : undefined}
+                  onClick={(link.onClick && !link.disabled) ? (e) => link.onClick(e) : undefined}
                 />
               ))}
             </div>

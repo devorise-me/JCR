@@ -47,6 +47,13 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
             <Link href="/admin/dashboard">لائحة المسؤول</Link>
           </li>
         )}
+      {hide &&
+        user &&
+        (user.role === "RESULTS_EDITOR") && (
+          <li onClick={enablescroll}>
+            <Link href="/admin/Results">لائحة محرر النتائج</Link>
+          </li>
+        )}
       <li onClick={enablescroll}>
         <Link href="/Results"></Link>
       </li>
@@ -68,8 +75,9 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
           <SelectValue placeholder="النتائج" />
         </SelectTrigger>
         <SelectContent className='max-w-20 outline-none border-none'>
-          <SelectGroup>
+          <SelectGroup className='flex flex-col gap-2'>
             <Link href="/Results">النتائج</Link>
+            <Link href="/profile/myCamels">المطايا المسجلة</Link>
           </SelectGroup>
         </SelectContent>
       </Select>

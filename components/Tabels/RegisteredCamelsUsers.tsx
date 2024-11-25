@@ -32,6 +32,7 @@ interface Loop {
   time: string;
   startRegister: Date;
   endRegister: Date;
+  number: number;
 }
 
 interface Camel {
@@ -252,8 +253,7 @@ const RegisterCamelsUsers = () => {
               <SelectContent>
                 {loops.map((loop) => (
                   <SelectItem key={loop.id} value={loop.id}>
-                    {translateAge(loop.age)} - {translateSex(loop.sex)} (
-                    {translateTime(loop.time)})
+                    {translateAge(loop.age)} - {translateSex(loop.sex)} - {translateTime(loop.time)} {'رقم الشوط: ' + loop.number}
                   </SelectItem>
                 ))}
               </SelectContent>

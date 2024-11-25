@@ -12,6 +12,7 @@ enum Role {
   ADMIN
   SUPERVISOR
   USER
+  RESULTS_EDITOR
 }
 
 enum Sex {
@@ -93,7 +94,6 @@ model Loop {
   event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   CamelLoop     CamelLoop[]
   number        Int
-  timeInHours   String      @default("12:00")
 
   RaceResult RaceResult[]
 }

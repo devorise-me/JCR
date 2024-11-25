@@ -31,7 +31,6 @@ interface Loop {
   startRegister: Date;
   endRegister: Date;
   number: number;
-  timeInHours: string;
 }
 
 interface EventDetailsProps {
@@ -194,7 +193,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       case "International":
         return "دولية";
       case "National":
-        return "محلية";
+        return "وطنية";
       default:
         return "";
     }
@@ -269,9 +268,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                   <TableHead>الفئة</TableHead>
                   <TableHead>النوع</TableHead>
                   <TableHead>الوقت</TableHead>
-                  <TableHead>الساعة</TableHead>
-                  <TableHead>تاريخ البدء</TableHead>
-                  <TableHead>تاريخ الانتهاء</TableHead>
                   <TableHead>الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -288,10 +284,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                         </TableCell>
                         <TableCell>{translateSex(loop.sex)} </TableCell>
                         <TableCell>{translateTime(loop.time)} </TableCell>
-                        <TableCell>{convertToArabicTime(loop.timeInHours)}</TableCell>
-                        <TableCell>{new Date(loop.startRegister).toLocaleDateString('ar-EG')}</TableCell>
-                        <TableCell>{new Date(loop.endRegister).toLocaleDateString('ar-EG')}</TableCell>
-
                         <TableCell>
                           <button
                             onClick={() => handleEditLoop(loop)}
@@ -398,7 +390,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     required
                   >
                     <option value="International">دولية</option>
-                    <option value="National">محلية</option>
+                    <option value="National">وطنية</option>
                   </select>
                 </div>
                 <div className="mb-4">

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ReportForm } from "@/components/Tabels/CamelsResultsTabe";
+import ReportForm from "@/components/Tabels/CamelsResultsTabe";
 
 const Page = () => {
   const [error, setError] = useState<string | null>(null);

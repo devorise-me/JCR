@@ -15,7 +15,7 @@ export const createLoop = async (
     return { error: "Invalid data", details: validatedFields.error.errors };
   }
 
-  const { capacity, age, sex, time, startRegister, endRegister, number, timeInHours } =
+  const { capacity, age, sex, time, startRegister, endRegister, number } =
     validatedFields.data;
 
   try {
@@ -35,7 +35,6 @@ export const createLoop = async (
         endRegister: new Date(endRegister),
         eventId,
         number,
-        timeInHours,
       },
     });
 

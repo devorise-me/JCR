@@ -1,7 +1,14 @@
 "use client";
-import { AiOutlineCamera } from "react-icons/ai";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Button } from "../ui/button";
+import { AiOutlineCamera } from "react-icons/ai";
+import { FaUser, FaEnvelope, FaIdCard, FaBirthdayCake, FaPhone, FaUniversity, FaMoneyCheckAlt } from "react-icons/fa";
+import { motion } from "framer-motion";
+import Nav from "../Navigation/Nav";
+import RegisterCamelForm from "../Forms/register-camels-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -9,12 +16,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+} from "@/components/ui/table";
 import * as XLSX from "xlsx";
-import Nav from "../Navigation/Nav";
-import RegisterCamelForm from "../Forms/register-camels-form";
 
 interface UserProfile {
   id: string;
@@ -29,6 +32,9 @@ interface UserProfile {
   MobileNumber: string;
   image?: string;
   role: string;
+  swiftCode: string;
+  IBAN: string;
+  bankName: string;
 }
 
 interface Camel {
@@ -139,22 +145,21 @@ const Profile = () => {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="flex justify-center items-center mb-4 transition-transform duration-500 ease-in-out transform hover:scale-110">
-        <Image 
-          src={'/loadingPage.jpeg'}
-          width={150}
-          height={150}
-          alt="loading"
-          className="rounded-full shadow-lg"
-        />
+        <div className="flex justify-center items-center mb-4 transition-transform duration-500 ease-in-out transform hover:scale-110">
+          <Image
+            src="/loadingPage.jpeg"
+            width={150}
+            height={150}
+            alt="loading"
+            className="rounded-full shadow-lg"
+          />
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-800 transition-transform duration-500 ease-in-out hover:translate-x-2">
+            رياضـة الـهـجـن الأردنـيـة
+          </h1>
+        </div>
       </div>
-      
-      <div className="flex flex-col items-center gap-3">
-        <h1 className="text-3xl font-bold text-gray-800 transition-transform duration-500 ease-in-out hover:translate-x-2">
-          رياضـة الـهـجـن الأردنـيـة
-        </h1>
-      </div>
-    </div>
     );
   }
 
@@ -162,24 +167,20 @@ const Profile = () => {
     switch (Age) {
       case "GradeOne":
         return "مفرد";
-        break;
       case "GradeTwo":
         return "حقايق";
-        break;
       case "GradeThree":
         return "لقايا";
-        break;
       case "GradeFour":
         return "جذاع";
-        break;
       case "GradeFive":
         return "ثنايا";
-        break;
       case "GradeSixMale":
         return "زمول";
-        break;
       case "GradeSixFemale":
         return "حيل";
+      default:
+        return Age;
     }
   }
 
@@ -187,197 +188,162 @@ const Profile = () => {
     switch (sex) {
       case "Male":
         return "قعدان";
-        break;
       case "Female":
         return "بكار";
-        break;
       default:
-        return "";
+        return sex;
     }
   }
 
   return (
-    <>
-      <div>
-        <div className="bg-[url('/WadiRam.jpeg')] h-[350px] relative bg-no-repeat bg-cover bg-top">
-          <div className="bg-black/50 absolute inset-0" />
-          <div className="container relative h-full">
-            <Nav />
-            <div className="flex items-end justify-end h-full translate-y-[25%] max-sm:justify-center">
-              <div className="relative">
-                <Image
-                  className="rounded-full aspect-square object-contain border-2 border-black shadow-md bg-white z-0"
-                  src={selectedImage || "/PFP.jpg"}
-                  width={200}
-                  height={200}
-                  alt="Profile Picture"
-                  priority
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-white">
+      <div className="relative h-[400px]">
+        <Image
+          src="/WadiRam.jpeg"
+          layout="fill"
+          objectFit="cover"
+          alt="Wadi Rum"
+          className="brightness-50"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-50" />
+        <div className="container relative h-full">
+          <Nav />
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="absolute bottom-0 right-0 transform translate-y-1/2 mr-8"
+          >
+            <div className="relative">
+              <Image
+                className="rounded-full border-4 border-white shadow-2xl"
+                src={selectedImage || "/PFP.jpg"}
+                width={200}
+                height={200}
+                alt="Profile Picture"
+                priority
+              />
+              <label className="absolute inset-0 bg-black opacity-0 hover:opacity-20 flex items-center justify-center cursor-pointer rounded-full transition-opacity duration-300">
+                <input
+                  type="file"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handlePictureChange}
                 />
-                <label className="absolute inset-0 bg-black opacity-0 hover:opacity-20 flex items-center justify-center cursor-pointer rounded-full">
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={handlePictureChange}
-                  />
-                  <span className="text-white">
-                    <AiOutlineCamera size={24} />
-                  </span>
-                </label>
-              </div>
+                <AiOutlineCamera size={40} className="text-white" />
+              </label>
             </div>
-          </div>
+          </motion.div>
         </div>
-        <div className="container w-full text-right mt-28 max-sm:text-center">
-          <h1 className="text-5xl font-semibold">أهلا {user?.username}</h1>
-        </div>
-
-        <div className="container w-full text-right mt-10 max-sm:text-center">
-          <div className="flex flex-col items-center justify-center text-right gap-4">
-            <div className="flex items-center justify-center gap-2 w-full flex-row-reverse max-sm:flex-col">
-              <div className="bg-gray-100 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">الاسم الأول:</label>
-                <input
-                  type="text"
-                  value={user?.FirstName}
-                  readOnly
-                  className=" outline-none input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                />
-              </div>
-              <div className="bg-gray-200 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">اسم الأب:</label>
-                <input
-                  type="text"
-                  value={user?.FatherName}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-            </div>
-            <div className="flex w-full gap-2 flex-row-reverse max-sm:flex-col">
-              <div className="bg-gray-100 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">اسم الجد:</label>
-                <input
-                  type="text"
-                  value={user?.GrandFatherName}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-              <div className="bg-gray-200 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">اسم العائلة:</label>
-                <input
-                  type="text"
-                  value={user?.FamilyName}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-            </div>
-            <div className="flex w-full gap-2 flex-row-reverse max-sm:flex-col">
-              <div className="bg-gray-100 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">
-                  اسم المستخدم:
-                </label>
-                <input
-                  type="text"
-                  value={user?.username}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-              <div className="bg-gray-200 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">
-                  البريد الإلكتروني:
-                </label>
-                <input
-                  type="text"
-                  value={user?.email}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none  text-right"
-                />
-              </div>
-            </div>
-            <div className="flex w-full gap-2 max-sm:flex-col">
-              <div className="bg-gray-100 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">
-                  الرقم الوطني:
-                </label>
-                <input
-                  type="text"
-                  value={user?.NationalID}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-              <div className="bg-gray-200 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">
-                  تاريخ الميلاد:
-                </label>
-                <input
-                  type="text"
-                  value={user?.BDate?.split("T")[0]}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg w-full">
-                <label className="block text-gray-400 mb-1">رقم الهاتف:</label>
-                <input
-                  type="text"
-                  value={user?.MobileNumber}
-                  readOnly
-                  className="input-field w-full p-2 rounded-md bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="container w-full text-center mt-20 max-sm:text-center">
-          <div className="mt-10 flex items-center justify-between flex-row-reverse max-sm:flex-col max-sm:gap-5">
-            <h2 className="text-2xl">: الهجن المسجلة</h2>
-            <div className="flex items-center justify-center gap-1">
-              <Button
-                variant="outline"
-                className="mr-5"
-                onClick={exportToExcel}
-              >
-                طباعة البيانات
-              </Button>
-              <Button onClick={handleRegisterForm}>
-                {camelRegister
-                  ? "إخفاء استمارة التسجيل"
-                  : "تسجيل الهجن في السباق"}
-              </Button>
-            </div>
-          </div>
-        </div>
-        <Table className="container text-right mt-10 mb-20" id="myCamels">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">الفئة / السن</TableHead>
-              <TableHead>رقم الشريحة</TableHead>
-              <TableHead>اسم الهجين</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {camels.map((camel) => (
-              <TableRow key={camel.id}>
-                <TableCell className="font-medium w-[33%]">
-                  {translateAge(camel.age)} \ {translateSex(camel.sex)}
-                </TableCell>
-                <TableCell>{camel.camelID}</TableCell>
-                <TableCell>{camel.name}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
       </div>
+
+      <div className="container mx-auto px-4 pt-32 pb-16">
+        <motion.h1
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="text-4xl font-bold text-right mb-12 text-gray-800"
+        >
+          أهلا {user?.username}
+        </motion.h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden shadow-lg">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-semibold mb-6 text-right text-gray-700 border-b pb-2">المعلومات البنكية</h2>
+                <div className="space-y-4">
+                  <InfoItem icon={<FaUniversity />} label="البنك" value={user?.bankName} />
+                  <InfoItem icon={<FaMoneyCheckAlt />} label="IBAN" value={user?.IBAN} />
+                  <InfoItem icon={<FaMoneyCheckAlt />} label="SWIFT Code" value={user?.swiftCode} />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ x: 50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden shadow-lg">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-semibold mb-6 text-right text-gray-700 border-b pb-2">المعلومات الشخصية</h2>
+                <div className="space-y-4">
+                  <InfoItem icon={<FaUser />} label="الاسم الكامل" value={`${user?.FirstName} ${user?.FatherName ?? ''} ${user?.GrandFatherName ?? ''} ${user?.FamilyName ?? ''}`} />
+                  <InfoItem icon={<FaEnvelope />} label="البريد الإلكتروني" value={user?.email} />
+                  <InfoItem icon={<FaIdCard />} label="الرقم الوطني" value={user?.NationalID} />
+                  <InfoItem icon={<FaBirthdayCake />} label="تاريخ الميلاد" value={user?.BDate?.split("T")[0]} />
+                  <InfoItem icon={<FaPhone />} label="رقم الهاتف" value={user?.MobileNumber} />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mt-16"
+        >
+          <Card className="overflow-hidden shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="space-x-4 rtl:space-x-reverse">
+                  <Button variant="outline" onClick={exportToExcel}>
+                    طباعة البيانات
+                  </Button>
+                  <Button onClick={handleRegisterForm}>
+                    {camelRegister ? "إخفاء استمارة التسجيل" : "تسجيل الهجن في السباق"}
+                  </Button>
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-700">الهجن المسجلة</h2>
+              </div>
+              <Table className="w-full" id="myCamels">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">الفئة / السن</TableHead>
+                    <TableHead className="text-right">رقم الشريحة</TableHead>
+                    <TableHead className="text-right">اسم الهجين</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {camels.map((camel) => (
+                    <TableRow key={camel.id}>
+                      <TableCell className="text-right">{translateAge(camel.age)} \ {translateSex(camel.sex)}</TableCell>
+                      <TableCell className="text-right">{camel.camelID}</TableCell>
+                      <TableCell className="text-right">{camel.name}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
       {camelRegister && (
         <RegisterCamelForm userId={user?.id} onClose={handleRegisterForm} />
       )}
-    </>
+    </div>
   );
 };
 
+const InfoItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | undefined }) => (
+  <div className="flex items-center justify-between">
+    <span className="text-gray-800">{value}</span>
+    <div className="flex items-center space-x-3 rtl:space-x-reverse">
+      <span className="font-medium text-gray-600">{label}</span>
+      <span className="text-blue-500">{icon}</span>
+    </div>
+  </div>
+);
+
 export default Profile;
+

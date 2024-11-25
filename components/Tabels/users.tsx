@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useCallback } from "react";
+"use client";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useInView } from "react-intersection-observer";
 import UserDetails from "../admin/ShowUserDetails";
 import { Button } from "../ui/button";
+import debounce from "lodash/debounce";
+import { ArrowUpDown } from "lucide-react";
 
 interface User {
   id: string;
@@ -22,14 +25,17 @@ interface User {
   bankName: string;
 }
 
-export const ShowUsers = () => {
+export const ShowUsers = ({ searchTerm }: { searchTerm: string }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const { ref, inView } = useInView({
     threshold: 0.5,
@@ -37,7 +43,7 @@ export const ShowUsers = () => {
   });
 
   const fetchUsers = useCallback(async (pageNum: number) => {
-    if (loading || !hasMore) return;
+    if (loading || (!hasMore && !initialLoad)) return;
 
     setLoading(true);
     try {
@@ -52,13 +58,16 @@ export const ShowUsers = () => {
         setError(data.error);
       } else {
         setUsers(prevUsers => {
-          // Deduplicate users based on ID
+          if (initialLoad) {
+            setInitialLoad(false);
+            return data.users;
+          }
           const newUsers = data.users.filter(
             (newUser: User) => !prevUsers.some(existingUser => existingUser.id === newUser.id)
           );
           return [...prevUsers, ...newUsers];
         });
-        setHasMore(data.hasMore);
+        setHasMore(data.users.length === 6);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -66,22 +75,87 @@ export const ShowUsers = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loading, hasMore, initialLoad]);
 
   useEffect(() => {
-    fetchUsers(1);
-  }, []);
+    if (initialLoad) {
+      fetchUsers(1);
+    }
+  }, [fetchUsers, initialLoad]);
 
   useEffect(() => {
-    // Load more when scrolling to bottom
-    if (inView && hasMore && !loading) {
+    if (inView && !initialLoad && hasMore && !loading) {
       setPage(prevPage => {
         const nextPage = prevPage + 1;
         fetchUsers(nextPage);
         return nextPage;
       });
     }
-  }, [inView, hasMore, loading, fetchUsers]);
+  }, [inView, hasMore, loading, fetchUsers, initialLoad]);
+
+  const getFullName = useCallback((user: User) => {
+    return `${user.FirstName} ${user.FatherName} ${user.GrandFatherName} ${user.FamilyName}`;
+  }, []);
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((searchValue: string, currentUsers: User[]) => {
+        if (!searchValue.trim()) {
+          setFilteredUsers(currentUsers);
+          return;
+        }
+
+        const normalizedSearch = searchValue.trim().toLowerCase();
+        const filtered = currentUsers.filter((user) => {
+          const fullName = getFullName(user).toLowerCase();
+          const email = user.email.toLowerCase();
+          const username = user.username.toLowerCase();
+          const mobile = user.MobileNumber;
+          const nationalId = user.NationalID;
+
+          return (
+            fullName.includes(normalizedSearch) ||
+            email.includes(normalizedSearch) ||
+            username.includes(normalizedSearch) ||
+            mobile.includes(normalizedSearch) ||
+            nationalId.includes(normalizedSearch)
+          );
+        });
+        setFilteredUsers(filtered);
+      }, 300),
+    [getFullName]
+  );
+
+  // Effect for search and sort
+  useEffect(() => {
+    const filtered = users.filter(user => {
+      if (!searchTerm.trim()) return true;
+
+      const normalizedSearch = searchTerm.trim().toLowerCase();
+      const fullName = getFullName(user).toLowerCase();
+      const email = user.email.toLowerCase();
+      const username = user.username.toLowerCase();
+      const mobile = user.MobileNumber;
+      const nationalId = user.NationalID;
+
+      return (
+        fullName.includes(normalizedSearch) ||
+        email.includes(normalizedSearch) ||
+        username.includes(normalizedSearch) ||
+        mobile.includes(normalizedSearch) ||
+        nationalId.includes(normalizedSearch)
+      );
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      const nameA = getFullName(a);
+      const nameB = getFullName(b);
+      const comparison = nameA.localeCompare(nameB, 'ar');
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    setFilteredUsers(sorted);
+  }, [users, searchTerm, sortDirection, getFullName]);
 
   const handleUserClick = (userId: string) => {
     setSelectedUserId(userId);
@@ -102,6 +176,7 @@ export const ShowUsers = () => {
 
       if (response.ok) {
         setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+        setFilteredUsers(prevFiltered => prevFiltered.filter(user => user.id !== userId));
         setShowDeletePopup(null);
       } else {
         const data = await response.json();
@@ -122,11 +197,21 @@ export const ShowUsers = () => {
     setShowDeletePopup(null);
   };
 
+  const toggleSort = useCallback(() => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  }, []);
+
   if (error) return <p className="text-red-500 p-4">{error}</p>;
 
   return (
     <div className="overflow-auto">
-      {users.map((user) => (
+      <div className="flex justify-end mb-2">
+        <Button variant="ghost" size="sm" onClick={toggleSort} className="flex items-center gap-2">
+          <span>ترتيب أبجدي</span>
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      </div>
+      {filteredUsers.map((user) => (
         <div
           className="w-full h-20 flex-shrink-0 bg-white/30 rounded-lg flex flex-row-reverse items-center justify-between px-5 cursor-pointer mb-2"
           key={user.id}
@@ -140,7 +225,7 @@ export const ShowUsers = () => {
               width={60}
               height={60}
             />
-            <span className="font-semibold">{user.username}</span>
+            <span className="font-semibold">{getFullName(user)}</span>
           </div>
           <button
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"

@@ -200,6 +200,12 @@ export const RegisterForm = () => {
                       >
                         مستخدم
                       </SelectItem>
+                      <SelectItem
+                        className="flex flex-row-reverse"
+                        value="RESULTS_EDITOR"
+                      >
+                        محرر النتائج
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -208,7 +214,7 @@ export const RegisterForm = () => {
             />
           )}
 
-          {selectedRole == "SUPERVISOR" && (
+          {(selectedRole == "SUPERVISOR" || selectedRole == "RESULTS_EDITOR") && (
             <>
               <FormField
                 control={form.control}

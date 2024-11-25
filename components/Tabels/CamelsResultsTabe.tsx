@@ -1,15 +1,6 @@
-"use client";
 import React, { useEffect, useState } from "react";
-import * as XLSX from "xlsx";
+import { Reorder } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -17,9 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+import { Trophy } from "lucide-react";
 
 interface Camel {
-  ownerId: string;
   id: string;
   name: string;
   age: string;
@@ -28,8 +20,9 @@ interface Camel {
   bankName: string;
   ownerName: string;
   swiftCode: string;
-  camelID: string; // Added camelID
-  NationalID: string; // Added NationalID
+  camelID: string;
+  ownerId: string;
+  NationalID: string;
 }
 
 interface Loop {
@@ -39,6 +32,7 @@ interface Loop {
   sex: string;
   name?: string;
   capacity: number;
+  number: number;
 }
 
 interface Event {
@@ -46,381 +40,232 @@ interface Event {
   name: string;
 }
 
-interface ReportData {
+interface RankedCamel extends Camel {
   rank: number;
-  camelId: number;
-  camelName: string;
-  loopId: string;
-  loopName: string;
-  eventId: string;
-  eventName: string;
-  IBAN: string;
-  bankName: string;
-  swiftCode: string;
-  camelID: string;
-  ownerName: string;
-  ownerId: string;
-  NationalID: string; // Added NationalID
 }
 
-export const ReportForm = () => {
+const ReportForm = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [loops, setLoops] = useState<Loop[]>([]);
   const [selectedLoop, setSelectedLoop] = useState<string | null>(null);
-  const [camels, setCamels] = useState<Camel[]>([]);
-  const [selectedCamel, setSelectedCamel] = useState<string | null>(null);
-  const [rank, setRank] = useState<number>(1);
-  const [results, setResults] = useState<ReportData[]>([]);
+  const [camels, setCamels] = useState<RankedCamel[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [confirmPublish, setConfirmPublish] = useState<boolean>(false);
-  const [selectedOwnerName, setSelectedOwnerName] = useState<string | null>(
-    null
-  );
+  const [confirmPublish, setConfirmPublish] = useState(false);
+  const [publishLoading, setPublishLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/events/getEvents")
       .then((response) => response.json())
-      .then((data) => setEvents(data))
+      .then(setEvents)
       .catch(() => setError("Error fetching events"));
   }, []);
 
   useEffect(() => {
     if (selectedEvent) {
-      fetch(`/api/events/${selectedEvent}/getLoops`) // تأكد أن هذه النقطة تجلب الأشواط الخاصة بالفعالية فقط
+      fetch(`/api/events/${selectedEvent}/getLoops`)
         .then((response) => response.json())
         .then((data) => {
-          const filteredLoops = data.filter((loop: Loop) => loop.eventId === selectedEvent); // فلترة الأشواط حسب eventId
+          const filteredLoops = data.filter((loop: Loop) =>
+            loop.eventId === selectedEvent
+          );
           setLoops(filteredLoops);
         })
         .catch(() => setError("Error fetching loops"));
     }
   }, [selectedEvent]);
-  
 
   useEffect(() => {
     if (selectedLoop && selectedEvent) {
-      fetch(
-        `/api/events/${selectedEvent}/getLoops/${selectedLoop}/registeredCamels`
-      )
+      fetch(`/api/events/${selectedEvent}/getLoops/${selectedLoop}/registeredCamels`)
         .then((response) => response.json())
         .then((data) => {
-          const formattedCamels = data.map((camel: any) => ({
-            id: camel.id,
-            name: camel.name,
-            age: camel.age,
-            sex: camel.sex,
-            IBAN: camel.IBAN ?? "N/A",
-            bankName: camel.bankName ?? "N/A",
-            swiftCode: camel.swiftCode ?? "N/A",
-            ownerName: camel.ownerName ?? "N/A",
-            ownerId: camel.ownerId ?? "N/A",
-            camelID: camel.camelID ?? "N/A",
-            NationalID: camel.NationalID ?? "N/A", // Adding NationalID
+          const rankedCamels = data.map((camel: Camel, index: number) => ({
+            ...camel,
+            rank: index + 1
           }));
-          setCamels(formattedCamels);
+          setCamels(rankedCamels);
         })
         .catch(() => setError("Error fetching camels"));
     }
   }, [selectedLoop, selectedEvent]);
 
-  function translateAge(age: string) {
-    switch (age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return "";
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return "";
-    }
-  }
-
-  const handleAddReport = () => {
-    if (!selectedCamel || !selectedLoop || !selectedEvent) {
-      setError("All fields are required.");
-      return;
-    }
-
-    if (results.some((report) => report.camelId === Number(selectedCamel))) {
-      setError("The camel is already added.");
-      return;
-    }
-
-    if (results.some((report) => report.rank === rank)) {
-      setError("Duplicate rank not allowed.");
-      return;
-    }
-
-    const event = events.find((event) => event.id === selectedEvent);
-    const loop = loops.find((loop) => loop.id === selectedLoop);
-    const camel = camels.find((camel) => camel.id === selectedCamel);
-
-    if (!camel) {
-      setError("Camel not found.");
-      return;
-    }
-
-    const reportData: ReportData = {
-      rank,
-      camelId: Number(selectedCamel),
-      camelName: camel.name || "Unknown Camel",
-      loopId: selectedLoop,
-      loopName: loop
-        ? `${translateAge(loop.age)} - ${translateSex(loop.sex)}`
-        : "Unknown Loop",
-      eventId: selectedEvent,
-      eventName: event?.name || "Unknown Event",
-      IBAN: camel?.IBAN || "N/A",
-      bankName: camel?.bankName || "N/A",
-      ownerId: camel?.ownerId || "N/A",
-      swiftCode: camel?.swiftCode || "N/A",
-      ownerName: camel?.ownerName || "N/A",
-      camelID: camel.camelID || "N/A", // Adding camelID
-      NationalID: camel.NationalID || "N/A", // Adding NationalID
-    };
-
-    setResults((prevResults) => {
-      const newResults = [...prevResults, reportData];
-      newResults.sort((a, b) => a.rank - b.rank);
-      return newResults;
-    });
-
-    setSelectedCamel(null);
-    setRank(1);
-    setSelectedOwnerName(camel.ownerName);
-    setError(null);
+  const handleReorder = (newOrder: RankedCamel[]) => {
+    const updatedCamels = newOrder.map((camel, index) => ({
+      ...camel,
+      rank: index + 1
+    }));
+    setCamels(updatedCamels);
   };
 
-  const handleRemoveReport = (camelId: number) => {
-    setResults((prevResults) =>
-      prevResults.filter((report) => report.camelId !== camelId)
-    );
+  const getMedalColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "bg-yellow-500";
+      case 2:
+        return "bg-gray-300";
+      case 3:
+        return "bg-amber-600";
+      default:
+        return "bg-white";
+    }
   };
 
-  const handlePublish = () => {
-    if (results.length === 0) {
+  const handlePublish = async () => {
+    if (camels.length === 0) {
       setError("No results to publish.");
       return;
     }
-    setConfirmPublish(true);
-  };
 
-  const confirmPublishResults = () => {
-    fetch("/api/results/publish", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(results),
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("Error publishing results");
-        return response.json();
-      })
-      .then(() => {
-        alert("Results published successfully!");
-        setResults([]);
-        setConfirmPublish(false);
-      })
-      .catch(() => {
-        setError("Error publishing results");
-        setConfirmPublish(false);
+    setPublishLoading(true);
+
+    const event = events.find(e => e.id === selectedEvent);
+    const loop = loops.find(l => l.id === selectedLoop);
+
+    const results = camels.map(camel => ({
+      rank: camel.rank,
+      camelId: Number(camel.id),
+      camelName: camel.name,
+      loopId: selectedLoop,
+      loopName: `${translateAge(loop?.age || '')} - ${translateSex(loop?.sex || '')}`,
+      eventId: selectedEvent,
+      eventName: event?.name || "Unknown Event",
+      IBAN: camel.IBAN,
+      bankName: camel.bankName,
+      ownerId: camel.ownerId,
+      swiftCode: camel.swiftCode,
+      ownerName: camel.ownerName,
+      camelID: camel.camelID,
+      NationalID: camel.NationalID,
+    }));
+
+    try {
+      const response = await fetch("/api/results/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(results),
       });
-  };
 
-  const handleExportToExcel = () => {
-    if (results.length === 0) {
-      setError("No results to export.");
-      return;
+      if (!response.ok) throw new Error("Error publishing results");
+
+      alert("Results published successfully!");
+      setCamels([]);
+      setSelectedLoop(null);
+      setConfirmPublish(false);
+    } catch (error) {
+      setError("Error publishing results");
+      setConfirmPublish(false);
     }
-    const filteredResults = results.map(({camelId, loopId, eventId, ownerId, ...rest }) => rest);
-
-    const worksheet = XLSX.utils.json_to_sheet(filteredResults);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Results");
-    XLSX.writeFile(workbook, "camel_race_results.xlsx");
+    finally {
+      setPublishLoading(false);
+    }
   };
+
+  function translateAge(age: string) {
+    const ageMap: Record<string, string> = {
+      "GradeOne": "مفرد",
+      "GradeTwo": "حقايق",
+      "GradeThree": "لقايا",
+      "GradeFour": "جذاع",
+      "GradeFive": "ثنايا",
+      "GradeSixMale": "زمول",
+      "GradeSixFemale": "حيل",
+    };
+    return ageMap[age] || "";
+  }
+
+  function translateSex(sex: string) {
+    return sex === "Male" ? "قعدان" : sex === "Female" ? "بكار" : "";
+  }
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="w-full">
-          <Select value={selectedEvent || ""} onValueChange={setSelectedEvent}>
-            <SelectTrigger className="border p-2 rounded w-full">
-              <SelectValue placeholder="اختر فعالية" />
+    <div className="w-full space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select value={selectedEvent || ""} onValueChange={setSelectedEvent}>
+          <SelectTrigger>
+            <SelectValue placeholder="اختر فعالية" />
+          </SelectTrigger>
+          <SelectContent>
+            {events.map((event) => (
+              <SelectItem key={event.id} value={event.id}>
+                {event.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedEvent && (
+          <Select value={selectedLoop || ""} onValueChange={setSelectedLoop}>
+            <SelectTrigger>
+              <SelectValue placeholder="اختر شوط" />
             </SelectTrigger>
             <SelectContent>
-              {events.map((event) => (
-                <SelectItem key={event.id} value={event.id}>
-                  {event.name}
+              {loops.map((loop) => (
+                <SelectItem key={loop.id} value={loop.id}>
+                  {translateAge(loop.age)} - {translateSex(loop.sex)} {'رقم الشوط: ' + loop.number}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
-        {selectedEvent && (
-          <div className="w-full">
-            <Select value={selectedLoop || ""} onValueChange={setSelectedLoop}>
-              <SelectTrigger className="border p-2 rounded w-full">
-                <SelectValue placeholder="اختر شوط" />
-              </SelectTrigger>
-              <SelectContent>
-                {loops
-                  .filter(
-                    (loop) =>
-                      !results.some((result) => result.loopId === loop.id)
-                  )
-                  .map((loop) => (
-                    <SelectItem key={loop.id} value={loop.id}>
-                    {translateAge(loop.age)} - {translateSex(loop.sex)}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-        {selectedLoop && (
-          <div className="w-full">
-            <Select
-              value={selectedCamel || ""}
-              onValueChange={setSelectedCamel}
-            >
-              <SelectTrigger className="border p-2 rounded w-full">
-                <SelectValue placeholder="اختر الهجن" />
-              </SelectTrigger>
-              <SelectContent>
-                {camels.map((camel) => (
-                  <SelectItem key={camel.id} value={camel.id}>
-                    {camel.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         )}
       </div>
 
-      {selectedCamel && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-            <div>
-              <p>
-                Camel Name:{" "}
-                {camels.find((camel) => camel.id === selectedCamel)?.name}
-              </p>
-            </div>
-            <div>
-              <p>
-                Owner:{" "}
-                {camels.find((camel) => camel.id === selectedCamel)
-                  ?.ownerName || "Unknown"}
-              </p>
-            </div>
-            <div className="w-full">
-              <Select
-                value={rank.toString()}
-                onValueChange={(value) => setRank(Number(value))}
-              >
-                <SelectTrigger className="border p-2 rounded w-full">
-                  <SelectValue placeholder="الترتيب" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: camels.length }, (_, i) => i + 1).map(
-                    (value) => (
-                      <SelectItem key={value} value={value.toString()}>
-                        {value}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <Button onClick={handleAddReport}>اضف نتيجة</Button>
-          </div>
-        </div>
+      {error && (
+        <div className="text-red-500 p-2 rounded bg-red-100">{error}</div>
       )}
 
-      {error && <div className="text-red-600">{error}</div>}
+      {selectedLoop && camels.length > 0 && (
+        <Card className="p-4">
+          <Reorder.Group axis="y" values={camels} onReorder={handleReorder} className="space-y-2">
+            {camels.map((camel) => (
+              <Reorder.Item
+                key={camel.id}
+                value={camel}
+                className={`p-4 rounded-lg cursor-move flex items-center justify-between ${getMedalColor(camel.rank)} transition-colors duration-200`}
+              >
+                <div className="flex items-center gap-4">
+                  <span className="font-bold text-lg">{camel.rank}</span>
+                  {camel.rank <= 3 && <Trophy className="w-6 h-6" />}
+                  <div>
+                    <p className="font-medium">{camel.name}</p>
+                    <p className="text-sm text-gray-600">{camel.ownerName}</p>
+                  </div>
+                </div>
+                <div className="text-sm">
+                  <p>رقم الشريحة: {camel.camelID}</p>
+                  <p>الرقم الوطني: {camel.NationalID}</p>
+                </div>
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
 
-      <Button className="mt-2" onClick={handleAddReport}>إضافة النتيجة</Button>
-
-      {results.length > 0 && (
-        <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>الرتبة</TableHead>
-                <TableHead>اسم الهجن</TableHead>
-                <TableHead>الشوط</TableHead>
-                <TableHead>الفعالية</TableHead>
-                <TableHead>مالك الهجن</TableHead>
-                <TableHead>رقم الشريحة </TableHead>
-                <TableHead>الـرقم الوطني للمالك</TableHead>
-                <TableHead>إجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {results.map((report) => (
-                <TableRow className="text-right" key={report.camelId}>
-                  <TableCell>{report.rank}</TableCell>
-                  <TableCell>{report.camelName}</TableCell>
-                  <TableCell>{report.loopName}</TableCell>
-                  <TableCell>{report.eventName}</TableCell>
-                  <TableCell>{report.ownerName}</TableCell>
-                  <TableCell>{report.camelID}</TableCell>
-                  <TableCell>{report.NationalID.toString()}</TableCell>
-                  <TableCell>
-                    <Button onClick={() => handleRemoveReport(report.camelId)}>
-                      حذف
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="flex space-x-4 mt-4">
-            <Button onClick={handlePublish}>نشر النتائج</Button>
-            <Button onClick={handleExportToExcel}>
-              تصدير النتائج إلى إكسل
+          <div className="mt-6 flex justify-end gap-4">
+            <Button
+              onClick={() => setConfirmPublish(true)}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              نشر النتائج
             </Button>
           </div>
-        </>
+        </Card>
       )}
 
       {confirmPublish && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center m-0 bg-black bg-opacity-50">
-          <div className="bg-white p-4 rounded">
-            <h3 className="text-lg">هل أنت متأكد من رغبتك بإعلان النتيجة؟</h3>
-            <div className="mt-4 flex justify-end">
-              <Button onClick={confirmPublishResults} className="mr-2">
-                نعم
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <Card className="p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">هل أنت متأكد من رغبتك بإعلان النتيجة؟</h3>
+            <div className="flex justify-end gap-4">
+              <Button disabled={publishLoading} onClick={handlePublish}>
+                {publishLoading ? "جاري النشر..." : "نعم"}
               </Button>
-              <Button onClick={() => setConfirmPublish(false)}>لا</Button>
+              <Button
+                onClick={() => setConfirmPublish(false)}
+                variant="outline"
+              >
+                لا
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>
@@ -428,5 +273,3 @@ export const ReportForm = () => {
 };
 
 export default ReportForm;
-
- 

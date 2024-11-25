@@ -16,6 +16,7 @@ interface DashboardProps {
 const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
   const [isEventFormOpen, setEventFormOpen] = useState(false);
   const [eventAdded, setEventAdded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (isEventFormOpen) {
@@ -38,7 +39,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
 
   useEffect(() => {
     if (eventAdded) {
-      setEventAdded(false); 
+      setEventAdded(false);
     }
   }, [eventAdded]);
 
@@ -54,7 +55,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
                 <FaPlus /> انشاء مستخدم
               </Button>
             </RedirectButton>
-            <SearchBar />
+            <SearchBar value={searchTerm} onChange={setSearchTerm} />
           </div>
         </div>
 
@@ -77,7 +78,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
               : المستخدمين
             </h2>
             <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
-              <ShowUsers />
+              <ShowUsers searchTerm={searchTerm} />
             </div>
           </div>
         </div>

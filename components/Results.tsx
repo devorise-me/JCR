@@ -193,18 +193,20 @@ const ResultsTabel = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {results.map((result) => (
-                      <TableRow
-                        className="text-right max-h-[300px] overflow-y-auto"
-                        key={result.camelId}
-                      >
-                        <TableCell>{result.camelName}</TableCell>
-                        <TableCell>{result.ownerName}</TableCell>
-                        <TableCell>{result.rank}</TableCell>
-                        <TableCell>{result.camelID}</TableCell>{" "}
-                        {/* إضافة رقم الشريحة */}
-                      </TableRow>
-                    ))}
+                    {results
+                      .sort((a, b) => a.rank - b.rank)
+                      .map((result) => (
+                        <TableRow
+                          className="text-right max-h-[300px] overflow-y-auto"
+                          key={result.camelId}
+                        >
+                          <TableCell>{result.camelName}</TableCell>
+                          <TableCell>{result.ownerName}</TableCell>
+                          <TableCell>{result.rank}</TableCell>
+                          <TableCell>{result.camelID}</TableCell>{" "}
+                          {/* إضافة رقم الشريحة */}
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>

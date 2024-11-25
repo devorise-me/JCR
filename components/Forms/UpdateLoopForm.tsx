@@ -12,7 +12,6 @@ type Loop = {
   startRegister: Date;
   endRegister: Date;
   number: number;
-  timeInHours: string;
 }
 
 interface UpdateLoopFormProps {
@@ -32,7 +31,6 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
   const [endRegister, setEndRegister] = useState<Date>(new Date(loop.endRegister));
   const [error, setError] = useState<string | null>(null);
   const [number, setNumber] = useState<number>(loop.number);
-  const [timeInHours, setTimeInHours] = useState<string>(loop.timeInHours);
 
   const handleUpdateLoop = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +61,6 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
           startRegister: startRegister.toISOString(),
           endRegister: endRegister.toISOString(),
           number,
-          timeInHours,
         }),
       });
       if (response.ok) {
@@ -156,18 +153,6 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
               <option value="Morning">صباحي</option>
               <option value="Evening">مسائي</option>
             </select>
-          </div>
-          <div className="mb-4 text-end ">
-            <label htmlFor="timeInHours" className="block text-sm font-bold mb-1">
-              (UTC) الساعة
-            </label>
-            <input
-              id="timeInHours"
-              type="time"
-              value={timeInHours}
-              onChange={(e) => setTimeInHours(e.target.value)}
-              className="w-full p-2 border rounded "
-            />
           </div>
           <label className="block mb-2">
             تاريخ البدء:
