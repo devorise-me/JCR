@@ -31,6 +31,7 @@ interface Loop {
   sex: string;
   capacity: number;
   time: string;
+  number: number;
 }
 
 interface Result {
@@ -93,7 +94,7 @@ const ReportForm = () => {
 
   useEffect(() => {
     if (selectedEvent) {
-      fetch(`/api/events/${selectedEvent}/getLoops`)
+      fetch(`/api/events/${selectedEvent}/getResultsLoops`)
         .then((response) => response.json())
         .then((data: Loop[]) => {
           setLoops(data);
@@ -148,7 +149,7 @@ const ReportForm = () => {
           <SelectContent>
             {loops.map((loop) => (
               <SelectItem key={loop.id} value={loop.id}>
-                {translateAge(loop.age) + " - " + translateSex(loop.sex)}
+                {translateAge(loop.age) + " - " + translateSex(loop.sex) + " - " + "رقم الشوط" + " " + loop.number}
               </SelectItem>
             ))}
           </SelectContent>
@@ -176,17 +177,19 @@ const ReportForm = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {results.map((result, index) => (
-                <TableRow className="text-right" key={index}>
-                  <TableCell>{result.rank}</TableCell>
-                  <TableCell>{result.camelName}</TableCell>
-                  <TableCell>{result.ownerName}</TableCell>
-                  <TableCell>{result.IBAN}</TableCell>
-                  <TableCell>{result.SwiftCode}</TableCell>
-                  <TableCell>{result.bankName}</TableCell>
-                  <TableCell>{result.NationalID || "N/A"}</TableCell>
-                </TableRow>
-              ))}
+              {results
+                .sort((a, b) => a.rank - b.rank)
+                .map((result, index) => (
+                  <TableRow className="text-right" key={index}>
+                    <TableCell>{result.rank}</TableCell>
+                    <TableCell>{result.camelName}</TableCell>
+                    <TableCell>{result.ownerName}</TableCell>
+                    <TableCell>{result.IBAN}</TableCell>
+                    <TableCell>{result.SwiftCode}</TableCell>
+                    <TableCell>{result.bankName}</TableCell>
+                    <TableCell>{result.NationalID || "N/A"}</TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>

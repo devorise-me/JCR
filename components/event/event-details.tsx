@@ -28,8 +28,8 @@ interface Loop {
   age: string;
   sex: string;
   time: string;
-  startRegister: Date;
-  endRegister: Date;
+  startRegister: string | Date;
+  endRegister: string | Date;
   number: number;
 }
 
@@ -50,6 +50,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
   const [name, setName] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [startTime, setStartTime] = useState<string>('00:00');
+  const [endTime, setEndTime] = useState<string>('00:00');
   const [disabled, setDisabled] = useState<boolean>(false);
   const [eventType, setEventType] = useState<string>('');
 
@@ -67,8 +69,14 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       const eventData = await eventResponse.json();
       setEvent(eventData);
       setName(eventData.name);
-      setStartDate(new Date(eventData.StartDate).toISOString().split('T')[0]);
-      setEndDate(new Date(eventData.EndDate).toISOString().split('T')[0]);
+
+      const startDateTime = eventData.StartDate;
+      const endDateTime = eventData.EndDate;
+
+      setStartDate(startDateTime.split('T')[0]);
+      setEndDate(endDateTime.split('T')[0]);
+      setStartTime(startDateTime.split('T')[1].slice(0, 5));
+      setEndTime(endDateTime.split('T')[1].slice(0, 5));
       setDisabled(eventData.disabled);
       setEventType(eventData.type);
 
@@ -82,9 +90,11 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       // Ensure that startRegister and endRegister are parsed as Date
       const formattedLoops = loopsData.map((loop: Loop) => ({
         ...loop,
-        startRegister: new Date(loop.startRegister).toISOString().split('T')[0],
-        endRegister: new Date(loop.endRegister).toISOString().split('T')[0],
+        startRegister: loop.startRegister,
+        endRegister: loop.endRegister,
       })).filter((loop: Loop) => loop.eventId === eventId);
+
+      console.log(formattedLoops);
 
       setLoops(formattedLoops);
     } catch (error: any) {
@@ -103,6 +113,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const startDateTime = new Date(`${startDate}T${startTime}:00.000Z`);
+      const endDateTime = new Date(`${endDate}T${endTime}:00.000Z`);
+
       const response = await fetch(`/api/events/${eventId}/updateEvent`, {
         method: "PUT",
         headers: {
@@ -110,8 +123,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
         },
         body: JSON.stringify({
           name,
-          StartDate: startDate,
-          EndDate: endDate,
+          StartDate: startDateTime,
+          EndDate: endDateTime,
           disabled,
           type: eventType,
         }),
@@ -193,7 +206,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       case "International":
         return "دولية";
       case "National":
-        return "وطنية";
+        return "محلية";
       default:
         return "";
     }
@@ -390,32 +403,51 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     required
                   >
                     <option value="International">دولية</option>
-                    <option value="National">وطنية</option>
+                    <option value="National">محلية</option>
                   </select>
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">
                     تاريخ البداية
                   </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-gray-300 rounded-md p-2 w-full"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 flex-1"
+                      required
+                    />
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 flex-1"
+                      required
+                    />
+                  </div>
                 </div>
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">
                     تاريخ النهاية
                   </label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="border border-gray-300 rounded-md p-2 w-full"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 flex-1"
+                      required
+                    />
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 flex-1"
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="mb-4 flex items-center justify-start gap-2 w-full">
                   <label htmlFor="disabled" className="block text-sm font-medium text-gray-700">

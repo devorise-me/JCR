@@ -19,8 +19,8 @@ interface Loop {
   capacity: number;
   eventId: string;
   time: string;
-  startRegister: Date;
-  endRegister: Date;
+  startRegister: string;
+  endRegister: string;
   number: number;
 }
 

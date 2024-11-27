@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { raceResultSchema } from "@/schemas";
 
 export async function createRaceResult(data: any) {
-  // Validate the incoming data against the schema
   const result = raceResultSchema.safeParse(data);
   if (!result.success) {
     console.error("Validation errors:", result.error.issues);
@@ -24,12 +23,31 @@ export async function createRaceResult(data: any) {
     camelID,
   } = result.data;
 
-  // Check for undefined values and handle them
   if (!swiftCode || !ownerName || !NationalID || !camelID) {
     throw new Error("swiftCode, ownerName, NationalID, and camelID are required");
   }
 
   try {
+    const existingResult = await db.raceResult.findMany({
+      where: {
+        AND: [
+          { camelId: camelId },
+          { loopId: loopId },
+          { eventId: eventId }
+        ]
+      }
+    });
+
+    if (existingResult?.length) {
+      await Promise.all(existingResult.map(async (result) => {
+        await db.raceResult.delete({
+          where: {
+            id: result.id
+          }
+        });
+      }))
+    }
+
     const raceResult = await db.raceResult.create({
       data: {
         rank,
@@ -41,13 +59,14 @@ export async function createRaceResult(data: any) {
         bankName,
         swiftCode,
         ownerName,
-        NationalID, // Storing NationalID in the database
-        camelID,    // Storing camelID in the database
+        NationalID,
+        camelID,
       },
     });
+
     return raceResult;
   } catch (error: any) {
-    console.error("Error creating race result:", error);
-    throw new Error("Failed to create race result: " + error.message);
+    console.error("Error handling race result:", error);
+    throw new Error("Failed to handle race result: " + error.message);
   }
 }

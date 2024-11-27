@@ -9,8 +9,8 @@ type Loop = {
   age: string;
   sex: string;
   time: string;
-  startRegister: Date;
-  endRegister: Date;
+  startRegister: string | Date;
+  endRegister: string | Date;
   number: number;
 }
 
@@ -27,22 +27,45 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
   const [age, setAge] = useState<string>(loop.age);
   const [sex, setSex] = useState<string>(loop.sex);
   const [time, setTime] = useState<string>(loop.time);
-  const [startRegister, setStartRegister] = useState<Date>(new Date(loop.startRegister));
-  const [endRegister, setEndRegister] = useState<Date>(new Date(loop.endRegister));
   const [error, setError] = useState<string | null>(null);
   const [number, setNumber] = useState<number>(loop.number);
+
+  const startDate = loop.startRegister as string;
+  const endDate = loop.endRegister as string;
+
+  console.log("startDate: ", startDate);
+  console.log("endDate: ", endDate);
+
+  const [startRegisterDate, setStartRegisterDate] = useState<string>(
+    startDate.split('T')[0]  // Get "2024-11-27"
+  );
+  const [startRegisterTime, setStartRegisterTime] = useState<string>(
+    startDate.split('T')[1].slice(0, 5)  // Get "06:00" from "06:00:00.000Z"
+  );
+  const [endRegisterDate, setEndRegisterDate] = useState<string>(
+    endDate.split('T')[0]
+  );
+  const [endRegisterTime, setEndRegisterTime] = useState<string>(
+    endDate.split('T')[1].slice(0, 5)
+  );
 
   const handleUpdateLoop = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (loops.find(l => (l.sex === sex && l.number === number)) !== undefined) {
+    if (loops.find(l => (l.sex === sex && l.number === number && l.age === age)) !== undefined) {
       console.log("test")
       setError("رقم الشوط موجود بالفعل.");
       return;
     }
 
+    const startDateTime = new Date(`${startRegisterDate}T${startRegisterTime}:00.000Z`);
+    const endDateTime = new Date(`${endRegisterDate}T${endRegisterTime}:00.000Z`);
+
+    console.log(startDateTime);
+    console.log(endDateTime);
+
     // Validate endRegister date
-    if (new Date(endRegister) > new Date(eventEndDate)) {
+    if (new Date(endDateTime) > new Date(eventEndDate)) {
       setError("تاريخ نهاية الشوط لا يمكن أن يتجاوز تاريخ نهاية الفعالية");
       return;
     }
@@ -58,8 +81,8 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
           age,
           sex,
           time,
-          startRegister: startRegister.toISOString(),
-          endRegister: endRegister.toISOString(),
+          startRegister: startDateTime,
+          endRegister: endDateTime,
           number,
         }),
       });
@@ -154,26 +177,49 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
               <option value="Evening">مسائي</option>
             </select>
           </div>
-          <label className="block mb-2">
-            تاريخ البدء:
-            <input
-              type="date"
-              value={startRegister.toISOString().split('T')[0]}
-              onChange={(e) => setStartRegister(new Date(e.target.value))}
-              className="mt-1 p-2 border border-gray-300 rounded w-full"
-              required
-            />
-          </label>
-          <label className="block mb-2">
-            تاريخ الانتهاء:
-            <input
-              type="date"
-              value={endRegister.toISOString().split('T')[0]}
-              onChange={(e) => setEndRegister(new Date(e.target.value))}
-              className="mt-1 p-2 border border-gray-300 rounded w-full"
-              required
-            />
-          </label>
+          <div className="mb-4">
+            <label className="block mb-2">
+              تاريخ البدء:
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={startRegisterDate}
+                  onChange={(e) => setStartRegisterDate(e.target.value)}
+                  className="mt-1 p-2 border border-gray-300 rounded w-full"
+                  required
+                />
+                <input
+                  type="time"
+                  value={startRegisterTime}
+                  onChange={(e) => setStartRegisterTime(e.target.value)}
+                  className="mt-1 p-2 border border-gray-300 rounded w-full"
+                  required
+                />
+              </div>
+            </label>
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-2">
+              تاريخ الانتهاء:
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={endRegisterDate}
+                  onChange={(e) => setEndRegisterDate(e.target.value)}
+                  className="mt-1 p-2 border border-gray-300 rounded w-full"
+                  required
+                />
+                <input
+                  type="time"
+                  value={endRegisterTime}
+                  onChange={(e) => setEndRegisterTime(e.target.value)}
+                  className="mt-1 p-2 border border-gray-300 rounded w-full"
+                  required
+                />
+              </div>
+            </label>
+          </div>
           <div className="flex justify-end space-x-4 mt-4">
             <Button
               onClick={onClose}

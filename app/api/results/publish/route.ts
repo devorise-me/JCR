@@ -15,16 +15,15 @@ export async function POST(req: Request) {
           return await createRaceResult(result);
         } catch (error) {
           console.error("Error creating individual race result:", error);
-          return null; // or an error object to handle it later
+          return null;
         }
       })
     );
 
-    // Filter out any null results if needed
     const successfulResults = raceResults.filter(result => result !== null);
 
     return NextResponse.json({ success: true, raceResults: successfulResults });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error creating race results:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

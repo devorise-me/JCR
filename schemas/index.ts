@@ -149,6 +149,8 @@ export const EventsSchema = z
         message: "تاريخ الانتهاء يجب أن يكون في المستقبل",
       }),
     type: z.enum(["International", "National"]),
+    startTime: z.string().min(5).max(5),
+    endTime: z.string().min(5).max(5),
   })
   .superRefine((data, ctx) => {
     if (data.EndDate <= data.StartDate) {

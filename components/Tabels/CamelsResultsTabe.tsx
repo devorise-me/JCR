@@ -69,6 +69,8 @@ const ReportForm = () => {
           const filteredLoops = data.filter((loop: Loop) =>
             loop.eventId === selectedEvent
           );
+          console.log(filteredLoops);
+          console.log(data);
           setLoops(filteredLoops);
         })
         .catch(() => setError("Error fetching loops"));
@@ -84,6 +86,7 @@ const ReportForm = () => {
             ...camel,
             rank: index + 1
           }));
+          console.log(rankedCamels);
           setCamels(rankedCamels);
         })
         .catch(() => setError("Error fetching camels"));

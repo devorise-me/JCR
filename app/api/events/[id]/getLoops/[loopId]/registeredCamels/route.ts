@@ -83,7 +83,7 @@ export async function GET(
       ownerId: camelLoop.camel.owner?.id || "N/A",
       swiftCode: camelLoop.camel.owner?.swiftCode || "N/A",
       NationalID: camelLoop.camel.owner?.NationalID || "N/A", // إضافة NationalID (الرقم الوطني)
-      ownerName: `${camelLoop.camel.owner.FirstName} ${camelLoop.camel.owner.FatherName} ${camelLoop.camel.owner.GrandFatherName} ${camelLoop.camel.owner.FamilyName}`,
+      ownerName: `${camelLoop.camel.owner.FirstName} ${camelLoop.camel.owner.FatherName ?? ''} ${camelLoop.camel.owner.GrandFatherName ?? ''} ${camelLoop.camel.owner.FamilyName ?? ''}`,
     }));
 
     return NextResponse.json(camels);
