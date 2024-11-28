@@ -1,4 +1,5 @@
 import { createRaceResult } from "@/Actions/createResult";
+import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 // تعطيل التخزين المؤقت وجعل الاستجابة ديناميكية
@@ -8,6 +9,20 @@ export const revalidate = 0;
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+
+    const loopId = data[0].loopId;
+    if (!loopId) {
+      return NextResponse.json(
+        { success: false, error: "loopId is required" },
+        { status: 400 }
+      );
+    }
+
+    await db.raceResult.deleteMany({
+      where: {
+        loopId: loopId
+      }
+    });
 
     const raceResults = await Promise.all(
       data.map(async (result: any) => {

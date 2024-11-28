@@ -147,7 +147,7 @@ const ReportForm = () => {
             <SelectValue placeholder="Select Loop" />
           </SelectTrigger>
           <SelectContent>
-            {loops.map((loop) => (
+            {loops.length > 0 && loops?.map((loop) => (
               <SelectItem key={loop.id} value={loop.id}>
                 {translateAge(loop.age) + " - " + translateSex(loop.sex) + " - " + "رقم الشوط" + " " + loop.number}
               </SelectItem>
