@@ -71,8 +71,8 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
         </NavigationMenuList>
       </NavigationMenu> */}
       <Select dir="rtl" open={open} onOpenChange={setOpen}>
-        <SelectTrigger className='bg-transparent max-w-20 !outline-none border-none shadow-none'>
-          <SelectValue placeholder="النتائج" />
+        <SelectTrigger className='bg-transparent max-w-44 !outline-none border-none shadow-none lg:text-base max-lg:max-w-60 max-lg:!text-2xl'>
+          <SelectValue placeholder="الابل المسجلة في السباق" />
         </SelectTrigger>
         <SelectContent className='max-w-20 outline-none border-none'>
           <SelectGroup className='flex flex-col gap-2'>

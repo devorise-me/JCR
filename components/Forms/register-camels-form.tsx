@@ -46,6 +46,7 @@ export default function RegisterCamelForm({
   const [availableCamels, setAvailableCamels] = useState<Camel[]>([]);
   const [message, setMessage] = useState("");
   const [loopRegistrations, setLoopRegistrations] = useState<Record<string, number>>({});
+  const [timeLeft, setTimeLeft] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -62,23 +63,57 @@ export default function RegisterCamelForm({
   }, []);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const updatedTimeLeft: Record<string, number> = {};
+
+      loops.forEach(loop => {
+        const endTime = new Date(loop.endRegister);
+        const remainingTime = Math.max(0, Math.floor((endTime.getTime() - now.getTime()) / 60000));
+        updatedTimeLeft[loop.id] = remainingTime;
+      });
+
+      setTimeLeft(updatedTimeLeft);
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [loops]);
+
+  useEffect(() => {
     if (selectedEvent) {
       const fetchLoops = async () => {
         try {
           const response = await fetch(`/api/events/${selectedEvent}/getLoops`);
           const data = await response.json();
-          setLoops(data.filter((loop: Loop) => loop.eventId === selectedEvent));
 
-          // Fetch registered camels count for each loop
+          // Filter loops by event and available time
+          const now = new Date();
+          const availableLoops = data.filter((loop: Loop) => {
+            const endTime = new Date(loop.endRegister);
+            return loop.eventId === selectedEvent && endTime > now;
+          });
+
+          setLoops(availableLoops);
+
+          // Fetch registered camels count for available loops
           const registrationCounts: Record<string, number> = {};
-          for (const loop of data) {
-            const registeredResponse = await fetch(
-              `/api/events/${selectedEvent}/getLoops/${loop.id}/registeredCamels`
-            );
+          const currentTimeLeft: Record<string, number> = {};
+
+          for (const loop of availableLoops) {
+            const [registeredResponse] = await Promise.all([
+              fetch(`/api/events/${selectedEvent}/getLoops/${loop.id}/registeredCamels`)
+            ]);
+
             const registeredData = await registeredResponse.json();
             registrationCounts[loop.id] = registeredData.length;
+
+            const endTime = new Date(loop.endRegister);
+            const remainingTime = Math.max(0, Math.floor((endTime.getTime() - now.getTime()) / 60000));
+            currentTimeLeft[loop.id] = remainingTime;
           }
+
           setLoopRegistrations(registrationCounts);
+          setTimeLeft(currentTimeLeft);
         } catch (error) {
           console.error(": حدث خطأ اثناء تحميل السباق", error);
         }
@@ -252,18 +287,33 @@ export default function RegisterCamelForm({
     }
   }
 
+  const getLoopLabel = (loop: Loop) => {
+    const remaining = timeLeft[loop.id] || 0;
+    const registeredCount = loopRegistrations[loop.id] || 0;
+
+    if (remaining <= 0) {
+      return `${translateAge(loop.age)} - ${translateSex(loop.sex)} (${translateTime(loop.time)}) - انتهى وقت التسجيل - شوط ${loop.number}`;
+    }
+
+    return `${translateAge(loop.age)} - ${translateSex(loop.sex)} (${translateTime(loop.time)}) - ${registeredCount}/${loop.capacity} - ${remaining} دقيقة متبقية - شوط ${loop.number}`;
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg relative w-full max-w-[500px]">
-        <h2 className="text-xl mb-4"> تسجيل المطية في السباق</h2>
-        {message && <p className="mb-4">{message}</p>}
+        <h2 className="text-xl mb-4">تسجيل المطية في السباق</h2>
+        {message && <p className="mb-4 text-right">{message}</p>}
 
         <div className="mb-4">
           <label className="block mb-2 text-right">اختر فعالية</label>
           <select
             className="w-full border rounded p-2"
             value={selectedEvent || ""}
-            onChange={(e) => setSelectedEvent(e.target.value)}
+            onChange={(e) => {
+              setSelectedEvent(e.target.value);
+              setSelectedLoop(null);
+              setSelectedCamel(null);
+            }}
           >
             <option value="">-- اختر فعالية --</option>
             {events.map((event) => (
@@ -274,7 +324,7 @@ export default function RegisterCamelForm({
           </select>
         </div>
 
-        {selectedEvent && (
+        {selectedEvent && loops.length > 0 && (
           <div className="mb-4">
             <label className="block mb-2 text-right">اختر شوط</label>
             <select
@@ -284,13 +334,12 @@ export default function RegisterCamelForm({
             >
               <option value="">-- اختر شوط --</option>
               {loops.map((loop) => (
-                <option key={loop.id} value={loop.id}>
-                  {translateAge(loop.age)} - {translateSex(loop.sex)} (
-                  {translateTime(loop.time)}) - {
-                    loopRegistrations[loop.id]
-                  }/{loop.capacity}
-                  {" "}
-                  {`شوط ${loop.number}`}
+                <option
+                  key={loop.id}
+                  value={loop.id}
+                  disabled={timeLeft[loop.id] <= 0}
+                >
+                  {getLoopLabel(loop)}
                 </option>
               ))}
             </select>
@@ -316,7 +365,12 @@ export default function RegisterCamelForm({
         )}
 
         <div className="flex justify-between">
-          <Button onClick={handleRegister}>تسجيل</Button>
+          <Button
+            onClick={handleRegister}
+            disabled={!selectedCamel || !selectedLoop || (timeLeft[selectedLoop] <= 0)}
+          >
+            تسجيل
+          </Button>
           <Button onClick={onClose} variant="secondary">
             إغلاق
           </Button>

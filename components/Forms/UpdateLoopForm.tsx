@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "../ui/button";
 // import { Loop } from "@prisma/client";
 
@@ -23,31 +23,21 @@ interface UpdateLoopFormProps {
 }
 
 const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onClose, onLoopUpdated, loops }) => {
+
+  const calculateInitialTimer = useCallback(() => {
+    const now = new Date();
+    const endTime = new Date(loop.endRegister);
+    const remainingTime = Math.max(0, Math.floor((endTime.getTime() - now.getTime()) / 60000));
+    return remainingTime;
+  }, [loop]);
+
   const [capacity, setCapacity] = useState<number>(loop.capacity);
   const [age, setAge] = useState<string>(loop.age);
   const [sex, setSex] = useState<string>(loop.sex);
+  const [timerMinutes, setTimerMinutes] = useState<number>(calculateInitialTimer());
   const [time, setTime] = useState<string>(loop.time);
   const [error, setError] = useState<string | null>(null);
   const [number, setNumber] = useState<number>(loop.number);
-
-  const startDate = loop.startRegister as string;
-  const endDate = loop.endRegister as string;
-
-  console.log("startDate: ", startDate);
-  console.log("endDate: ", endDate);
-
-  const [startRegisterDate, setStartRegisterDate] = useState<string>(
-    startDate.split('T')[0]  // Get "2024-11-27"
-  );
-  const [startRegisterTime, setStartRegisterTime] = useState<string>(
-    startDate.split('T')[1].slice(0, 5)  // Get "06:00" from "06:00:00.000Z"
-  );
-  const [endRegisterDate, setEndRegisterDate] = useState<string>(
-    endDate.split('T')[0]
-  );
-  const [endRegisterTime, setEndRegisterTime] = useState<string>(
-    endDate.split('T')[1].slice(0, 5)
-  );
 
   const handleUpdateLoop = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,17 +48,8 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
       return;
     }
 
-    const startDateTime = new Date(`${startRegisterDate}T${startRegisterTime}:00.000Z`);
-    const endDateTime = new Date(`${endRegisterDate}T${endRegisterTime}:00.000Z`);
-
-    console.log(startDateTime);
-    console.log(endDateTime);
-
-    // Validate endRegister date
-    if (new Date(endDateTime) > new Date(eventEndDate)) {
-      setError("تاريخ نهاية الشوط لا يمكن أن يتجاوز تاريخ نهاية الفعالية");
-      return;
-    }
+    const now = new Date();
+    const endTime = new Date(now.getTime() + timerMinutes * 60000);
 
     try {
       const response = await fetch(`/api/events/${loop.eventId}/getLoops/${loop.id}/updateLoop`, {
@@ -81,8 +62,8 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
           age,
           sex,
           time,
-          startRegister: startDateTime,
-          endRegister: endDateTime,
+          startRegister: now,
+          endRegister: endTime,
           number,
         }),
       });
@@ -121,14 +102,17 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
             <label htmlFor="number" className="block text-sm font-bold mb-1">
               رقم الشوط
             </label>
-            <input
+            <select
               id="number"
-              type="number"
               value={number}
-              onChange={(e) => setNumber(parseInt(e.target.value) || 0)}
+              onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
               className="w-full p-2 border rounded"
               required
-            />
+            >
+              <option value={1}>رقم الشوط 1</option>
+              <option value={2}>رقم الشوط 2</option>
+              <option value={3}>رقم الشوط 3</option>
+            </select>
           </div>
           <div className="mb-4 text-end">
             <label htmlFor="age" className="block text-sm font-bold mb-1">
@@ -177,48 +161,19 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
               <option value="Evening">مسائي</option>
             </select>
           </div>
-          <div className="mb-4">
-            <label className="block mb-2">
-              تاريخ البدء:
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={startRegisterDate}
-                  onChange={(e) => setStartRegisterDate(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-                <input
-                  type="time"
-                  value={startRegisterTime}
-                  onChange={(e) => setStartRegisterTime(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-              </div>
+          <div className="mb-4 text-end">
+            <label htmlFor="timer" className="block text-sm font-bold mb-1">
+              مدة التسجيل (بالدقائق)
             </label>
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-2">
-              تاريخ الانتهاء:
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={endRegisterDate}
-                  onChange={(e) => setEndRegisterDate(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-                <input
-                  type="time"
-                  value={endRegisterTime}
-                  onChange={(e) => setEndRegisterTime(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-              </div>
-            </label>
+            <input
+              id="timer"
+              type="number"
+              min="1"
+              value={timerMinutes}
+              onChange={(e) => setTimerMinutes(Math.max(1, parseInt(e.target.value) || 0))}
+              className="w-full p-2 border rounded"
+              required
+            />
           </div>
           <div className="flex justify-end space-x-4 mt-4">
             <Button

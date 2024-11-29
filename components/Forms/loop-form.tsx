@@ -34,10 +34,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   const [age, setAge] = useState<string>("GradeOne");
   const [sex, setSex] = useState<string>("Male");
   const [time, setTime] = useState<string>("Morning");
-  const [startRegisterDate, setStartRegisterDate] = useState<string>("");
-  const [startRegisterTime, setStartRegisterTime] = useState<string>("00:00");
-  const [endRegisterDate, setEndRegisterDate] = useState<string>("");
-  const [endRegisterTime, setEndRegisterTime] = useState<string>("00:00");
+  const [timerMinutes, setTimerMinutes] = useState<number>(60);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [number, setNumber] = useState<number>(0);
@@ -45,7 +42,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!capacity || !age || !sex || !time || !startRegisterDate || !endRegisterDate || !number) {
+    if (!capacity || !age || !sex || !time || !timerMinutes || !number) {
       setError("جميع الحقول مطلوبة.");
       return;
     }
@@ -58,29 +55,8 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
 
     // Validate that all fields are filled
 
-    const startDateTime = new Date(`${startRegisterDate}T${startRegisterTime}:00.000Z`);
-    const endDateTime = new Date(`${endRegisterDate}T${endRegisterTime}:00.000Z`);
-    const eventStart = new Date(eventStartDate);
-    const eventEnd = new Date(eventEndDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set time to start of the day for accurate comparison
-
-    // Validate that the start date is today or in the future
-    if (startDateTime < today) {
-      setError("يجب أن يكون تاريخ البدء اليوم أو في المستقبل.");
-      return;
-    }
-    // Validate that the end registration date is within the event's date range
-    if (endDateTime > eventEnd) {
-      setError("يجب أن يكون تاريخ نهاية التسجيل قبل أو يساوي تاريخ انتهاء الحدث.");
-      return;
-    }
-
-    // Validate that end date is after start date
-    if (endDateTime <= startDateTime) {
-      setError("يجب أن يكون تاريخ النهاية بعد تاريخ البدء.");
-      return;
-    }
+    const now = new Date();
+    const endTime = new Date(now.getTime() + timerMinutes * 60000);
 
     const loopData: Loop = {
       id: "", // id will be assigned by the server
@@ -89,8 +65,8 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
       age,
       sex,
       time,
-      startRegister: startDateTime,
-      endRegister: endDateTime,
+      startRegister: now,
+      endRegister: endTime,
       number: number,
     };
 
@@ -148,14 +124,25 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
             <label htmlFor="number" className="block text-sm font-bold mb-1">
               رقم الشوط
             </label>
-            <input
+            {/* <input
               id="number"
               type="number"
               value={number}
               onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
               className="w-full p-2 border rounded"
               required
-            />
+            /> */}
+            <select
+              id="number"
+              value={number}
+              onChange={(e) => setNumber(parseInt(e.target.value, 10) || 0)}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value={1}>رقم الشوط 1</option>
+              <option value={2}>رقم الشوط 2</option>
+              <option value={3}>رقم الشوط 3</option>
+            </select>
           </div>
           <div className="mb-4 text-end">
             <label htmlFor="age" className="block text-sm font-bold mb-1">
@@ -204,48 +191,19 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
               <option value="Evening">مسائي</option>
             </select>
           </div>
-          <div className="mb-4">
-            <label className="block mb-2">
-              تاريخ البدء للتسجيل:
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={startRegisterDate}
-                  onChange={(e) => setStartRegisterDate(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-                <input
-                  type="time"
-                  value={startRegisterTime}
-                  onChange={(e) => setStartRegisterTime(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-              </div>
+          <div className="mb-4 text-end">
+            <label htmlFor="timer" className="block text-sm font-bold mb-1">
+              مدة التسجيل (بالدقائق)
             </label>
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-2">
-              تاريخ النهاية للتسجيل:
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={endRegisterDate}
-                  onChange={(e) => setEndRegisterDate(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-                <input
-                  type="time"
-                  value={endRegisterTime}
-                  onChange={(e) => setEndRegisterTime(e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded w-full"
-                  required
-                />
-              </div>
-            </label>
+            <input
+              id="timer"
+              type="number"
+              min="1"
+              value={timerMinutes}
+              onChange={(e) => setTimerMinutes(Math.max(1, parseInt(e.target.value) || 0))}
+              className="w-full p-2 border rounded"
+              required
+            />
           </div>
           <div className="flex justify-between">
             <Button type="submit">إنشاء</Button>

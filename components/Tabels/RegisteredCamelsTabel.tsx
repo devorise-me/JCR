@@ -10,6 +10,7 @@ import {
 import { Button } from "../ui/button";
 import { TransferCamelModal } from "../ui/TransferCamelModal";
 import { useRouter } from "next/navigation";
+import { TransferLoopModal } from "../ui/TransferLoopModal";
 
 interface Camel {
   id: string;
@@ -44,6 +45,8 @@ export const RegisteredCamelsTable = () => {
   const [selectedCamel, setSelectedCamel] = useState<Camel | null>(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [isLoopTransferModalOpen, setIsLoopTransferModalOpen] = useState(false);
+  const [currentLoopId, setCurrentLoopId] = useState<string>("");
 
   const fetchEvents = async () => {
     try {
@@ -163,7 +166,39 @@ export const RegisteredCamelsTable = () => {
     }
   };
 
-  console.log(events);
+  const handleLoopTransfer = async (camelId: string, newLoopId: string) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setError("! الرجاء تسجيل الدخول");
+        router.push("/auth/login");
+        return;
+      }
+
+      const response = await fetch(`/api/loops/transfer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          camelId,
+          newLoopId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      // Refresh the loops data
+      fetchLoops();
+
+    } catch (error) {
+      throw error;
+    }
+  };
 
   return (
     <div className="w-full">
@@ -189,8 +224,8 @@ export const RegisteredCamelsTable = () => {
           <TableRow>
             <TableHead className="text-right">#</TableHead>
             <TableHead className="text-right">رقم الشريحة</TableHead> {/* إضافة عنوان رقم الشريحة */}
-            <TableHead className="text-right">اسم المطية</TableHead>
             <TableHead className="text-right">النوع</TableHead>
+            <TableHead className="text-right">اسم المطية</TableHead>
             <TableHead className="text-right">مالك المطية</TableHead>
             <TableHead className="text-right">رقم الشوط</TableHead>
             <TableHead className="text-right">الإجراءات</TableHead>
@@ -210,8 +245,8 @@ export const RegisteredCamelsTable = () => {
                   <TableRow key={camel.id}>
                     <TableCell className="text-right">{index + 1}</TableCell>
                     <TableCell className="text-right">{camel.camelID}</TableCell> {/* عرض رقم الشريحة */}
-                    <TableCell className="text-right">{camel.name}</TableCell>
                     <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
+                    <TableCell className="text-right">{camel.name}</TableCell>
                     <TableCell className="text-right">{camel.ownerName}</TableCell>
                     <TableCell className="text-right">{loop.number}</TableCell>
                     <TableCell className="text-right">
@@ -224,6 +259,17 @@ export const RegisteredCamelsTable = () => {
                         }}
                       >
                         نقل الملكية
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCamel(camel);
+                          setCurrentLoopId(loop.id);
+                          setIsLoopTransferModalOpen(true);
+                        }}
+                      >
+                        نقل لشوط آخر
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -240,15 +286,29 @@ export const RegisteredCamelsTable = () => {
         </TableBody>
       </Table>
       {selectedCamel && (
-        <TransferCamelModal
-          isOpen={isTransferModalOpen}
-          onClose={() => {
-            setIsTransferModalOpen(false);
-            setSelectedCamel(null);
-          }}
-          camel={selectedCamel}
-          onTransfer={handleTransfer}
-        />
+        <>
+          <TransferCamelModal
+            isOpen={isTransferModalOpen}
+            onClose={() => {
+              setIsTransferModalOpen(false);
+              setSelectedCamel(null);
+            }}
+            camel={selectedCamel}
+            onTransfer={handleTransfer}
+          />
+          <TransferLoopModal
+            isOpen={isLoopTransferModalOpen}
+            onClose={() => {
+              setIsLoopTransferModalOpen(false);
+              setSelectedCamel(null);
+              setCurrentLoopId("");
+            }}
+            camel={selectedCamel}
+            availableLoops={loops}
+            currentLoopId={currentLoopId}
+            onTransfer={handleLoopTransfer}
+          />
+        </>
       )}
     </div>
   );
