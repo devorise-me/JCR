@@ -17,9 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import AddCamelButton from "../ui/AddCamelButton";
 import RegisterCamelForm from "../Forms/register-camels-form";
-import EditCamelDialog from "../ui/EditCamelDialog";
 
 interface UserProfile {
   id: string;
@@ -61,7 +59,6 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'registered'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [camelRegister, setCamelRegister] = useState(false);
-  const [editingCamel, setEditingCamel] = useState<Camel | null>(null);
 
   const handleRegisterForm = () => {
     setCamelRegister((prev) => !prev);
@@ -103,26 +100,6 @@ const Profile = () => {
     fetchData();
   }, [router]);
 
-  const handleUpdateCamel = async (updatedCamel: Camel) => {
-    try {
-      const response = await fetch(`/api/camels/${updatedCamel.id}/update`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedCamel)
-      });
-
-      if (response.ok) {
-        await fetchCamels(user!.id);
-        setEditingCamel(null);
-      } else {
-        const error = await response.json();
-        setError(error.message);
-      }
-    } catch (error) {
-      console.error("Error updating camel:", error);
-      setError("Failed to update camel");
-    }
-  };
 
   useEffect(() => {
     if (camelRegister) {
@@ -235,28 +212,6 @@ const Profile = () => {
     } catch (error) {
       console.error("Error canceling registration:", error);
       setError("Failed to cancel registration");
-    }
-  };
-
-  const handleDeleteCamel = async (camelId: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الهجين؟")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/camels/${camelId}/delete`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        await fetchCamels(user!.id);
-      } else {
-        const error = await response.json();
-        setError(error.message);
-      }
-    } catch (error) {
-      console.error("Error deleting camel:", error);
-      setError("Failed to delete camel");
     }
   };
 
@@ -426,12 +381,6 @@ const Profile = () => {
                 <Button className='ml-auto' onClick={handleRegisterForm}>
                   {camelRegister ? "إخفاء استمارة التسجيل" : "تسجيل الهجن في السباق"}
                 </Button>
-                {activeTab === 'all' && (
-                  <AddCamelButton
-                    userId={user.id}
-                    onCamelAdded={() => fetchCamels(user.id)}
-                  />
-                )}
               </div>
 
               {activeTab === 'all' ? (
@@ -442,7 +391,6 @@ const Profile = () => {
                       <TableHead className="text-right">رقم الشريحة</TableHead>
                       <TableHead className="text-right">النوع</TableHead>
                       <TableHead className="text-right">العمر</TableHead>
-                      <TableHead className="text-right">العمليات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -452,22 +400,6 @@ const Profile = () => {
                         <TableCell className="text-right">{camel.camelID}</TableCell>
                         <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
                         <TableCell className="text-right">{translateAge(camel.age)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            onClick={() => setEditingCamel(camel)}
-                            className="ml-2"
-                          >
-                            <MdEdit />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleDeleteCamel(camel.id)}
-                            className="ml-2"
-                          >
-                            <MdDelete />
-                          </Button>
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -511,13 +443,6 @@ const Profile = () => {
       </div>
       {camelRegister && (
         <RegisterCamelForm userId={user?.id} onClose={handleRegisterForm} />
-      )}
-      {editingCamel && (
-        <EditCamelDialog
-          camel={editingCamel}
-          onClose={() => setEditingCamel(null)}
-          onUpdate={handleUpdateCamel}
-        />
       )}
     </div>
   );
