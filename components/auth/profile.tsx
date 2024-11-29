@@ -251,6 +251,8 @@ const Profile = () => {
     );
   }
 
+  console.log(registeredCamels)
+
   if (isLoading || !user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -405,8 +407,8 @@ const Profile = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {camels.map((camel) => (
-                      <TableRow key={camel.id}>
+                    {camels.map((camel, index) => (
+                      <TableRow key={index}>
                         <TableCell className="text-right">{camel.name}</TableCell>
                         <TableCell className="text-right">{camel.camelID}</TableCell>
                         <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
@@ -435,8 +437,8 @@ const Profile = () => {
                         </TableCell>
                       </TableRow>
                     ) :
-                      registeredCamels.length > 0 && registeredCamels?.map((camel) => (
-                        <TableRow key={camel.id}>
+                      registeredCamels.length > 0 && registeredCamels?.map((camel, index) => (
+                        <TableRow key={index}>
                           <TableCell className="text-right">{camel.name}</TableCell>
                           <TableCell className="text-right">{camel.camelID}</TableCell>
                           <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
@@ -460,7 +462,7 @@ const Profile = () => {
         </motion.div>
       </div>
       {camelRegister && (
-        <RegisterCamelForm userId={user?.id} onClose={handleRegisterForm} />
+        <RegisterCamelForm userId={user?.id} onClose={handleRegisterForm} refetchRegisteredCamels={() => fetchRegisteredCamels(user?.id)} />
       )}
     </div>
   );

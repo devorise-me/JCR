@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 interface RegisterCamelFormProps {
   userId: string;
   onClose: () => void;
+  refetchRegisteredCamels: () => void;
 }
 
 interface Event {
@@ -35,6 +36,7 @@ interface Camel {
 export default function RegisterCamelForm({
   userId,
   onClose,
+  refetchRegisteredCamels,
 }: RegisterCamelFormProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loops, setLoops] = useState<Loop[]>([]);
@@ -234,6 +236,7 @@ export default function RegisterCamelForm({
         setRegisteredCamels(registeredData);
 
         // Close the popup after successful registration
+        refetchRegisteredCamels()
         onClose();
       } else {
         setMessage(data.error || "فشلت عملية تسجيل المطية");
