@@ -59,6 +59,8 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'registered'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [camelRegister, setCamelRegister] = useState(false);
+  const [registeredCamelsFetched, setRegisteredCamelsFetched] = useState(false);
+  const [fetchingRegisteredCamels, setFetchingRegisteredCamels] = useState(false);
 
   const handleRegisterForm = () => {
     setCamelRegister((prev) => !prev);
@@ -88,7 +90,7 @@ const Profile = () => {
         if (userData.image) setSelectedImage(userData.image);
 
         await fetchCamels(userData.id);
-        await fetchRegisteredCamels(userData.id);
+        // await fetchRegisteredCamels(userData.id);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("An error occurred while fetching data.");
@@ -122,8 +124,15 @@ const Profile = () => {
     }
   };
 
+  useEffect(() => {
+    if (activeTab === 'registered' && user && !registeredCamelsFetched) {
+      fetchRegisteredCamels(user.id);
+    }
+  }, [activeTab, user, registeredCamelsFetched]);
+
   const fetchRegisteredCamels = async (userId: string) => {
     try {
+      setFetchingRegisteredCamels(true);
       const eventsResponse = await fetch("/api/events/getEvents");
       const events = await eventsResponse.json();
 
@@ -152,6 +161,8 @@ const Profile = () => {
       }
 
       setRegisteredCamels(allRegisteredCamels);
+      setRegisteredCamelsFetched(true);
+      setFetchingRegisteredCamels(false);
     } catch (error) {
       console.error("Error fetching registered camels:", error);
       setError("Failed to fetch registered camels");
@@ -417,23 +428,30 @@ const Profile = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {registeredCamels.length > 0 && registeredCamels?.map((camel) => (
-                      <TableRow key={camel.id}>
-                        <TableCell className="text-right">{camel.name}</TableCell>
-                        <TableCell className="text-right">{camel.camelID}</TableCell>
-                        <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
-                        <TableCell className="text-right">{camel.eventName}</TableCell>
-                        <TableCell className="text-right">{camel.loopNumber}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            onClick={() => camel.camelLoopId && handleCancelRegistration(camel.id, camel.camelLoopId, camel?.eventId!)}
-                          >
-                            إلغاء التسجيل
-                          </Button>
+                    {fetchingRegisteredCamels ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center">
+                          جاري تحميل المطايا المسجلة...
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) :
+                      registeredCamels.length > 0 && registeredCamels?.map((camel) => (
+                        <TableRow key={camel.id}>
+                          <TableCell className="text-right">{camel.name}</TableCell>
+                          <TableCell className="text-right">{camel.camelID}</TableCell>
+                          <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
+                          <TableCell className="text-right">{camel.eventName}</TableCell>
+                          <TableCell className="text-right">{camel.loopNumber}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="outline"
+                              onClick={() => camel.camelLoopId && handleCancelRegistration(camel.id, camel.camelLoopId, camel?.eventId!)}
+                            >
+                              إلغاء التسجيل
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               )}
