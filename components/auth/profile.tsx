@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AiOutlineCamera } from "react-icons/ai";
 import { FaUser, FaEnvelope, FaIdCard, FaBirthdayCake, FaPhone, FaUniversity, FaMoneyCheckAlt } from "react-icons/fa";
+import { MdDelete, MdEdit } from "react-icons/md";
 import { motion } from "framer-motion";
 import Nav from "../Navigation/Nav";
-import RegisterCamelForm from "../Forms/register-camels-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,7 +17,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import * as XLSX from "xlsx";
+import AddCamelButton from "../ui/AddCamelButton";
+import RegisterCamelForm from "../Forms/register-camels-form";
+import EditCamelDialog from "../ui/EditCamelDialog";
 
 interface UserProfile {
   id: string;
@@ -43,15 +45,27 @@ interface Camel {
   sex: string;
   camelID: string;
   name: string;
+  camelLoopId?: string;
+  loopNumber?: number;
+  eventName?: string;
+  eventId?: string;
 }
 
 const Profile = () => {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [camels, setCamels] = useState<Camel[]>([]);
+  const [registeredCamels, setRegisteredCamels] = useState<Camel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'registered'>('all');
+  const [isLoading, setIsLoading] = useState(true);
   const [camelRegister, setCamelRegister] = useState(false);
+  const [editingCamel, setEditingCamel] = useState<Camel | null>(null);
+
+  const handleRegisterForm = () => {
+    setCamelRegister((prev) => !prev);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,9 +78,7 @@ const Profile = () => {
         }
 
         const userResponse = await fetch("/api/user/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!userResponse.ok) {
@@ -78,54 +90,38 @@ const Profile = () => {
         setUser(userData);
         if (userData.image) setSelectedImage(userData.image);
 
-        const camelResponse = await fetch(`/api/camels/${userData.id}`);
-        if (!camelResponse.ok) {
-          const errorData = await camelResponse.json();
-          setError(errorData.error || "Failed to fetch camels.");
-          return;
-        }
-        const camelData = await camelResponse.json();
-        setCamels(camelData);
+        await fetchCamels(userData.id);
+        await fetchRegisteredCamels(userData.id);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("An error occurred while fetching data.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [router]);
 
-  const handlePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.result) {
-          setSelectedImage(reader.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const exportToExcel = () => {
-    const table = document.getElementById("myCamels");
-    if (!table) {
-      setError("Table element not found.");
-      return;
-    }
-
+  const handleUpdateCamel = async (updatedCamel: Camel) => {
     try {
-      const workbook = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-      XLSX.writeFile(workbook, "camels-data.xlsx");
-    } catch (err) {
-      console.error("Error exporting to Excel:", err);
-      setError("An error occurred while exporting to Excel.");
-    }
-  };
+      const response = await fetch(`/api/camels/${updatedCamel.id}/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedCamel)
+      });
 
-  const handleRegisterForm = () => {
-    setCamelRegister((prev) => !prev);
+      if (response.ok) {
+        await fetchCamels(user!.id);
+        setEditingCamel(null);
+      } else {
+        const error = await response.json();
+        setError(error.message);
+      }
+    } catch (error) {
+      console.error("Error updating camel:", error);
+      setError("Failed to update camel");
+    }
   };
 
   useEffect(() => {
@@ -138,14 +134,161 @@ const Profile = () => {
     }
   }, [camelRegister]);
 
-  if (error) {
-    return <p>Error: {error}</p>;
+  const fetchCamels = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/camels/${userId}`);
+      const camelData = await response.json();
+      setCamels(camelData);
+    } catch (error) {
+      console.error("Error fetching camels:", error);
+      setError("Failed to fetch camels");
+    }
+  };
+
+  const fetchRegisteredCamels = async (userId: string) => {
+    try {
+      const eventsResponse = await fetch("/api/events/getEvents");
+      const events = await eventsResponse.json();
+
+      let allRegisteredCamels: Camel[] = [];
+
+      for (const event of events) {
+        const loopsResponse = await fetch(`/api/events/${event.id}/getLoops`);
+        const loops = await loopsResponse.json();
+
+        for (const loop of loops) {
+          const registeredResponse = await fetch(
+            `/api/events/${event.id}/getLoops/${loop.id}/registeredCamels?userId=${userId}`
+          );
+          const loopCamels = await registeredResponse.json();
+
+          const camelsWithLoopInfo = loopCamels.map((camel: Camel) => ({
+            ...camel,
+            loopNumber: loop.number,
+            camelLoopId: loop.id,
+            eventName: event.name,
+            eventId: event.id  // Add event ID
+          }));
+
+          allRegisteredCamels = [...allRegisteredCamels, ...camelsWithLoopInfo];
+        }
+      }
+
+      setRegisteredCamels(allRegisteredCamels);
+    } catch (error) {
+      console.error("Error fetching registered camels:", error);
+      setError("Failed to fetch registered camels");
+    }
+  };
+
+  const handlePictureChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (reader.result) {
+            setSelectedImage(reader.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const token = localStorage.getItem("authToken");
+        const response = await fetch('/api/user/updateImage', {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update profile picture');
+        }
+      } catch (error) {
+        console.error("Error updating profile picture:", error);
+        setError("Failed to update profile picture");
+      }
+    }
+  };
+
+  const handleCancelRegistration = async (camelId: string, loopId: string, eventId: string) => {
+    try {
+      const response = await fetch(`/api/events/${eventId}/getLoops/${loopId}/removeRegisteredCamel`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          camelId: parseInt(camelId, 10)
+        })
+      });
+
+      if (response.ok) {
+        setError(null);
+        await fetchRegisteredCamels(user!.id);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Failed to cancel registration");
+      }
+    } catch (error) {
+      console.error("Error canceling registration:", error);
+      setError("Failed to cancel registration");
+    }
+  };
+
+  const handleDeleteCamel = async (camelId: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا الهجين؟")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/camels/${camelId}/delete`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await fetchCamels(user!.id);
+      } else {
+        const error = await response.json();
+        setError(error.message);
+      }
+    } catch (error) {
+      console.error("Error deleting camel:", error);
+      setError("Failed to delete camel");
+    }
+  };
+
+  function translateAge(Age: string) {
+    const translations: { [key: string]: string } = {
+      "GradeOne": "مفرد",
+      "GradeTwo": "حقايق",
+      "GradeThree": "لقايا",
+      "GradeFour": "جذاع",
+      "GradeFive": "ثنايا",
+      "GradeSixMale": "زمول",
+      "GradeSixFemale": "حيل"
+    };
+    return translations[Age] || Age;
   }
 
-  if (!user) {
+  function translateSex(sex: string) {
+    return sex === "Male" ? "قعدان" : sex === "Female" ? "بكار" : sex;
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-red-500 text-xl">{error}</p>
+      </div>
+    );
+  }
+
+  if (isLoading || !user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="flex justify-center items-center mb-4 transition-transform duration-500 ease-in-out transform hover:scale-110">
+        <div className="flex justify-center items-center mb-4">
           <Image
             src="/loadingPage.jpeg"
             width={150}
@@ -155,44 +298,12 @@ const Profile = () => {
           />
         </div>
         <div className="flex flex-col items-center gap-3">
-          <h1 className="text-3xl font-bold text-gray-800 transition-transform duration-500 ease-in-out hover:translate-x-2">
+          <h1 className="text-3xl font-bold text-gray-800">
             رياضـة الـهـجـن الأردنـيـة
           </h1>
         </div>
       </div>
     );
-  }
-
-  function translateAge(Age: string) {
-    switch (Age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return Age;
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return sex;
-    }
   }
 
   return (
@@ -226,6 +337,7 @@ const Profile = () => {
               <label className="absolute inset-0 bg-black opacity-0 hover:opacity-20 flex items-center justify-center cursor-pointer rounded-full transition-opacity duration-300">
                 <input
                   type="file"
+                  accept="image/*"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   onChange={handlePictureChange}
                 />
@@ -243,12 +355,10 @@ const Profile = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="text-4xl font-bold text-right mb-12 text-gray-800"
         >
-          أهلا {user?.username}
+          أهلا {user.username}
         </motion.h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -258,9 +368,9 @@ const Profile = () => {
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold mb-6 text-right text-gray-700 border-b pb-2">المعلومات البنكية</h2>
                 <div className="space-y-4">
-                  <InfoItem icon={<FaUniversity />} label="البنك" value={user?.bankName} />
-                  <InfoItem icon={<FaMoneyCheckAlt />} label="IBAN" value={user?.IBAN} />
-                  <InfoItem icon={<FaMoneyCheckAlt />} label="SWIFT Code" value={user?.swiftCode} />
+                  <InfoItem icon={<FaUniversity />} label="البنك" value={user.bankName} />
+                  <InfoItem icon={<FaMoneyCheckAlt />} label="IBAN" value={user.IBAN} />
+                  <InfoItem icon={<FaMoneyCheckAlt />} label="SWIFT Code" value={user.swiftCode} />
                 </div>
               </CardContent>
             </Card>
@@ -275,11 +385,15 @@ const Profile = () => {
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold mb-6 text-right text-gray-700 border-b pb-2">المعلومات الشخصية</h2>
                 <div className="space-y-4">
-                  <InfoItem icon={<FaUser />} label="الاسم الكامل" value={`${user?.FirstName} ${user?.FatherName ?? ''} ${user?.GrandFatherName ?? ''} ${user?.FamilyName ?? ''}`} />
-                  <InfoItem icon={<FaEnvelope />} label="البريد الإلكتروني" value={user?.email} />
-                  <InfoItem icon={<FaIdCard />} label="الرقم الوطني" value={user?.NationalID} />
-                  <InfoItem icon={<FaBirthdayCake />} label="تاريخ الميلاد" value={user?.BDate?.split("T")[0]} />
-                  <InfoItem icon={<FaPhone />} label="رقم الهاتف" value={user?.MobileNumber} />
+                  <InfoItem
+                    icon={<FaUser />}
+                    label="الاسم الكامل"
+                    value={`${user.FirstName} ${user.FatherName ?? ''} ${user.GrandFatherName ?? ''} ${user.FamilyName ?? ''}`}
+                  />
+                  <InfoItem icon={<FaEnvelope />} label="البريد الإلكتروني" value={user.email} />
+                  <InfoItem icon={<FaIdCard />} label="الرقم الوطني" value={user.NationalID} />
+                  <InfoItem icon={<FaBirthdayCake />} label="تاريخ الميلاد" value={user.BDate?.split("T")[0]} />
+                  <InfoItem icon={<FaPhone />} label="رقم الهاتف" value={user.MobileNumber} />
                 </div>
               </CardContent>
             </Card>
@@ -294,42 +408,116 @@ const Profile = () => {
         >
           <Card className="overflow-hidden shadow-lg">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="space-x-4 rtl:space-x-reverse">
-                  <Button variant="outline" onClick={exportToExcel}>
-                    طباعة البيانات
+              <div className="flex items-center justify-between mb-6 gap-2">
+                <div className="flex space-x-4 rtl:space-x-reverse">
+                  <Button
+                    variant={activeTab === 'all' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('all')}
+                  >
+                    جميع الهجن
                   </Button>
-                  <Button onClick={handleRegisterForm}>
-                    {camelRegister ? "إخفاء استمارة التسجيل" : "تسجيل الهجن في السباق"}
+                  <Button
+                    variant={activeTab === 'registered' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('registered')}
+                  >
+                    الهجن المسجلة في السباقات
                   </Button>
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-700">الهجن المسجلة</h2>
+                <Button className='ml-auto' onClick={handleRegisterForm}>
+                  {camelRegister ? "إخفاء استمارة التسجيل" : "تسجيل الهجن في السباق"}
+                </Button>
+                {activeTab === 'all' && (
+                  <AddCamelButton
+                    userId={user.id}
+                    onCamelAdded={() => fetchCamels(user.id)}
+                  />
+                )}
               </div>
-              <Table className="w-full" id="myCamels">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">الفئة / السن</TableHead>
-                    <TableHead className="text-right">رقم الشريحة</TableHead>
-                    <TableHead className="text-right">اسم الهجين</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {camels.map((camel) => (
-                    <TableRow key={camel.id}>
-                      <TableCell className="text-right">{translateAge(camel.age)} \ {translateSex(camel.sex)}</TableCell>
-                      <TableCell className="text-right">{camel.camelID}</TableCell>
-                      <TableCell className="text-right">{camel.name}</TableCell>
+
+              {activeTab === 'all' ? (
+                <Table dir='rtl' className="w-full" id="myCamels">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">اسم الهجين</TableHead>
+                      <TableHead className="text-right">رقم الشريحة</TableHead>
+                      <TableHead className="text-right">النوع</TableHead>
+                      <TableHead className="text-right">العمر</TableHead>
+                      <TableHead className="text-right">العمليات</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {camels.map((camel) => (
+                      <TableRow key={camel.id}>
+                        <TableCell className="text-right">{camel.name}</TableCell>
+                        <TableCell className="text-right">{camel.camelID}</TableCell>
+                        <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
+                        <TableCell className="text-right">{translateAge(camel.age)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            onClick={() => setEditingCamel(camel)}
+                            className="ml-2"
+                          >
+                            <MdEdit />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleDeleteCamel(camel.id)}
+                            className="ml-2"
+                          >
+                            <MdDelete />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <Table dir='rtl' className="w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">اسم الهجين</TableHead>
+                      <TableHead className="text-right">رقم الشريحة</TableHead>
+                      <TableHead className="text-right">النوع</TableHead>
+                      <TableHead className="text-right">الفعالية</TableHead>
+                      <TableHead className="text-right">رقم الشوط</TableHead>
+                      <TableHead className="text-right">العمليات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {registeredCamels.length > 0 && registeredCamels?.map((camel) => (
+                      <TableRow key={camel.id}>
+                        <TableCell className="text-right">{camel.name}</TableCell>
+                        <TableCell className="text-right">{camel.camelID}</TableCell>
+                        <TableCell className="text-right">{translateSex(camel.sex)}</TableCell>
+                        <TableCell className="text-right">{camel.eventName}</TableCell>
+                        <TableCell className="text-right">{camel.loopNumber}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            onClick={() => camel.camelLoopId && handleCancelRegistration(camel.id, camel.camelLoopId, camel?.eventId!)}
+                          >
+                            إلغاء التسجيل
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </motion.div>
       </div>
-
       {camelRegister && (
         <RegisterCamelForm userId={user?.id} onClose={handleRegisterForm} />
+      )}
+      {editingCamel && (
+        <EditCamelDialog
+          camel={editingCamel}
+          onClose={() => setEditingCamel(null)}
+          onUpdate={handleUpdateCamel}
+        />
       )}
     </div>
   );
@@ -346,4 +534,3 @@ const InfoItem = ({ icon, label, value }: { icon: React.ReactNode, label: string
 );
 
 export default Profile;
-
