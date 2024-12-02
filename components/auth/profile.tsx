@@ -376,8 +376,8 @@ const Profile = () => {
         >
           <Card className="overflow-hidden shadow-lg">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6 gap-2">
-                <div className="flex space-x-4 rtl:space-x-reverse">
+              <div className="flex items-center justify-between mb-6 gap-2 max-md:flex-col">
+                <div className="flex space-x-4 rtl:space-x-reverse max-md:mr-auto">
                   <Button
                     variant={activeTab === 'all' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('all')}
