@@ -64,36 +64,23 @@ export const RegisteredCamelsTable = () => {
     fetchEvents();
   }, [refresh]);
 
-  const fetchLoops = async () => {
+  const fetchLoops = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/events/${selectedEvent}/getLoops`);
+      const response = await fetch(`/api/events/${eventId}/getLoopsWithCamels`);
+      if (!response.ok) throw new Error('Failed to fetch loops');
       const data = await response.json();
-      setLoops(data.filter((loop: Loop) => loop.eventId === selectedEvent));
-
-      // Fetch camels registered for each loop
-      for (const loop of data) {
-        const registeredResponse = await fetch(
-          `/api/events/${selectedEvent}/getLoops/${loop.id}/registeredCamels`
-        );
-        const registeredCamels = await registeredResponse.json();
-        setLoops((prevLoops) =>
-          prevLoops.map((prevLoop) =>
-            prevLoop.id === loop.id
-              ? { ...prevLoop, camels: registeredCamels }
-              : prevLoop
-          )
-        );
-      }
+      setLoops(data);
     } catch (error) {
-      console.error(": حدث خطأ اثناء تحميل الأشواط", error);
+      console.error("Error fetching loops:", error);
       setError("حدث خطأ أثناء تحميل الأشواط والهجن المسجلة.");
+    } finally {
     }
   };
 
   useEffect(() => {
     // جلب الأشواط والهجن المسجلة لكل فعالية
     if (selectedEvent) {
-      fetchLoops();
+      fetchLoops(selectedEvent);
     }
   }, [selectedEvent]);
 
@@ -158,7 +145,7 @@ export const RegisteredCamelsTable = () => {
         throw new Error(error.message);
       }
 
-      fetchLoops()
+      if (selectedEvent) fetchLoops(selectedEvent)
 
 
     } catch (error) {
@@ -193,7 +180,7 @@ export const RegisteredCamelsTable = () => {
       }
 
       // Refresh the loops data
-      fetchLoops();
+      if (selectedEvent) fetchLoops(selectedEvent);
 
     } catch (error) {
       throw error;

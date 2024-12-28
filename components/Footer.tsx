@@ -68,6 +68,11 @@ const Footer = () => {
           جميع الحقوق محفوظة &copy; 2024
         </p>
       </div>
+      <div className="container flex items-center mt-5 max-sm:p-0">
+        <p className="whitespace-nowrap mx-2 max-sm:text-center text-xs max-sm:w-full">
+          powered by Devorise Media and Business Solutions
+        </p>
+      </div>
     </footer>
   );
 };
