@@ -13,6 +13,8 @@ import { Button } from "../ui/button";
 import { IoIosClose } from "react-icons/io";
 import AddCamelsForm from "../Forms/CamelForm";
 import bcryptjs from "bcryptjs";
+import { TransferCamelModal } from "../ui/TransferCamelModal";
+import { useRouter } from "next/navigation";
 
 interface Camel {
   id: number;
@@ -33,7 +35,7 @@ interface User {
   NationalID: string;
   BDate: string;
   MobileNumber: string;
-  password:string;
+  password: string;
   image?: string;
   role: string;
   camels?: Camel[];
@@ -59,6 +61,9 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
   );
   const [showEditUserForm, setShowEditUserForm] = useState(false);
   const [updatedUser, setUpdatedUser] = useState<Partial<User> | null>(null);
+  const [selectedCamelForTransfer, setSelectedCamelForTransfer] = useState<Camel | null>(null);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -159,7 +164,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({...updatedUser,password: hashedPassword}),
+          body: JSON.stringify({ ...updatedUser, password: hashedPassword }),
         });
 
         const result = await response.json();
@@ -171,6 +176,43 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
       } catch (error) {
         console.error("Error updating user:", error);
       }
+    }
+  };
+
+  const handleTransfer = async (newOwnerId: string) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setError("! الرجاء تسجيل الدخول");
+        router.push("/auth/login");
+        return;
+      }
+
+      const response = await fetch('/api/camels/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          camelId: selectedCamelForTransfer?.id,
+          newOwnerId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      // Refresh camels after successful transfer
+      fetchCamels();
+      setIsTransferModalOpen(false);
+      setSelectedCamelForTransfer(null);
+
+    } catch (error) {
+      console.error("Error transferring camel:", error);
+      setError("حدث خطأ أثناء نقل ملكية الجمل");
     }
   };
 
@@ -214,7 +256,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[full] max-w-md">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-[full] max-w-xl">
         <div className="flex justify-between items-center">
           <button
             onClick={onClose}
@@ -310,7 +352,17 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
                       <TableCell>{camel.name}</TableCell>
                       <TableCell>{translateSex(camel.sex)}</TableCell>
                       <TableCell>{translateAge(camel.age)}</TableCell>
-                      <TableCell className="flex items-center justify-end gap-0 flex-nowrap">
+                      <TableCell className="flex items-center justify-end gap-2 flex-nowrap">
+                        <Button
+                          variant="outline"
+                          className="mr-2"
+                          onClick={() => {
+                            setSelectedCamelForTransfer(camel);
+                            setIsTransferModalOpen(true);
+                          }}
+                        >
+                          نقل الملكية
+                        </Button>
                         <Button
                           variant="outline"
                           className="mr-2"
@@ -702,6 +754,17 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
           </div>
         )}
       </div>
+      {selectedCamelForTransfer && (
+        <TransferCamelModal
+          isOpen={isTransferModalOpen}
+          onClose={() => {
+            setIsTransferModalOpen(false);
+            setSelectedCamelForTransfer(null);
+          }}
+          camel={{ ...selectedCamelForTransfer, id: selectedCamelForTransfer.id.toString() }}
+          onTransfer={handleTransfer}
+        />
+      )}
     </div>
   );
 };

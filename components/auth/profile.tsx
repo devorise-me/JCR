@@ -125,47 +125,26 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    if (activeTab === 'registered' && user && !registeredCamelsFetched) {
+    if (activeTab === 'registered' && user && !registeredCamelsFetched && !fetchingRegisteredCamels) {
       fetchRegisteredCamels(user.id);
     }
-  }, [activeTab, user, registeredCamelsFetched]);
+  }, [activeTab, user, registeredCamelsFetched, fetchingRegisteredCamels]);
 
   const fetchRegisteredCamels = async (userId: string) => {
     try {
       setFetchingRegisteredCamels(true);
-      const eventsResponse = await fetch("/api/events/getEvents");
-      const events = await eventsResponse.json();
-
-      let allRegisteredCamels: Camel[] = [];
-
-      for (const event of events) {
-        const loopsResponse = await fetch(`/api/events/${event.id}/getLoops`);
-        const loops = await loopsResponse.json();
-
-        for (const loop of loops) {
-          const registeredResponse = await fetch(
-            `/api/events/${event.id}/getLoops/${loop.id}/registeredCamels?userId=${userId}`
-          );
-          const loopCamels = await registeredResponse.json();
-
-          const camelsWithLoopInfo = loopCamels.map((camel: Camel) => ({
-            ...camel,
-            loopNumber: loop.number,
-            camelLoopId: loop.id,
-            eventName: event.name,
-            eventId: event.id  // Add event ID
-          }));
-
-          allRegisteredCamels = [...allRegisteredCamels, ...camelsWithLoopInfo];
-        }
+      const response = await fetch(`/api/user/${userId}/registeredCamels`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch registered camels');
       }
-
-      setRegisteredCamels(allRegisteredCamels);
+      const data = await response.json();
+      setRegisteredCamels(data);
       setRegisteredCamelsFetched(true);
-      setFetchingRegisteredCamels(false);
     } catch (error) {
       console.error("Error fetching registered camels:", error);
       setError("Failed to fetch registered camels");
+    } finally {
+      setFetchingRegisteredCamels(false);
     }
   };
 

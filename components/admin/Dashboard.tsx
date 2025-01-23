@@ -55,7 +55,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
                 <FaPlus /> انشاء مستخدم
               </Button>
             </RedirectButton>
-            <SearchBar value={searchTerm} onChange={setSearchTerm} />
+            <SearchBar value={searchTerm} onChange={setSearchTerm} onSearchTypeChange={() => ({})} searchType="general" />
           </div>
         </div>
 
@@ -89,10 +89,12 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
               <CreateEventForm onClose={toggleEventForm} onEventAdded={handleEventAdded} />
             )}
             <div className="w-full flex justify-between items-center px-5 my-2">
-              <Button onClick={toggleEventForm}>
-                <FaPlus />
-                {isEventFormOpen ? "إغلاق" : "إضافة فعالية"}
-              </Button>
+              <div className="flex gap-2 items-center">
+                <Button onClick={toggleEventForm}>
+                  <FaPlus />
+                  {isEventFormOpen ? "إغلاق" : "إضافة فعالية"}
+                </Button>
+              </div>
               <h2 className="text-3xl font-semibold my-2">: الفعاليات</h2>
             </div>
             <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">

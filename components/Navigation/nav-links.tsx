@@ -77,6 +77,7 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
         <SelectContent className='max-w-20 outline-none border-none'>
           <SelectGroup className='flex flex-col gap-2'>
             <Link href="/Results">النتائج</Link>
+            <Link href="/registeredCamels">الهجن المسجلة</Link>
           </SelectGroup>
         </SelectContent>
       </Select>

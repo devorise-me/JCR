@@ -47,7 +47,14 @@ export const RegisteredCamelsOut = () => {
   useEffect(() => {
     fetch("/api/events/getEvents")
       .then((response) => response.json())
-      .then((data) => setEvents(data))
+      .then((data) => {
+        const currentDate = new Date();
+        const upcomingEvents = data.filter((event: Event) => {
+          const eventEndDate = new Date(event.EndDate);
+          return eventEndDate > currentDate;
+        });
+        setEvents(upcomingEvents);
+      })
       .catch(() => setError("حدث خطأ أثناء جلب الفعاليات"));
   }, []);
 
@@ -56,10 +63,10 @@ export const RegisteredCamelsOut = () => {
       fetch(`/api/events/${selectedEvent}/getLoops`)
         .then((response) => response.json())
         .then((data) => {
-          const currentDate = new Date(); 
+          const currentDate = new Date();
           const activeLoops = data.filter((loop: Loop) => {
             const loopEndRegisterDate = new Date(loop.endRegister);
-            return loopEndRegisterDate < currentDate; 
+            return loopEndRegisterDate < currentDate;
           });
           setLoops(activeLoops);
           setFilteredLoops(
@@ -68,7 +75,7 @@ export const RegisteredCamelsOut = () => {
         })
         .catch(() => setError("حدث خطأ أثناء جلب الأشواط"));
     } else {
-      setLoops([]); 
+      setLoops([]);
       setFilteredLoops([]);
     }
   }, [selectedEvent]);
@@ -84,10 +91,11 @@ export const RegisteredCamelsOut = () => {
         })
         .catch(() => setError("حدث خطأ أثناء جلب الجمال"));
     } else {
-      setCamels([]); 
+      setCamels([]);
     }
   }, [selectedEvent, selectedLoop]);
-  if (error) return <p>{error}</p>;
+
+  if (error) return <p className="text-red-500 text-center p-4">{error}</p>;
 
   function translateSex(sex: string) {
     switch (sex) {
@@ -99,6 +107,7 @@ export const RegisteredCamelsOut = () => {
         return "";
     }
   }
+
   function translateAge(age: string) {
     switch (age) {
       case "GradeOne":
@@ -121,83 +130,97 @@ export const RegisteredCamelsOut = () => {
   }
 
   return (
-    <div className="bg-[url('/desert.jpg')] h-screen bg-center  bg-no-repeat bg-cover flex items-center justify-center">
-      <div className="container w-full max-w-[800px] p-6 rounded-lg  bg-white flex flex-col justify-center gap-4">
-        <h1 className="text-3xl font-bold mb-4 text-center">
-          المطايا المشاركة
-        </h1>
+    <div className="bg-[url('/desert.jpg')] pt-32 min-h-screen bg-center bg-no-repeat bg-cover py-8 px-4">
+      <div className="container mx-auto max-w-4xl bg-white rounded-lg shadow-lg">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">
+            المطايا المشاركة
+          </h1>
 
-        <div className="flex flex-col gap-4 mb-4">
-          {/* اختيار الفعالية */}
-          <select
-            className="border p-2 rounded w-full"
-            value={selectedEvent || ""}
-            onChange={(e) => {
-              setSelectedEvent(e.target.value);
-              setSelectedLoop(null); // إعادة تعيين الشوط عند تغيير الفعالية
-            }}
-          >
-            <option value="">اختر فعالية</option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.name}
-              </option>
-            ))}
-          </select>
+          <div className="grid gap-4 mb-6">
+            <div className="space-y-2">
+              <label htmlFor="event-select" className="block text-lg font-medium text-right">
+                الفعالية
+              </label>
+              <select
+                id="event-select"
+                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                value={selectedEvent || ""}
+                onChange={(e) => {
+                  setSelectedEvent(e.target.value);
+                  setSelectedLoop(null);
+                }}
+              >
+                <option value="">اختر فعالية</option>
+                {events.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {selectedEvent && (
-            <select
-              className="border p-2 rounded w-full"
-              value={selectedLoop || ""}
-              onChange={(e) => {
-                setSelectedLoop(e.target.value);
-              }}
-            >
-              <option value="">اختر شوط</option>
-              {filteredLoops.map((loop) => (
-                <option key={loop.id} value={loop.id}>
-                  {translateAge(loop.age) + ` - ` + translateSex(loop.sex)}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        {/* جدول الجمال المسجلة */}
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">#</TableHead>
-              <TableHead className="text-right">رقم الشريحة</TableHead>
-              <TableHead className="text-right">اسم المطية</TableHead>
-              <TableHead className="text-right">النوع</TableHead>
-              <TableHead className="text-right">مالك المطية</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {selectedLoop && camels.length > 0 ? (
-              camels.map((camel, index) => (
-                <TableRow key={camel.id}>
-                  <TableCell className="text-right">{index + 1}</TableCell>
-                  <TableCell className="text-right">{camel.camelID}</TableCell>
-                  <TableCell className="text-right">{camel.name}</TableCell>
-                  <TableCell className="text-right">
-                    {translateSex(camel.sex)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {camel.ownerName}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  لا توجد جمال مسجلة
-                </TableCell>
-              </TableRow>
+            {selectedEvent && (
+              <div className="space-y-2">
+                <label htmlFor="loop-select" className="block text-lg font-medium text-right">
+                  الشوط
+                </label>
+                <select
+                  id="loop-select"
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  value={selectedLoop || ""}
+                  onChange={(e) => {
+                    setSelectedLoop(e.target.value);
+                  }}
+                >
+                  <option value="">اختر شوط</option>
+                  {filteredLoops.map((loop) => (
+                    <option key={loop.id} value={loop.id}>
+                      {translateAge(loop.age) + ` - ` + translateSex(loop.sex)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
-          </TableBody>
-        </Table>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <Table className="w-full">
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="text-right py-4 px-4 text-sm font-medium text-gray-700">#</TableHead>
+                  <TableHead className="text-right py-4 px-4 text-sm font-medium text-gray-700">رقم الشريحة</TableHead>
+                  <TableHead className="text-right py-4 px-4 text-sm font-medium text-gray-700">اسم المطية</TableHead>
+                  <TableHead className="text-right py-4 px-4 text-sm font-medium text-gray-700">النوع</TableHead>
+                  <TableHead className="text-right py-4 px-4 text-sm font-medium text-gray-700">مالك المطية</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {selectedLoop && camels.length > 0 ? (
+                  camels.map((camel, index) => (
+                    <TableRow key={camel.id} className="border-t border-gray-200 hover:bg-gray-50">
+                      <TableCell className="text-right py-4 px-4">{index + 1}</TableCell>
+                      <TableCell className="text-right py-4 px-4">{camel.camelID}</TableCell>
+                      <TableCell className="text-right py-4 px-4">{camel.name}</TableCell>
+                      <TableCell className="text-right py-4 px-4">
+                        {translateSex(camel.sex)}
+                      </TableCell>
+                      <TableCell className="text-right py-4 px-4">
+                        {camel.ownerName}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                      لا توجد جمال مسجلة
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </div>
     </div>
   );

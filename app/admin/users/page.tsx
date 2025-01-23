@@ -10,6 +10,7 @@ import * as XLSX from "xlsx";
 const UsersPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState<'general' | 'camelId'>('general');
 
   const exportToExcel = () => {
     const table = document.getElementById("myUsers");
@@ -40,6 +41,8 @@ const UsersPage = () => {
             <SearchBar
               value={searchTerm}
               onChange={setSearchTerm}
+              searchType={searchType}
+              onSearchTypeChange={setSearchType}
             />
           </div>
         </div>
@@ -59,7 +62,7 @@ const UsersPage = () => {
               </Button>
             </div>
             <div className="flex-1 min-h-0 bg-gray-200 dark:bg-neutral-700 rounded-lg p-2">
-              <ShowUsers searchTerm={searchTerm} />
+              <ShowUsers searchTerm={searchTerm} searchType={searchType} />
             </div>
           </div>
         </div>

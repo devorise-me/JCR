@@ -237,7 +237,7 @@ export const RegisteredCamelsTable = () => {
                     <TableCell className="text-right">{camel.ownerName}</TableCell>
                     <TableCell className="text-right">{loop.number}</TableCell>
                     <TableCell className="text-right">
-                      <Button
+                      {/* <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
@@ -246,7 +246,7 @@ export const RegisteredCamelsTable = () => {
                         }}
                       >
                         نقل الملكية
-                      </Button>
+                      </Button> */}
                       <Button
                         variant="outline"
                         size="sm"

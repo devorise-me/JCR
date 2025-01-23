@@ -1,8 +1,7 @@
 "use client";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useInView } from "react-intersection-observer";
-import debounce from "lodash/debounce";
 import {
   Table,
   TableBody,
@@ -35,11 +34,11 @@ interface User {
 
 interface ShowUsersProps {
   searchTerm: string;
+  searchType: 'general' | 'camelId';
 }
 
-export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
+export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm, searchType }) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -53,12 +52,19 @@ export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
     return `${user.FirstName} ${user.FatherName} ${user.GrandFatherName} ${user.FamilyName}`;
   }, []);
 
-  const fetchUsers = useCallback(async (pageNum: number) => {
-    if (loading || !hasMore) return;
+  const fetchUsers = useCallback(async (pageNum: number, resetUsers = false) => {
+    if (loading || (!hasMore && !resetUsers)) return;
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/users/getUsers?page=${pageNum}&limit=6`);
+      const queryParams = new URLSearchParams({
+        page: pageNum.toString(),
+        limit: '6',
+        searchType,
+        ...(searchTerm && { search: searchTerm })
+      });
+
+      const response = await fetch(`/api/users/getUsers?${queryParams}`);
       if (!response.ok) throw new Error('Network response was not ok');
 
       const data = await response.json();
@@ -67,15 +73,17 @@ export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
         return;
       }
 
-      // Remove duplicates based on id
-      const uniqueUsers = (prevUsers: User[]) => {
-        const combined = [...prevUsers, ...data.users];
-        const uniqueMap = new Map(combined.map(user => [user.id, user]));
-        return Array.from(uniqueMap.values());
-      };
+      if (resetUsers) {
+        setUsers(data.users);
+      } else {
+        setUsers(prevUsers => {
+          const combined = [...prevUsers, ...data.users];
+          const uniqueMap = new Map(combined.map(user => [user.id, user]));
+          return Array.from(uniqueMap.values());
+        });
+      }
 
-      setUsers(prevUsers => uniqueUsers(prevUsers));
-      setHasMore(data.users.length === 6);
+      setHasMore(data.hasMore);
       setPage(pageNum);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -83,44 +91,21 @@ export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore]);
+  }, [loading, searchTerm, searchType]);
 
-  // Filter users based on search term
-  const filterUsers = useCallback((searchValue: string, users: User[]) => {
-    if (!searchValue.trim()) return users;
-
-    const normalizedSearch = searchValue.trim().toLowerCase();
-    return users.filter((user) => {
-      const fullName = getFullName(user).toLowerCase();
-      const email = user.email.toLowerCase();
-      const username = user.username.toLowerCase();
-      const mobile = user.MobileNumber;
-      const nationalId = user.NationalID;
-
-      return (
-        fullName.includes(normalizedSearch) ||
-        email.includes(normalizedSearch) ||
-        username.includes(normalizedSearch) ||
-        mobile.includes(normalizedSearch) ||
-        nationalId.includes(normalizedSearch)
-      );
-    });
-  }, [getFullName]);
-
-  // Update filtered users whenever users or search term changes
+  // Reset and fetch when search changes
   useEffect(() => {
-    setFilteredUsers(filterUsers(searchTerm, users));
-  }, [searchTerm, users, filterUsers]);
+    setPage(1);
+    setHasMore(true);
+    fetchUsers(1, true);
+  }, [searchTerm, searchType]);
 
+  // Infinite scroll
   useEffect(() => {
-    fetchUsers(1);
-  }, []);
-
-  useEffect(() => {
-    if (inView && hasMore && !loading) {
+    if (inView && hasMore && !loading && searchType === 'general') {
       fetchUsers(page + 1);
     }
-  }, [inView, hasMore, loading, page, fetchUsers]);
+  }, [inView, hasMore, loading, page, fetchUsers, searchType]);
 
   const handleUserClick = useCallback((userId: string) => {
     setSelectedUserId(userId);
@@ -132,7 +117,7 @@ export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
 
   const toggleSort = useCallback(() => {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    setFilteredUsers(prev => [...prev].sort((a, b) => {
+    setUsers(prev => [...prev].sort((a, b) => {
       const nameA = getFullName(a);
       const nameB = getFullName(b);
       const comparison = nameA.localeCompare(nameB, 'ar');
@@ -164,7 +149,7 @@ export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredUsers.map((user) => (
+          {users.map((user) => (
             <TableRow
               key={user.id}
               className="cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800"
@@ -194,7 +179,7 @@ export const ShowUsers: React.FC<ShowUsersProps> = ({ searchTerm }) => {
 
       <div ref={ref} className="p-4 text-center text-gray-500">
         {loading ? "جاري تحميل المزيد من المستخدمين..." :
-          hasMore ? "قم بالتمرير لأسفل لتحميل المزيد" : ""}
+          hasMore && searchType === 'general' ? "قم بالتمرير لأسفل لتحميل المزيد" : ""}
       </div>
 
       {selectedUserId && (
