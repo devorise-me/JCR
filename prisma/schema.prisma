@@ -27,6 +27,7 @@ model User {
   camels          Camel[]
   CamelHistory    CamelHistory[]
   RaceResult      RaceResult[]
+  news            news[]
 }
 
 model Camel {
@@ -98,12 +99,6 @@ model RaceResult {
   owner      User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
-model playing_with_neon {
-  id    Int    @id @default(autoincrement())
-  name  String
-  value Float? @db.Real
-}
-
 model CamelHistory {
   id            Int       @id @default(autoincrement())
   name          String
@@ -114,6 +109,17 @@ model CamelHistory {
   Date          DateTime? @db.Timestamp(6)
   typeOfMethode String?
   User          User?     @relation(fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_loops_loop_id")
+}
+
+model news {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  title       String   @db.VarChar(255)
+  description String
+  date        DateTime @db.Timestamp(6)
+  author_id   String   @db.VarChar(36)
+  startDate   DateTime @default(now()) @db.Timestamp(6)
+  endDate     DateTime @default(now()) @db.Timestamp(6)
+  User        User     @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_author")
 }
 
 enum Role {

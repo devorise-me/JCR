@@ -95,7 +95,7 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
         <Link href="/registeredCamels">المطايا المشاركة</Link>
       </li> */}
       <li onClick={enablescroll}>
-        <Link href="#">الأخبار</Link>
+        <Link href="/news">الأخبار</Link>
       </li>
       <li onClick={enablescroll}>
         <Link href="#">الإعلانات</Link>
