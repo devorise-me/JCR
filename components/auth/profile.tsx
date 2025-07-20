@@ -360,12 +360,14 @@ const Profile = () => {
                   <Button
                     variant={activeTab === 'all' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('all')}
+                    className="bg-green-500 hover:bg-green-800 text-white hover:text-white"
                   >
                     جميع الهجن
                   </Button>
                   <Button
                     variant={activeTab === 'registered' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('registered')}
+                    className="bg-red-500 hover:bg-red-800 text-white hover:text-white"
                   >
                     الهجن المسجلة في السباقات
                   </Button>

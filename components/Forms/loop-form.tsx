@@ -142,6 +142,8 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
               <option value={1}>رقم الشوط 1</option>
               <option value={2}>رقم الشوط 2</option>
               <option value={3}>رقم الشوط 3</option>
+              <option value={4}>رقم الشوط 4</option>
+              <option value={5}>رقم الشوط 5</option>
             </select>
           </div>
           <div className="mb-4 text-end">

@@ -153,7 +153,7 @@ export const RegisteredCamelsTable = () => {
     }
   };
 
-  const handleLoopTransfer = async (camelId: string, newLoopId: string) => {
+  const handleLoopTransfer = async (camelId: number, newLoopId: string) => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
@@ -169,7 +169,7 @@ export const RegisteredCamelsTable = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          camelId,
+          camelId: Number(camelId),
           newLoopId,
         }),
       });

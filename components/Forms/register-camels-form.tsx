@@ -43,6 +43,7 @@ export default function RegisterCamelForm({
   const [camels, setCamels] = useState<Camel[]>([]);
   const [registeredCamels, setRegisteredCamels] = useState<Camel[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const [selectedAge, setSelectedAge] = useState<string | null>(null);
   const [selectedLoop, setSelectedLoop] = useState<string | null>(null);
   const [selectedCamel, setSelectedCamel] = useState<string | null>(null);
   const [availableCamels, setAvailableCamels] = useState<Camel[]>([]);
@@ -221,7 +222,7 @@ export default function RegisterCamelForm({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ camelId: selectedCamel, userId }),
+          body: JSON.stringify({ camelId: parseInt(selectedCamel), userId }),
         }
       );
 
@@ -326,8 +327,29 @@ export default function RegisterCamelForm({
             ))}
           </select>
         </div>
+        <div className="mb-4">
+          <label className="block mb-2 text-right">اختيار الفئة</label>
+          <select
+            className="w-full border rounded p-2"
+            value={selectedAge || ""}
+            onChange={(e) => {
+              setSelectedAge(e.target.value);
+              setSelectedLoop(null);
+              setSelectedCamel(null);
+            }}
+          >
+            <option value="">-- اختر الفئة --</option>
+            <option value="GradeOne">مفرد</option>
+            <option value="GradeTwo">حقايق</option>
+            <option value="GradeThree">لقايا</option>
+            <option value="GradeFour">جذاع</option>
+            <option value="GradeFive">ثنايا</option>
+            <option value="GradeSixMale">زمول</option>
+            <option value="GradeSixFemale">حيل</option>
+          </select>
+        </div>
 
-        {selectedEvent && loops.length > 0 && (
+        {selectedAge && selectedEvent && loops.length > 0 && (
           <div className="mb-4">
             <label className="block mb-2 text-right">اختر شوط</label>
             <select
@@ -336,7 +358,7 @@ export default function RegisterCamelForm({
               onChange={(e) => setSelectedLoop(e.target.value)}
             >
               <option value="">-- اختر شوط --</option>
-              {loops.map((loop) => (
+              {loops.filter(e=> e.age == selectedAge).map((loop) => (
                 <option
                   key={loop.id}
                   value={loop.id}

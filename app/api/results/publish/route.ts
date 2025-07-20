@@ -27,7 +27,39 @@ export async function POST(req: Request) {
     const raceResults = await Promise.all(
       data.map(async (result: any) => {
         try {
-          return await createRaceResult(result);
+          const createdResult = await createRaceResult(result);
+          
+          // Create camel history record for the race result
+          if (createdResult && createdResult.camelId) {
+            const camel = await db.camel.findUnique({
+              where: { id: createdResult.camelId },
+              include: {
+                owner: {
+                  select: {
+                    FirstName: true,
+                    FamilyName: true,
+                    username: true
+                  }
+                }
+              }
+            });
+
+            if (camel) {
+              await db.camelHistory.create({
+                data: {
+                  name: camel.name,
+                  camelID: camel.camelID,
+                  age: camel.age,
+                  sex: camel.sex,
+                  ownerId: camel.ownerId,
+                  Date: new Date(),
+                  typeOfMethode: `نشر نتيجة السباق - الحدث: ${loop.event.name}, الرتبة: ${createdResult.rank}, المالك: ${camel.owner?.FirstName || 'غير محدد'} ${camel.owner?.FamilyName || ''}`,
+                },
+              });
+            }
+          }
+          
+          return createdResult;
         } catch (error) {
           console.error("Error creating individual race result:", error);
           return null;

@@ -35,7 +35,7 @@ interface TransferLoopModalProps {
     };
     availableLoops: Loop[];
     currentLoopId: string;
-    onTransfer: (camelId: string, newLoopId: string) => Promise<void>;
+    onTransfer: (camelId: number, newLoopId: string) => Promise<void>;
 }
 
 export const TransferLoopModal = ({

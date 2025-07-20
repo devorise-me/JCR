@@ -12,6 +12,11 @@ export async function GET(
             where: {
                 camel: {
                     ownerId: userId
+                },
+                loop:{
+                    endRegister:{
+                        gt: new Date()
+                    }
                 }
             },
             include: {

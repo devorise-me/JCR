@@ -19,6 +19,8 @@ interface Event {
   name: string;
   StartDate: Date;
   EndDate: Date;
+  type: string;
+  disabled: boolean;
 }
 
 interface Loop {
@@ -31,6 +33,7 @@ interface Loop {
   startRegister: string | Date;
   endRegister: string | Date;
   number: number;
+  rank: number;
 }
 
 interface EventDetailsProps {
@@ -39,13 +42,13 @@ interface EventDetailsProps {
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
-  const [event, setEvent] = useState<Event | any>();
+  const [event, setEvent] = useState<Event | null>(null);
   const [loops, setLoops] = useState<Loop[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isCreateLoopModalOpen, setIsCreateLoopModalOpen] = useState(false);
   const [isUpdateLoopModalOpen, setIsUpdateLoopModalOpen] = useState(false);
   const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
-  const [editingLoop, setEditingLoop] = useState<Loop | any>(null);
+  const [editingLoop, setEditingLoop] = useState<Loop | null>(null);
   const [confirmDeleteLoop, setConfirmDeleteLoop] = useState<string | null>(null);
   const [name, setName] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
@@ -57,7 +60,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
 
   useEffect(() => {
     fetchEventAndLoopsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
   const fetchEventAndLoopsData = async () => {
@@ -87,28 +89,24 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       }
       const loopsData = await loopsResponse.json();
 
-      // Ensure that startRegister and endRegister are parsed as Date
-      const formattedLoops = loopsData.map((loop: Loop) => ({
-        ...loop,
-        startRegister: loop.startRegister,
-        endRegister: loop.endRegister,
-      })).filter((loop: Loop) => loop.eventId === eventId);
-
-      console.log(formattedLoops);
-
-      setLoops(formattedLoops);
+      const rankedLoops = loopsData
+        .sort((a: Loop, b: Loop) => a.rank - b.rank)
+        .map((loop: Loop, index: number) => ({
+          ...loop,
+          rank: index + 1,
+        }))
+        .filter((loop: Loop) => loop.eventId === eventId);
+      
+      setLoops(rankedLoops);
     } catch (error: any) {
       setError(`An error occurred while fetching event details: ${error.message}`);
     }
   };
 
-
   const handleEditLoop = (loop: Loop) => {
     setEditingLoop(loop);
     setIsUpdateLoopModalOpen(true);
   };
-
-
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +146,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       });
       if (response.ok) {
         setConfirmDeleteLoop(null);
-        await fetchEventAndLoopsData(); // Fetch updated loops
+        await fetchEventAndLoopsData();
       } else {
         const error = await response.json();
         alert(`Error: ${error.error}`);
@@ -212,25 +210,56 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
     }
   }
 
-  console.log("loops: ", loops)
-
-  const convertToArabicTime = (time: string) => {
-    // Arabic numerals ٠١٢٣٤٥٦٧٨٩
-    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-
-    // Convert each digit to Arabic
-    return time?.split('').map(char => {
-      if (char >= '0' && char <= '9') {
-        return arabicNumerals[parseInt(char)];
-      }
-      return char === ':' ? ':' : char;
-    }).join('');
+  const swapRanks = async (i: number, j: number) => {
+    const updated = [...loops];
+    [updated[i].rank, updated[j].rank] = [updated[j].rank, updated[i].rank];
+    setLoops(updated);
+    await saveLoopOrder([updated[i], updated[j]]);
   };
+  
+  const handleMoveLoopUp = (loop: Loop) => { 
+    const i = loops.findIndex(l => l.id === loop.id); 
+    if (i > 0) swapRanks(i, i - 1); 
+  };
+  
+  const handleMoveLoopDown = (loop: Loop) => { 
+    const i = loops.findIndex(l => l.id === loop.id); 
+    if (i < loops.length - 1) swapRanks(i, i + 1); 
+  };
+
+  const saveLoopOrder = async (updatedLoops: Loop[]) => {
+    try {
+      await fetch(`/api/events/${eventId}/updateLoopsOrder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedLoops.map(({ id, rank }) => ({ id, rank }))),
+      });
+      await fetchEventAndLoopsData();
+    } catch (error) {
+      console.error("Failed to update loop order:", error);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl">
+          <p className="text-red-500 text-center">{error}</p>
+          <button
+            onClick={onClose}
+            className="mt-4 bg-gray-500 text-white p-2 rounded mx-auto block"
+          >
+            إغلاق
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] overflow-auto">
-        <div className=" items-center mb-4">
+        <div className="items-center mb-4">
           <div className="flex space-x-2 justify-between items-center">
             <button
               onClick={onClose}
@@ -246,19 +275,18 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
               >
                 <MdEdit className="mr-2" size={18} /> تعديل فعالية
               </Button>
-
             </div>
           </div>
         </div>
         <hr className="mt-4 mb-4" />
-        <h2 className="text-xl font-bold  text-center ">
+        <h2 className="text-xl font-bold text-center">
           تفاصيل الفعالية
         </h2>
         <hr className="mt-4 mb-4" />
 
         {event ? (
           <div className="text-end pb-4 pt-4">
-            <h3 className="text-xl font-semibold mb-4 text-center ">{event.name}</h3>
+            <h3 className="text-xl font-semibold mb-4 text-center">{event.name}</h3>
             <div className="flex justify-between items-center">
               <p>تاريخ البداية: {event.StartDate.toString().split('T')[0]}</p>
               <span className="mx-2">→</span>
@@ -276,30 +304,39 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
             <Table className="container text-right mt-4">
               <TableHeader>
                 <TableRow>
+                  <TableHead></TableHead>
+                  {/* <TableHead>الإجراءات</TableHead> */}
                   <TableHead>الرقم</TableHead>
                   <TableHead>السعة</TableHead>
                   <TableHead>الفئة</TableHead>
                   <TableHead>النوع</TableHead>
                   <TableHead>الوقت</TableHead>
-                  <TableHead>الإجراءات</TableHead>
+                  {/* <TableHead>الرقم</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loops.length > 0 ? (
                   loops
-                    .sort((a, b) => a.number - b.number)
+                    .sort((a, b) => a.rank - b.rank)
                     .map((loop) => (
                       <TableRow key={loop.id}>
-                        <TableCell>{loop.number}</TableCell>
-                        <TableCell>{loop.capacity}</TableCell>
-                        <TableCell className="font-medium">
-                          {translateAge(loop.age)}
-                        </TableCell>
-                        <TableCell>{translateSex(loop.sex)} </TableCell>
-                        <TableCell>{translateTime(loop.time)} </TableCell>
-                        <TableCell>
-                          <button
-                            onClick={() => handleEditLoop(loop)}
+                        <TableCell className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleMoveLoopUp(loop)} 
+                            className="text-green-600"
+                            disabled={loop.rank === 1}
+                          >
+                            ↑
+                          </button>
+                          <button 
+                            onClick={() => handleMoveLoopDown(loop)} 
+                            className="text-green-600"
+                            disabled={loop.rank === loops.length}
+                          >
+                            ↓
+                          </button>
+                          <button 
+                            onClick={() => handleEditLoop(loop)} 
                             className="text-blue-950"
                           >
                             <MdEdit size={20} />
@@ -311,18 +348,25 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                             <MdDelete size={20} />
                           </button>
                         </TableCell>
+                        {/* <TableCell>{loop.rank}</TableCell> */}
+                        <TableCell>{loop.number}</TableCell>
+                        <TableCell>{loop.capacity}</TableCell>
+                        <TableCell className="font-medium">
+                          {translateAge(loop.age)}
+                        </TableCell>
+                        <TableCell>{translateSex(loop.sex)}</TableCell>
+                        <TableCell>{translateTime(loop.time)}</TableCell>
                       </TableRow>
                     ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={6} className="text-center">
                       لا يوجد بيانات
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-
 
             {confirmDeleteLoop && (
               <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
@@ -339,7 +383,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     </Button>
                     <Button
                       className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                      onClick={() => setConfirmDeleteLoop(null)}>
+                      onClick={() => setConfirmDeleteLoop(null)}
+                    >
                       إلغاء
                     </Button>
                   </div>
@@ -354,21 +399,21 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
         {isCreateLoopModalOpen && (
           <CreateLoopForm
             eventId={eventId}
-            eventEndDate={event.EndDate}
+            eventEndDate={event?.EndDate}
             onClose={() => setIsCreateLoopModalOpen(false)}
             onAddLoop={(newLoop: Loop) => {
               setLoops((prevLoops) => [...prevLoops, newLoop]);
               fetchEventAndLoopsData();
             }}
-            eventStartDate={""}
+            eventStartDate=""
             loops={loops}
           />
-
         )}
+
         {isUpdateLoopModalOpen && editingLoop && (
           <UpdateLoopForm
             loop={editingLoop}
-            eventEndDate={new Date(event.EndDate)}
+            eventEndDate={new Date(event?.EndDate || '')}
             onClose={() => setIsUpdateLoopModalOpen(false)}
             onLoopUpdated={fetchEventAndLoopsData}
             loops={loops.filter(loopFiltered => loopFiltered.id !== editingLoop?.id)}
@@ -453,13 +498,14 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                   <label htmlFor="disabled" className="block text-sm font-medium text-gray-700">
                     اخفاء
                   </label>
-                  <Checkbox id="disabled" checked={disabled} onCheckedChange={(checked) => setDisabled(!!checked)} />
+                  <Checkbox 
+                    id="disabled" 
+                    checked={disabled} 
+                    onCheckedChange={(checked) => setDisabled(!!checked)} 
+                  />
                 </div>
                 <div className="flex justify-between">
-                  <Button
-                    type="submit"
-
-                  >
+                  <Button type="submit">
                     حفظ التعديلات
                   </Button>
                   <Button

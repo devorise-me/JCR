@@ -29,9 +29,61 @@ export async function POST(req: Request) {
         console.log('camelId:', camelId);
         console.log('newOwnerId:', newOwnerId);
 
+        // Get camel details before transfer
+        const camel = await db.camel.findUnique({
+            where: { id: camelId },
+            include: {
+                owner: {
+                    select: {
+                        FirstName: true,
+                        FamilyName: true,
+                        username: true
+                    }
+                }
+            }
+        });
+
+        if (!camel) {
+            return NextResponse.json(
+                { error: "المطية غير موجودة" },
+                { status: 404 }
+            );
+        }
+
+        // Get new owner details
+        const newOwner = await db.user.findUnique({
+            where: { id: newOwnerId },
+            select: {
+                FirstName: true,
+                FamilyName: true,
+                username: true
+            }
+        });
+
+        if (!newOwner) {
+            return NextResponse.json(
+                { error: "المالك الجديد غير موجود" },
+                { status: 404 }
+            );
+        }
+
+        // Update camel ownership
         await db.camel.update({
             where: { id: camelId },
             data: { ownerId: newOwnerId },
+        });
+
+        // Create camel history record for the transfer
+        await db.camelHistory.create({
+            data: {
+                name: camel.name,
+                camelID: camel.camelID,
+                age: camel.age,
+                sex: camel.sex,
+                ownerId: newOwnerId,
+                Date: new Date(),
+                typeOfMethode: `نقل من ${camel.owner?.FirstName || 'غير محدد'} ${camel.owner?.FamilyName || ''} إلى ${newOwner.FirstName} ${newOwner.FamilyName}`,
+            },
         });
 
         return NextResponse.json({ message: 'تم نقل المطية بنجاح' });

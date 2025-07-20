@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "../ui/select";
+import ContactDropdown from "./ContactDropdown";
+
 
 interface Props {
   className?: string;
@@ -71,19 +73,17 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
         </NavigationMenuList>
       </NavigationMenu> */}
       <Select dir="rtl" open={open} onOpenChange={setOpen}>
-        <SelectTrigger className='bg-transparent max-w-44 !outline-none border-none shadow-none lg:text-base max-lg:max-w-60 max-lg:!text-2xl'>
+        <SelectTrigger className='bg-transparent  !outline-none border-none shadow-none lg:text-base '>
           <SelectValue placeholder="سباقات الهجن" />
         </SelectTrigger>
-        <SelectContent className='max-w-20 outline-none border-none'>
-          <SelectGroup className='flex flex-col gap-2'>
-            <Link href="/Results">النتائج</Link>
-            <Link href="/registeredCamels">الهجن المسجلة</Link>
+        <SelectContent className='mx-4 outline-none border-none'>
+          <SelectGroup className='mx-4 flex flex-col gap-2'>
+            <Link href="/Results">نتائج السباق</Link>
+            <Link href="/registeredCamels">الهجن المشاركة في السباق</Link>
           </SelectGroup>
         </SelectContent>
       </Select>
-      <li onClick={enablescroll}>
-        <Link href="mailto:info@jocrc.com">تواصل معنا</Link>
-      </li>
+      <ContactDropdown />
       {hide && token && (
         <>
           <li onClick={enablescroll}>

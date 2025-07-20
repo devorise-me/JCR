@@ -8,8 +8,6 @@ export async function DELETE(req: NextRequest) {
     const url = new URL(req.url || "", `http://${req.headers.get("host")}`);
     const [_, , , , , loopId] = url.pathname.split("/");
 
-
-
     if (!camelId || !loopId) {
       return NextResponse.json(
         { message: "Invalid request parameters" },
@@ -17,11 +15,36 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const loop = await db.loop.findUnique({
-      where: { id: loopId },
-      select: { startRegister: true, endRegister: true },
+    const camelIdNumber = parseInt(camelId, 10);
+
+    // Get camel and loop details before removal for history
+    const camel = await db.camel.findUnique({
+      where: { id: camelIdNumber },
+      include: {
+        owner: {
+          select: {
+            FirstName: true,
+            FamilyName: true,
+            username: true
+          }
+        }
+      }
     });
 
+    const loop = await db.loop.findUnique({
+      where: { id: loopId },
+      include: {
+        event: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    if (!camel) {
+      return NextResponse.json({ message: "الجمل غير موجود" }, { status: 404 });
+    }
 
     if (!loop) {
       return NextResponse.json({ message: "الشوط غير موجود " }, { status: 404 });
@@ -36,12 +59,23 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const camelIdNumber = parseInt(camelId, 10);
-
     await db.camelLoop.deleteMany({
       where: {
         camelId: camelIdNumber,
         loopId: loopId,
+      },
+    });
+
+    // Create camel history record for the removal
+    await db.camelHistory.create({
+      data: {
+        name: camel.name,
+        camelID: camel.camelID,
+        age: camel.age,
+        sex: camel.sex,
+        ownerId: camel.ownerId,
+        Date: new Date(),
+        typeOfMethode: `إزالة تسجيل المطية من الحدث: ${loop.event.name}, المالك: ${camel.owner?.FirstName || 'غير محدد'} ${camel.owner?.FamilyName || ''}`,
       },
     });
 

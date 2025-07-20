@@ -1,11 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model User {
+  id              String         @id @default(cuid())
+  FirstName       String?
+  FatherName      String?
+  GrandFatherName String?
+  FamilyName      String?
+  username        String         @unique
+  email           String         @unique
+  NationalID      String?        @unique
+  BDate           DateTime?
+  MobileNumber    String?
+  password        String
+  image           String?
+  role            Role?          @default(USER)
+  swiftCode       String?
+  bankName        String?
+  IBAN            String?        @unique
+  camels          Camel[]
+  CamelHistory    CamelHistory[]
+  RaceResult      RaceResult[]
+}
+
+model Camel {
+  id         Int          @id @default(autoincrement())
+  name       String
+  camelID    String       @unique
+  age        Age
+  sex        Sex
+  ownerId    String
+  owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  loops      CamelLoop[]
+  RaceResult RaceResult[]
+}
+
+model Event {
+  id         String       @id @default(cuid())
+  name       String
+  StartDate  DateTime
+  EndDate    DateTime
+  disabled   Boolean      @default(false)
+  type       String       @default("International")
+  loops      Loop[]
+  RaceResult RaceResult[]
+}
+
+model Loop {
+  id            String       @id @default(cuid())
+  capacity      Int
+  registered    Int          @default(autoincrement())
+  age           Age
+  sex           Sex
+  time          Time
+  startRegister DateTime
+  endRegister   DateTime
+  eventId       String
+  number        Int
+  rank          Int?
+  CamelLoop     CamelLoop[]
+  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  RaceResult    RaceResult[]
+}
+
+model CamelLoop {
+  id      String @id @default(cuid())
+  camelId Int
+  loopId  String
+  camel   Camel  @relation(fields: [camelId], references: [id], onDelete: Cascade)
+  loop    Loop   @relation(fields: [loopId], references: [id], onDelete: Cascade)
+
+  @@unique([camelId, loopId], name: "camel_unique_in_event")
+}
+
+model RaceResult {
+  id         String  @id @default(cuid())
+  rank       Int
+  eventId    String
+  ownerId    String
+  camelId    Int
+  loopId     String
+  IBAN       String
+  bankName   String
+  swiftCode  String
+  ownerName  String
+  NationalID String?
+  camelID    String?
+  camel      Camel   @relation(fields: [camelId], references: [id], onDelete: Cascade)
+  event      Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  loop       Loop    @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  owner      User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model playing_with_neon {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value Float? @db.Real
+}
+
+model CamelHistory {
+  id            Int       @id @default(autoincrement())
+  name          String
+  camelID       String?
+  age           String
+  sex           String
+  ownerId       String?
+  Date          DateTime? @db.Timestamp(6)
+  typeOfMethode String?
+  User          User?     @relation(fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_loops_loop_id")
 }
 
 enum Role {
@@ -33,96 +141,4 @@ enum Age {
 enum Time {
   Morning
   Evening
-}
-
-model User {
-  id              String    @id @default(cuid())
-  FirstName       String?
-  FatherName      String?
-  GrandFatherName String?
-  FamilyName      String?
-  username        String    @unique
-  email           String    @unique
-  NationalID      String?   @unique
-  BDate           DateTime?
-  MobileNumber    String?
-  password        String
-  image           String?
-  role            Role?     @default(USER)
-  camels          Camel[]
-  swiftCode       String?
-  bankName        String?
-  IBAN            String?   @unique
-
-  RaceResult RaceResult[]
-}
-
-model Camel {
-  id         Int          @id @default(autoincrement())
-  name       String
-  camelID    String       @unique
-  age        Age
-  sex        Sex
-  ownerId    String
-  owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  loops      CamelLoop[]
-  RaceResult RaceResult[]
-}
-
-model Event {
-  id        String   @id @default(cuid())
-  name      String
-  StartDate DateTime
-  EndDate   DateTime
-  loops     Loop[]
-  disabled  Boolean  @default(false)
-  type      String   @default("International")
-
-  RaceResult RaceResult[]
-}
-
-model Loop {
-  id            String      @id @default(cuid())
-  capacity      Int
-  registered    Int         @default(autoincrement())
-  age           Age
-  sex           Sex
-  time          Time
-  startRegister DateTime
-  endRegister   DateTime
-  eventId       String
-  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  CamelLoop     CamelLoop[]
-  number        Int
-
-  RaceResult RaceResult[]
-}
-
-model CamelLoop {
-  id      String @id @default(cuid())
-  camelId Int
-  loopId  String
-  camel   Camel  @relation(fields: [camelId], references: [id], onDelete: Cascade)
-  loop    Loop   @relation(fields: [loopId], references: [id], onDelete: Cascade)
-
-  @@unique([camelId, loopId], name: "camel_unique_in_event")
-}
-
-model RaceResult {
-  id         String  @id @default(cuid())
-  rank       Int
-  eventId    String
-  event      Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  ownerId    String
-  owner      User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  camelId    Int
-  camel      Camel   @relation(fields: [camelId], references: [id], onDelete: Cascade)
-  loopId     String
-  loop       Loop    @relation(fields: [loopId], references: [id], onDelete: Cascade)
-  IBAN       String
-  bankName   String
-  swiftCode  String
-  ownerName  String
-  NationalID String?
-  camelID    String?
 }
