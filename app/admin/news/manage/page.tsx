@@ -9,6 +9,7 @@ interface NewsItem {
   date: string;
   startDate?: string;
   endDate?: string;
+  isVisible?: boolean;
 }
 
 export default function ManageNewsPage() {
@@ -50,6 +51,27 @@ export default function ManageNewsPage() {
     }
   };
 
+  const handleToggleVisible = async (id: string, isVisible: boolean) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`/api/news/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isVisible: !isVisible }),
+      });
+      if (res.ok) {
+        setNews(news.map((item) => item.id === id ? { ...item, isVisible: !isVisible } : item));
+      } else {
+        setError("فشل في تحديث حالة الظهور");
+      }
+    } catch {
+      setError("فشل في تحديث حالة الظهور");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto mt-12 p-4">
       <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">إدارة الأخبار</h1>
@@ -72,7 +94,7 @@ export default function ManageNewsPage() {
                 </div>
               </div>
               <div className="text-gray-800 mb-2 whitespace-pre-line">{item.description}</div>
-              <div className="flex gap-2 mt-2 self-end">
+              <div className="flex gap-2 mt-2 self-end items-center">
                 <button
                   className="bg-yellow-500 text-white px-4 py-1 rounded-lg font-semibold shadow hover:bg-yellow-600 transition"
                   onClick={() => router.push(`/admin/news/edit/${item.id}`)}
@@ -84,6 +106,12 @@ export default function ManageNewsPage() {
                   onClick={() => handleDelete(item.id)}
                 >
                   حذف
+                </button>
+                <button
+                  className={`px-4 py-1 rounded-lg font-semibold shadow transition border ${item.isVisible ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
+                  onClick={() => handleToggleVisible(item.id, !!item.isVisible)}
+                >
+                  {item.isVisible ? 'إخفاء' : 'إظهار'}
                 </button>
               </div>
             </li>

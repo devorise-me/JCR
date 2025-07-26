@@ -69,4 +69,41 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     console.error('Error updating news:', error);
     return NextResponse.json({ error: 'Failed to update news' }, { status: 500 });
   }
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as { id: string, role: string };
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+    if (!decoded?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    // Fetch user to check role
+    const user = await db.user.findUnique({ where: { id: decoded.id }, select: { id: true, role: true } });
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPERVISOR')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { id } = params;
+    const { isVisible } = await req.json();
+    if (typeof isVisible !== 'boolean') {
+      return NextResponse.json({ error: 'Missing or invalid isVisible' }, { status: 400 });
+    }
+    const updated = await db.news.update({
+      where: { id },
+      data: { isVisible },
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error('Error toggling news visibility:', error);
+    return NextResponse.json({ error: 'Failed to update news visibility' }, { status: 500 });
+  }
 } 
