@@ -57,6 +57,7 @@
     "react-hook-form": "^7.53.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.13.1",
+    "react-select": "^5.10.2",
     "sass-loader": "^16.0.1",
     "style-loader": "^4.0.0",
     "tailwind-merge": "^2.5.2",

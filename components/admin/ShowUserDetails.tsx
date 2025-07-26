@@ -75,7 +75,21 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
           return;
         }
         setUser(userData);
-        setUpdatedUser(userData);
+        setUpdatedUser({
+          FirstName: userData.FirstName,
+          FatherName: userData.FatherName,
+          GrandFatherName: userData.GrandFatherName,
+          FamilyName: userData.FamilyName,
+          username: userData.username,
+          email: userData.email,
+          NationalID: userData.NationalID,
+          BDate: userData.BDate,
+          MobileNumber: userData.MobileNumber,
+          IBAN: userData.IBAN,
+          swiftCode: userData.swiftCode,
+          bankName: userData.bankName,
+          // Do NOT include password here!
+        });
 
         const camelResponse = await fetch(`/api/camels/${userData.id}`);
         const camelData = await camelResponse.json();
@@ -645,7 +659,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
                       <span className="text-gray-700"> : كلمة السر</span>
                       <input
                         type="text"
-                        value={updatedUser?.password}
+                        value={updatedUser?.password || ""}
                         onChange={(e) =>
                           setUpdatedUser((prev) => ({
                             ...prev,

@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
-    Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from 'react';
+import Select from 'react-select';
 
 interface User {
     id: string;
@@ -45,6 +45,7 @@ export const TransferCamelModal = ({
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [usersLoading, setUsersLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -95,23 +96,21 @@ export const TransferCamelModal = ({
                     <div className="grid gap-2">
                         <label>المالك الجديد</label>
                         <Select
-                            onValueChange={setSelectedUserId}
-                            value={selectedUserId}
-                            disabled={usersLoading}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="اختر المالك الجديد" />
-                            </SelectTrigger>
-                            <SelectContent className='max-h-96 overflow-y-auto'>
-                                {users
-                                    .sort((a, b) => a.FirstName?.localeCompare(b?.FirstName))
-                                    .map((user) => (
-                                        <SelectItem key={user.id} value={user.id}>
-                                            {user.FirstName} {user.FamilyName} - {user.username}
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
+                            options={users.map(user => ({
+                                value: user.id,
+                                label: `${user.FirstName} ${user.FamilyName} - ${user.username}`
+                            }))}
+                            onChange={option => setSelectedUserId(option?.value || "")}
+                            isLoading={usersLoading}
+                            placeholder="ابحث عن المالك..."
+                            isRtl
+                            value={users
+                                .map(user => ({
+                                    value: user.id,
+                                    label: `${user.FirstName} ${user.FamilyName} - ${user.username}`
+                                }))
+                                .find(option => option.value === selectedUserId) || null}
+                        />
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
                 </div>

@@ -22,7 +22,11 @@ interface User {
   bankName: string;
 }
 
-const ShowSupers = () => {
+interface ShowSupersProps {
+  searchTerm?: string;
+}
+
+const ShowSupers: React.FC<ShowSupersProps> = ({ searchTerm = "" }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -45,6 +49,15 @@ const ShowSupers = () => {
         setError("An error occurred while fetching users.");
       });
   }, []);
+
+  // Add search filter
+  const displayedUsers = searchTerm
+    ? users.filter(user =>
+        (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.FirstName && user.FirstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.FamilyName && user.FamilyName.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : users;
 
   const handleSuperClick = (user: User) => {
     setSelectedUser(user);
@@ -101,7 +114,7 @@ const ShowSupers = () => {
     <>
       {error && <p>{error}</p>}
       <div>
-        {users.map((user) => (
+        {displayedUsers.map((user) => (
           <div
             className="w-full h-20 flex-shrink-0 mb-2 bg-white/30 rounded-lg flex flex-row-reverse items-center justify-between px-5 cursor-pointer"
             key={user.id}

@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import React from "react";
+import { Button } from "@/components/ui/button";
 
 interface Loop {
   eventId: string;
@@ -51,6 +52,8 @@ const ResultsTabel = () => {
   const [selectedLoop, setSelectedLoop] = useState<string | null>(null);
   const [results, setResults] = useState<ReportData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const RESULTS_PER_PAGE = 10;
 
   useEffect(() => {
     fetch("/api/events/getEvents")
@@ -92,6 +95,17 @@ const ResultsTabel = () => {
         .catch(() => setError("Error fetching results"));
     }
   }, [selectedLoop, selectedEvent]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(results.length / RESULTS_PER_PAGE);
+  const paginatedResults = results
+    .sort((a, b) => a.rank - b.rank)
+    .slice((currentPage - 1) * RESULTS_PER_PAGE, currentPage * RESULTS_PER_PAGE);
+
+  // Reset to page 1 when results change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [results, selectedLoop]);
 
   function translateAge(age: string) {
     switch (age) {
@@ -137,14 +151,14 @@ const ResultsTabel = () => {
   }
 
   return (
-    <div className="bg-[url('/desert.jpg')] h-screen bg-center bg-no-repeat bg-cover flex items-center justify-center">
-      <div className="container w-full max-w-[600px] p-6 rounded-lg bg-white flex flex-col justify-center gap-2">
-        <h1 className="text-3xl font-bold mb-4 text-center">نتائج السباق</h1>
+    <div className="bg-[url('/desert.jpg')] min-h-screen bg-center bg-no-repeat bg-cover flex items-center justify-center px-2 py-8">
+      <div className="w-full max-w-2xl p-6 rounded-2xl bg-white/90 flex flex-col justify-center gap-4 shadow-2xl border border-slate-100">
+        <h1 className="text-3xl font-bold mb-4 text-center text-slate-800">نتائج السباق</h1>
 
-        <div className="mb-4 flex flex-col justify-center gap-2">
+        <div className="mb-4 flex flex-col gap-3">
           <Select onValueChange={setSelectedEvent} value={selectedEvent || ""}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Event" />
+            <SelectTrigger className="w-full h-12 rounded-lg border-slate-300 shadow-sm text-base">
+              <SelectValue placeholder="اختر الفعالية" />
             </SelectTrigger>
             <SelectContent>
               {events.map((event) => (
@@ -157,8 +171,8 @@ const ResultsTabel = () => {
 
           {selectedEvent && (
             <Select onValueChange={setSelectedLoop} value={selectedLoop || ""}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Loop" />
+              <SelectTrigger className="w-full h-12 rounded-lg border-slate-300 shadow-sm text-base">
+                <SelectValue placeholder="اختر الشوط" />
               </SelectTrigger>
               <SelectContent>
                 {loops.map((loop) => (
@@ -170,7 +184,6 @@ const ResultsTabel = () => {
                       translateTime(loop.time) +
                       ` - ` +
                       'رقم الشوط: ' + loop.number}
-
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -181,42 +194,63 @@ const ResultsTabel = () => {
         {selectedLoop && (
           <>
             {results.length > 0 ? (
-              <div className="max-h-80 overflow-y-auto">
-                <Table>
-                  <TableHeader>
+              <div className="max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white/80 shadow">
+                <Table className="w-full">
+                  <TableHeader className="sticky top-0 bg-white/90 z-10">
                     <TableRow>
-                      <TableHead>اسم المطية</TableHead>
-                      <TableHead>صاحب المطية</TableHead>
-                      <TableHead>المركز</TableHead>
-                      <TableHead>رقم الشريحة</TableHead>{" "}
-                      {/* إضافة عنوان لرقم الشريحة */}
+                      <TableHead className="text-slate-700 font-bold text-base">اسم المطية</TableHead>
+                      <TableHead className="text-slate-700 font-bold text-base">صاحب المطية</TableHead>
+                      <TableHead className="text-slate-700 font-bold text-base">المركز</TableHead>
+                      <TableHead className="text-slate-700 font-bold text-base">رقم الشريحة</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {results
-                      .sort((a, b) => a.rank - b.rank)
-                      .map((result) => (
-                        <TableRow
-                          className="text-right max-h-[300px] overflow-y-auto"
-                          key={result.camelId}
-                        >
-                          <TableCell>{result.camelName}</TableCell>
-                          <TableCell>{result.ownerName}</TableCell>
-                          <TableCell>{result.rank}</TableCell>
-                          <TableCell>{result.camelID}</TableCell>{" "}
-                          {/* إضافة رقم الشريحة */}
-                        </TableRow>
-                      ))}
+                    {paginatedResults.map((result) => (
+                      <TableRow
+                        className="text-right hover:bg-blue-50/60 transition-colors"
+                        key={result.camelId}
+                      >
+                        <TableCell className="text-base font-medium text-slate-800">{result.camelName}</TableCell>
+                        <TableCell className="text-base text-slate-700">{result.ownerName}</TableCell>
+                        <TableCell className="text-base font-bold text-blue-700">{result.rank}</TableCell>
+                        <TableCell className="text-base font-mono text-slate-600">{result.camelID}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>
             ) : (
               <p className="text-center mt-4">لم يتم اعلان النتائج بعد</p>
             )}
+
+            {/* Pagination Controls */}
+            {results.length > RESULTS_PER_PAGE && (
+              <div className="flex items-center justify-center gap-4 mt-4">
+                <Button
+                  variant="outline"
+                  className="rounded-full px-4 py-2"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                >
+                  السابق
+                </Button>
+                <span className="text-slate-700 font-semibold">
+                  صفحة {currentPage} من {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  className="rounded-full px-4 py-2"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  التالي
+                </Button>
+              </div>
+            )}
           </>
         )}
 
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="text-red-500 text-center font-semibold mt-2">{error}</p>}
       </div>
     </div>
   );

@@ -24,11 +24,13 @@ interface Event {
 interface ShowEventsProps {
   eventAdded: boolean;
   setEventAdded: (value: boolean) => void;
+  searchTerm?: string;
 }
 
 export const ShowEvents: React.FC<ShowEventsProps> = ({
   eventAdded,
   setEventAdded,
+  searchTerm = "",
 }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -81,6 +83,11 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
       setEventAdded(false);
     }
   }, [eventAdded, setEventAdded]);
+
+  // Add search filter
+  const displayedEvents = searchTerm
+    ? filteredEvents.filter(event => event.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : filteredEvents;
 
   const handleEventClick = (eventId: string) => {
     setSelectedEventId(eventId);
@@ -239,7 +246,7 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
           </SelectContent>
         </Select>
       </div>
-      {filteredEvents.map((event) => (
+      {displayedEvents.map((event) => (
         <div
           className="w-full h-20 flex-shrink-0 bg-white/30 rounded-lg flex flex-row-reverse items-center justify-between px-5 cursor-pointer mb-2"
           key={event.id}

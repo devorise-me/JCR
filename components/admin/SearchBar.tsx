@@ -13,8 +13,8 @@ import {
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
-  searchType: 'general' | 'camelId';
-  onSearchTypeChange: (type: 'general' | 'camelId') => void;
+  searchType?: 'general' | 'camelId';
+  onSearchTypeChange?: (type: 'general' | 'camelId') => void;
   placeholder?: string;
 }
 
@@ -27,19 +27,20 @@ const SearchBar = ({
 }: SearchBarProps) => {
   return (
     <div className="flex gap-2 flex-1">
-      <Select
-        value={searchType}
-        onValueChange={(value: 'general' | 'camelId') => onSearchTypeChange(value)}
-      >
-        <SelectTrigger className="w-[140px]">
-          <SelectValue placeholder="نوع البحث" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="general">بحث عام</SelectItem>
-          <SelectItem value="camelId">رقم الشريحة</SelectItem>
-        </SelectContent>
-      </Select>
-
+      {searchType && onSearchTypeChange && (
+        <Select
+          value={searchType}
+          onValueChange={(value: 'general' | 'camelId') => onSearchTypeChange(value)}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="نوع البحث" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="general">بحث عام</SelectItem>
+            <SelectItem value="camelId">رقم الشريحة</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
       <div className="relative flex-1">
         <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
         <Input
