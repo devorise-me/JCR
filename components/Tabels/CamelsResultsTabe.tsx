@@ -245,15 +245,15 @@ const ReportForm = () => {
   return (
     <div className="w-full min-h-screen flex justify-center items-start bg-gradient-to-br from-slate-50 to-slate-200 py-10 px-2">
       <div className="w-full space-y-8">
-        <Card className="p-6 shadow-xl border-0 bg-white/90 w-full">
+        <Card className="p-2 sm:p-6 shadow-xl border-0 bg-white/90 w-full">
           {/* Export to Excel Button */}
-          <div className="flex justify-end mb-4">
-            <Button onClick={handleExportExcel} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+          <div className="flex justify-end mb-4 w-full">
+            <Button onClick={handleExportExcel} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold w-full sm:w-auto">
               استخراج النتائج إلى Excel
             </Button>
           </div>
           <h2 className="text-2xl font-bold mb-6 text-center text-slate-800">إدارة نتائج الهجن</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
             <div>
               <label className="block mb-1 text-sm font-medium text-slate-700">الفعالية</label>
               <Select value={selectedEvent || ""} onValueChange={setSelectedEvent}>
@@ -294,71 +294,73 @@ const ReportForm = () => {
           )}
 
           {selectedLoop && camels.length > 0 && (
-            <div className="mt-6 w-full">
-              <Reorder.Group axis="y" values={camels} onReorder={handleReorder} className="space-y-3 w-full" style={{width: '100%'}}>
-                {camels.map((camel, idx) => (
-                  <Reorder.Item
-                    key={camel.id}
-                    value={camel}
-                    className={cn(
-                      "flex items-center justify-between border shadow-sm transition-all duration-200 hover:shadow-md group w-full px-0 py-0 rounded-none overflow-hidden min-w-0",
-                      camel.rank === 1 && "bg-yellow-50",
-                      camel.rank === 2 && "bg-gray-100",
-                      camel.rank === 3 && "bg-amber-100",
-                      camel.rank > 3 && "bg-white"
-                    )}
-                    style={{ width: '100%' }}
-                  >
-                    <div className="flex items-center gap-4 min-w-0 px-4 py-4 w-full">
-                      {/* Rank badge or input */}
-                      {editingRankId === camel.id ? (
-                        <input
-                          type="number"
-                          min={1}
-                          max={camels.length}
-                          value={rankInputValue}
-                          autoFocus
-                          onChange={e => setRankInputValue(e.target.value.replace(/[^0-9]/g, ""))}
-                          onKeyDown={e => handleRankInputKeyDown(e, camel.id)}
-                          onBlur={handleRankInputBlur}
-                          className="w-14 h-8 flex items-center justify-center text-lg font-bold mr-2 border rounded text-center focus:ring-2 focus:ring-primary outline-none transition-all"
-                          title="تغيير ترتيب النتيجة"
-                        />
-                      ) : (
-                        <Badge
-                          className={cn(
-                            "w-8 h-8 flex items-center justify-center text-lg font-bold mr-2 cursor-pointer",
-                            camel.rank === 1 && "bg-yellow-400 text-white",
-                            camel.rank === 2 && "bg-gray-300 text-gray-800",
-                            camel.rank === 3 && "bg-amber-600 text-white"
-                          )}
-                          variant={camel.rank > 3 ? "secondary" : "default"}
-                          onClick={() => {
-                            setEditingRankId(camel.id);
-                            setRankInputValue(String(camel.rank));
-                          }}
-                          tabIndex={0}
-                          role="button"
-                          aria-label="تغيير ترتيب النتيجة"
-                        >
-                          {camel.rank}
-                        </Badge>
+            <div className="mt-6 w-full overflow-x-auto">
+              <div className="min-w-[500px]">
+                <Reorder.Group axis="y" values={camels} onReorder={handleReorder} className="space-y-3 w-full" style={{width: '100%'}}>
+                  {camels.map((camel, idx) => (
+                    <Reorder.Item
+                      key={camel.id}
+                      value={camel}
+                      className={cn(
+                        "flex flex-col sm:flex-row items-start sm:items-center justify-between border shadow-sm transition-all duration-200 hover:shadow-md group w-full px-0 py-0 rounded-none overflow-hidden min-w-0",
+                        camel.rank === 1 && "bg-yellow-50",
+                        camel.rank === 2 && "bg-gray-100",
+                        camel.rank === 3 && "bg-amber-100",
+                        camel.rank > 3 && "bg-white"
                       )}
-                      {camel.rank <= 3 && <Trophy className={cn("w-6 h-6", camel.rank === 1 ? "text-yellow-500" : camel.rank === 2 ? "text-gray-400" : "text-amber-700")} />}
-                      <div className="min-w-0">
-                        <p className="font-medium text-slate-800 group-hover:text-primary transition-colors truncate">{camel.name}</p>
-                        <p className="text-xs text-slate-500 truncate">{camel.ownerName}</p>
+                      style={{ width: '100%' }}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-4 min-w-0 px-2 sm:px-4 py-2 sm:py-4 w-full">
+                        {/* Rank badge or input */}
+                        {editingRankId === camel.id ? (
+                          <input
+                            type="number"
+                            min={1}
+                            max={camels.length}
+                            value={rankInputValue}
+                            autoFocus
+                            onChange={e => setRankInputValue(e.target.value.replace(/[^0-9]/g, ""))}
+                            onKeyDown={e => handleRankInputKeyDown(e, camel.id)}
+                            onBlur={handleRankInputBlur}
+                            className="w-14 h-8 flex items-center justify-center text-lg font-bold mr-2 border rounded text-center focus:ring-2 focus:ring-primary outline-none transition-all"
+                            title="تغيير ترتيب النتيجة"
+                          />
+                        ) : (
+                          <Badge
+                            className={cn(
+                              "w-8 h-8 flex items-center justify-center text-lg font-bold mr-2 cursor-pointer",
+                              camel.rank === 1 && "bg-yellow-400 text-white",
+                              camel.rank === 2 && "bg-gray-300 text-gray-800",
+                              camel.rank === 3 && "bg-amber-600 text-white"
+                            )}
+                            variant={camel.rank > 3 ? "secondary" : "default"}
+                            onClick={() => {
+                              setEditingRankId(camel.id);
+                              setRankInputValue(String(camel.rank));
+                            }}
+                            tabIndex={0}
+                            role="button"
+                            aria-label="تغيير ترتيب النتيجة"
+                          >
+                            {camel.rank}
+                          </Badge>
+                        )}
+                        {camel.rank <= 3 && <Trophy className={cn("w-6 h-6", camel.rank === 1 ? "text-yellow-500" : camel.rank === 2 ? "text-gray-400" : "text-amber-700")} />}
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-800 group-hover:text-primary transition-colors truncate text-sm sm:text-base">{camel.name}</p>
+                          <p className="text-xs sm:text-sm text-slate-500 truncate">{camel.ownerName}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4 px-4 py-4">
-                      <div className="text-xs text-right space-y-1">
-                        <p>رقم الشريحة: <span className="font-mono text-slate-700">{camel.camelID}</span></p>
-                        <p>الرقم الوطني: <span className="font-mono text-slate-700">{camel.NationalID}</span></p>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 px-2 sm:px-4 py-2 sm:py-4">
+                        <div className="text-xs sm:text-sm text-right space-y-1">
+                          <p>رقم الشريحة: <span className="font-mono text-slate-700">{camel.camelID}</span></p>
+                          <p>الرقم الوطني: <span className="font-mono text-slate-700">{camel.NationalID}</span></p>
+                        </div>
                       </div>
-                    </div>
-                  </Reorder.Item>
-                ))}
-              </Reorder.Group>
+                    </Reorder.Item>
+                  ))}
+                </Reorder.Group>
+              </div>
               <div className="mt-8 flex justify-end gap-4">
                 <Button
                   onClick={() => setConfirmPublish(true)}

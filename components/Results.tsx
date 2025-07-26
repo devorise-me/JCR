@@ -152,12 +152,12 @@ const ResultsTabel = () => {
 
   return (
     <div className="bg-[url('/desert.jpg')] min-h-screen bg-center bg-no-repeat bg-cover flex items-center justify-center px-2 py-8">
-      <div className="w-full max-w-2xl p-6 rounded-2xl bg-white/90 flex flex-col justify-center gap-4 shadow-2xl border border-slate-100">
+      <div className="w-full max-w-2xl p-4 sm:p-6 rounded-2xl bg-white/90 flex flex-col justify-center gap-4 shadow-2xl border border-slate-100">
         <h1 className="text-3xl font-bold mb-4 text-center text-slate-800">نتائج السباق</h1>
 
-        <div className="mb-4 flex flex-col gap-3">
+        <div className="mb-4 flex flex-col gap-3 w-full">
           <Select onValueChange={setSelectedEvent} value={selectedEvent || ""}>
-            <SelectTrigger className="w-full h-12 rounded-lg border-slate-300 shadow-sm text-base">
+            <SelectTrigger className="w-full h-12 rounded-lg border-slate-300 shadow-sm text-base" >
               <SelectValue placeholder="اختر الفعالية" />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +171,7 @@ const ResultsTabel = () => {
 
           {selectedEvent && (
             <Select onValueChange={setSelectedLoop} value={selectedLoop || ""}>
-              <SelectTrigger className="w-full h-12 rounded-lg border-slate-300 shadow-sm text-base">
+              <SelectTrigger className="w-full h-12 rounded-lg border-slate-300 shadow-sm text-base" >
                 <SelectValue placeholder="اختر الشوط" />
               </SelectTrigger>
               <SelectContent>
@@ -194,30 +194,32 @@ const ResultsTabel = () => {
         {selectedLoop && (
           <>
             {results.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white/80 shadow">
-                <Table className="w-full">
-                  <TableHeader className="sticky top-0 bg-white/90 z-10">
-                    <TableRow>
-                      <TableHead className="text-slate-700 font-bold text-base">اسم المطية</TableHead>
-                      <TableHead className="text-slate-700 font-bold text-base">صاحب المطية</TableHead>
-                      <TableHead className="text-slate-700 font-bold text-base">المركز</TableHead>
-                      <TableHead className="text-slate-700 font-bold text-base">رقم الشريحة</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedResults.map((result) => (
-                      <TableRow
-                        className="text-right hover:bg-blue-50/60 transition-colors"
-                        key={result.camelId}
-                      >
-                        <TableCell className="text-base font-medium text-slate-800">{result.camelName}</TableCell>
-                        <TableCell className="text-base text-slate-700">{result.ownerName}</TableCell>
-                        <TableCell className="text-base font-bold text-blue-700">{result.rank}</TableCell>
-                        <TableCell className="text-base font-mono text-slate-600">{result.camelID}</TableCell>
+              <div className="max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white/80 shadow w-full">
+                <div className="w-full overflow-x-auto">
+                  <Table className="w-full min-w-[500px]">
+                    <TableHeader className="sticky top-0 bg-white/90 z-10">
+                      <TableRow>
+                        <TableHead className="text-slate-700 font-bold text-base px-2 py-2 sm:px-4 sm:py-3">اسم المطية</TableHead>
+                        <TableHead className="text-slate-700 font-bold text-base px-2 py-2 sm:px-4 sm:py-3">صاحب المطية</TableHead>
+                        <TableHead className="text-slate-700 font-bold text-base px-2 py-2 sm:px-4 sm:py-3">المركز</TableHead>
+                        <TableHead className="text-slate-700 font-bold text-base px-2 py-2 sm:px-4 sm:py-3">رقم الشريحة</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedResults.map((result) => (
+                        <TableRow
+                          className="text-right hover:bg-blue-50/60 transition-colors"
+                          key={result.camelId}
+                        >
+                          <TableCell className="text-sm sm:text-base font-medium text-slate-800 px-2 py-2 sm:px-4 sm:py-3">{result.camelName}</TableCell>
+                          <TableCell className="text-sm sm:text-base text-slate-700 px-2 py-2 sm:px-4 sm:py-3">{result.ownerName}</TableCell>
+                          <TableCell className="text-sm sm:text-base font-bold text-blue-700 px-2 py-2 sm:px-4 sm:py-3">{result.rank}</TableCell>
+                          <TableCell className="text-sm sm:text-base font-mono text-slate-600 px-2 py-2 sm:px-4 sm:py-3">{result.camelID}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             ) : (
               <p className="text-center mt-4">لم يتم اعلان النتائج بعد</p>
@@ -225,21 +227,21 @@ const ResultsTabel = () => {
 
             {/* Pagination Controls */}
             {results.length > RESULTS_PER_PAGE && (
-              <div className="flex items-center justify-center gap-4 mt-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mt-4 w-full">
                 <Button
                   variant="outline"
-                  className="rounded-full px-4 py-2"
+                  className="rounded-full px-4 py-2 w-full sm:w-auto"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 >
                   السابق
                 </Button>
-                <span className="text-slate-700 font-semibold">
+                <span className="text-slate-700 font-semibold text-sm sm:text-base">
                   صفحة {currentPage} من {totalPages}
                 </span>
                 <Button
                   variant="outline"
-                  className="rounded-full px-4 py-2"
+                  className="rounded-full px-4 py-2 w-full sm:w-auto"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 >

@@ -16,6 +16,7 @@ interface SearchBarProps {
   searchType?: 'general' | 'camelId';
   onSearchTypeChange?: (type: 'general' | 'camelId') => void;
   placeholder?: string;
+  className?: string;
 }
 
 const SearchBar = ({
@@ -23,10 +24,11 @@ const SearchBar = ({
   onChange,
   searchType,
   onSearchTypeChange,
-  placeholder = "ابحث عن طريق الاسم، البريد الإلكتروني، رقم الجوال، أو رقم الهوية"
+  placeholder = "ابحث عن طريق الاسم، البريد الإلكتروني، رقم الجوال، أو رقم الهوية",
+  className = ""
 }: SearchBarProps) => {
   return (
-    <div className="flex gap-2 flex-1">
+    <div className={`flex gap-2 flex-1 ${className}`}>
       {searchType && onSearchTypeChange && (
         <Select
           value={searchType}

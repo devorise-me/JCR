@@ -47,23 +47,22 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
   }, [eventAdded]);
 
   return (
-    <div className="flex flex-1">
-      <div className="p-2 md:p-5 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-6 flex-1 w-full h-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="h-full">
-            <CardHeader>
-            </CardHeader>
+    <div className="flex flex-1 w-full">
+      <div className="p-2 sm:p-4 md:p-5 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-6 flex-1 w-full h-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          <Card className="h-full w-full">
+            <CardHeader />
             <CardContent>
-              <div className="flex flex-col gap-4">
-                <div className="flex gap-2 items-center">
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full">
                   <RedirectButton path="/auth/register">
-                    <Button size="sm" variant="default">
+                    <Button size="sm" variant="default" className="w-full sm:w-auto">
                       <FaPlus /> انشاء مستخدم
                     </Button>
                   </RedirectButton>
-                  <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="ابحث عن المستخدمين..." />
+                  <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="ابحث عن المستخدمين..." className="w-full" />
                 </div>
-                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-4 mt-2">
+                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4 mt-2">
                   <h2 className="w-full flex justify-end text-lg font-semibold my-2">المستخدمين</h2>
                   <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
                     <ShowUsers searchTerm={searchTerm} />
@@ -72,13 +71,12 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
               </div>
             </CardContent>
           </Card>
-          <Card className="h-full">
-            <CardHeader>
-            </CardHeader>
+          <Card className="h-full w-full">
+            <CardHeader />
             <CardContent>
-              <div className="flex flex-col gap-4">
-                <SearchBar value={supervisorSearch} onChange={setSupervisorSearch} placeholder="ابحث عن المشرفين..." />
-                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-4">
+              <div className="flex flex-col gap-4 w-full">
+                <SearchBar value={supervisorSearch} onChange={setSupervisorSearch} placeholder="ابحث عن المشرفين..." className="w-full" />
+                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4">
                   <h2 className="w-full flex justify-end text-lg font-semibold my-2">المشرفين</h2>
                   <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
                     <ShowSupers searchTerm={supervisorSearch} />
@@ -88,24 +86,23 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
             </CardContent>
           </Card>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="h-full">
-            <CardHeader>
-            </CardHeader>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          <Card className="h-full w-full">
+            <CardHeader />
             <CardContent>
-              <div className="flex flex-col gap-4">
-                <div className="flex gap-2 items-center">
-                  <Button onClick={toggleEventForm} size="sm" variant="default">
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full">
+                  <Button onClick={toggleEventForm} size="sm" variant="default" className="w-full sm:w-auto">
                     <FaPlus /> {isEventFormOpen ? "إغلاق" : "إضافة فعالية"}
                   </Button>
-                  <SearchBar value={eventSearch} onChange={setEventSearch} placeholder="ابحث عن الفعاليات..." />
+                  <SearchBar value={eventSearch} onChange={setEventSearch} placeholder="ابحث عن الفعاليات..." className="w-full" />
                 </div>
                 {isEventFormOpen && (
                   <div className="my-2">
                     <CreateEventForm onClose={toggleEventForm} onEventAdded={handleEventAdded} />
                   </div>
                 )}
-                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-4 mt-2">
+                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4 mt-2">
                   <h2 className="w-full flex justify-end text-lg font-semibold my-2">الفعاليات</h2>
                   <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
                     <ShowEvents eventAdded={eventAdded} setEventAdded={setEventAdded} searchTerm={eventSearch} />
