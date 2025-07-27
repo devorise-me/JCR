@@ -54,7 +54,7 @@ export const TransferLoopModal = ({
         try {
             setLoading(true);
             setError(null);
-            await onTransfer(camel.id, selectedLoopId);
+            await onTransfer(Number(camel.id), selectedLoopId);
             onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "حدث خطأ أثناء نقل المطية للشوط الجديد");

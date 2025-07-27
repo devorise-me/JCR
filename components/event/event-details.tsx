@@ -23,7 +23,7 @@ interface Event {
   disabled: boolean;
 }
 
-interface Loop {
+export interface Loop {
   eventId: string;
   id: string;
   capacity: number;
@@ -33,7 +33,7 @@ interface Loop {
   startRegister: string | Date;
   endRegister: string | Date;
   number: number;
-  rank: number;
+  rank?: number;
 }
 
 interface EventDetailsProps {
@@ -90,7 +90,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       const loopsData = await loopsResponse.json();
 
       const rankedLoops = loopsData
-        .sort((a: Loop, b: Loop) => a.rank - b.rank)
+        .sort((a: Loop, b: Loop) => a.rank! - b.rank!)
         .map((loop: Loop, index: number) => ({
           ...loop,
           rank: index + 1,
@@ -317,7 +317,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
               <TableBody>
                 {loops.length > 0 ? (
                   loops
-                    .sort((a, b) => a.rank - b.rank)
+                    .sort((a, b) => a.rank! - b.rank!)
                     .map((loop) => (
                       <TableRow key={loop.id}>
                         <TableCell className="flex items-center gap-2">

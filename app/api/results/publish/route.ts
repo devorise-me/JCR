@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    const loopId = data[0].loopId;
+    const loopId = data[0]?.loopId;
     if (!loopId) {
       return NextResponse.json(
         { success: false, error: "loopId is required" },
@@ -18,18 +18,29 @@ export async function POST(req: Request) {
       );
     }
 
+    // Fetch loop and its associated event
+    const loop = await db.loop.findUnique({
+      where: { id: loopId },
+      include: { event: true }
+    });
+
+    if (!loop || !loop.event) {
+      return NextResponse.json(
+        { success: false, error: "Loop or associated event not found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete old race results for this loop
     await db.raceResult.deleteMany({
-      where: {
-        loopId: loopId
-      }
+      where: { loopId: loopId }
     });
 
     const raceResults = await Promise.all(
       data.map(async (result: any) => {
         try {
           const createdResult = await createRaceResult(result);
-          
-          // Create camel history record for the race result
+
           if (createdResult && createdResult.camelId) {
             const camel = await db.camel.findUnique({
               where: { id: createdResult.camelId },
@@ -58,7 +69,7 @@ export async function POST(req: Request) {
               });
             }
           }
-          
+
           return createdResult;
         } catch (error) {
           console.error("Error creating individual race result:", error);
@@ -75,5 +86,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
-
-

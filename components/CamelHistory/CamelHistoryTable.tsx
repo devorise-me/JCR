@@ -12,25 +12,8 @@ import {
   TableRow,
 } from "../ui/table";
 import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
-import CamelHistoryForm from "./CamelHistoryForm";
+import CamelHistoryForm, { CamelHistory } from "./CamelHistoryForm";
 
-interface CamelHistory {
-  id: number;
-  name: string;
-  camelID?: string;
-  age: string;
-  sex: string;
-  ownerId?: string;
-  Date?: string;
-  typeOfMethode?: string;
-  User?: {
-    id: string;
-    FirstName: string;
-    FamilyName: string;
-    username: string;
-    email: string;
-  };
-}
 
 const CamelHistoryTable: React.FC = () => {
   const [camelHistories, setCamelHistories] = useState<CamelHistory[]>([]);
@@ -225,7 +208,7 @@ const CamelHistoryTable: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setConfirmDelete(camelHistory.id)}
+                        onClick={() => setConfirmDelete(camelHistory.id || null)}
                       >
                         <MdDelete />
                       </Button>

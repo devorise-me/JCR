@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "../ui/select";
 
-interface CamelHistory {
+export interface CamelHistory {
   id?: number;
   name: string;
   camelID?: string;

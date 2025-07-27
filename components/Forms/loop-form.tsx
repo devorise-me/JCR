@@ -1,22 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
+import { Loop } from '../event/event-details';
 
-interface Loop {
-  id: string;
-  eventId: string;
-  capacity: number;
-  age: string;
-  sex: string;
-  time: string;
-  startRegister: string | Date;
-  endRegister: string | Date;
-  number: number;
-}
+
 
 interface CreateLoopFormProps {
   eventId: string;
   eventStartDate: string; // Add event start date as a prop
-  eventEndDate: string; // Add event end date as a prop
+  eventEndDate: Date | undefined; // Add event end date as a prop
   onClose: () => void;
   onAddLoop: (newLoop: Loop) => void;
   loops: Loop[];
