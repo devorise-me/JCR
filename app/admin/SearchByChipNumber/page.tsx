@@ -157,9 +157,9 @@ const ReportForm = () => {
           className="w-60 px-3 py-2 border border-gray-300 rounded-md"
           value={chipNumber}
           onChange={(e) => setChipNumber(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyPress={(e) => e.key === "Enter" && handleSearch()}
         />
-        <Button 
+        <Button
           onClick={handleSearch}
           disabled={loading || !chipNumber.trim()}
           className="px-6"
@@ -197,25 +197,38 @@ const ReportForm = () => {
                 <TableRow className="text-right" key={history.id}>
                   <TableCell>{history.typeOfMethode || "غير محدد"}</TableCell>
                   <TableCell>
-                    {history.Date ? new Date(history.Date).toLocaleDateString('ar-SA') : "غير محدد"}
+                    {history.Date
+                      ? new Date(history.Date).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "غير محدد"}
                   </TableCell>
                   <TableCell>{history.name}</TableCell>
                   <TableCell>{history.camelID || "غير محدد"}</TableCell>
                   <TableCell>{translateSex(history.sex)}</TableCell>
                   <TableCell>{translateAge(history.age)}</TableCell>
                   <TableCell>
-                    {history.User ? `${history.User.FirstName} ${history.User.FamilyName}` : "غير محدد"}
+                    {history.User
+                      ? `${history.User.FirstName} ${history.User.FamilyName}`
+                      : "غير محدد"}
                   </TableCell>
                   <TableCell>{history.User?.username || "غير محدد"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          
+
           {pagination.totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-4">
               <Button
-                onClick={() => fetchCamelHistory(chipNumber, pagination.page - 1)}
+                onClick={() =>
+                  fetchCamelHistory(chipNumber, pagination.page - 1)
+                }
                 disabled={pagination.page <= 1}
                 variant="outline"
                 size="sm"
@@ -226,7 +239,9 @@ const ReportForm = () => {
                 صفحة {pagination.page} من {pagination.totalPages}
               </span>
               <Button
-                onClick={() => fetchCamelHistory(chipNumber, pagination.page + 1)}
+                onClick={() =>
+                  fetchCamelHistory(chipNumber, pagination.page + 1)
+                }
                 disabled={pagination.page >= pagination.totalPages}
                 variant="outline"
                 size="sm"
