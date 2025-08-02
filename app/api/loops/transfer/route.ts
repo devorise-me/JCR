@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 const JWT_SECRET = process.env.JWT_SECRET || "defualt-secret-key";
+
 function translateAge(age: string) {
     switch (age) {
       case "GradeOne": return "مفرد";
@@ -16,14 +17,16 @@ function translateAge(age: string) {
       case "GradeSixFemale": return "حيل";
       default: return age;
     }
-  }
-  function translateSex(sex: string) {
+}
+
+function translateSex(sex: string) {
     switch (sex) {
       case "Male": return "قعدان";
       case "Female": return "بكار";
       default: return sex;
     }
-  }
+}
+
 export async function POST(req: Request) {
   const authHeader = req.headers.get("Authorization");
 
@@ -117,33 +120,51 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check loop capacity
-    const registeredCount = await db.camelLoop.count({
-      where: { loopId: newLoopId }
+    // Get current registration in the same event
+    const currentRegistration = await db.camelLoop.findFirst({
+      where: { 
+        camelId,
+        loop: {
+          eventId: newLoop.eventId // Same event
+        }
+      },
+      include: {
+        loop: true
+      }
     });
 
-    if (registeredCount >= newLoop.capacity) {
+    // If camel is already in the target loop, no need to do anything
+    if (currentRegistration?.loopId === newLoopId) {
+      return NextResponse.json({ 
+        message: 'المطية مسجلة مسبقاً في هذا الشوط' 
+      });
+    }
+
+    // Check if new loop has capacity (excluding current camel if transferring)
+    const registeredInNewLoop = await db.camelLoop.count({
+      where: { 
+        loopId: newLoopId,
+        ...(currentRegistration ? { camelId: { not: camelId } } : {})
+      }
+    });
+
+    if (registeredInNewLoop >= newLoop.capacity) {
       return NextResponse.json(
         { error: "الشوط ممتلئ" },
         { status: 400 }
       );
     }
 
-    // Get current registration
-    const currentRegistration = await db.camelLoop.findFirst({
-      where: { camelId }
-    });
-
-    // Perform transaction: remove old, add new, log history
+    // Perform transaction: handle the transfer properly
     await db.$transaction(async (tx) => {
-      // Delete old registration
+      // If there's an existing registration in the same event, delete it first
       if (currentRegistration) {
         await tx.camelLoop.delete({
           where: { id: currentRegistration.id }
         });
       }
 
-      // Add new registration
+      // Create new registration (this will always succeed due to unique constraint)
       await tx.camelLoop.create({
         data: {
           camelId,
@@ -153,6 +174,10 @@ export async function POST(req: Request) {
 
       // Log camel transfer history
       if (camelWithOwner && loopWithEvent) {
+        const actionType = currentRegistration 
+          ? `نقل المطية من الشوط رقم ${currentRegistration.loop.number} إلى الشوط رقم ${newLoop?.number ?? 'غير معروف'}`
+          : `تسجيل المطية في الشوط رقم ${newLoop?.number ?? 'غير معروف'}`;
+
         await tx.camelHistory.create({
           data: {
             name: camelWithOwner.name,
@@ -161,16 +186,29 @@ export async function POST(req: Request) {
             sex: camelWithOwner.sex,
             ownerId: camelWithOwner.ownerId,
             Date: new Date(),
-            typeOfMethode: `نقل المطية إلى الشوط رقم ${newLoop?.number ?? 'غير معروف'} - ${loopWithEvent.event?.name || 'غير معروف'} (الفئة: ${translateAge(newLoop?.age) ?? '؟'} - ${translateSex(newLoop?.sex)})`,
-        },
+            typeOfMethode: `${actionType} - ${loopWithEvent.event?.name || 'غير معروف'} (الفئة: ${translateAge(newLoop?.age) ?? '؟'} - ${translateSex(newLoop?.sex)})`,
+          },
         });
       }
     });
 
-    return NextResponse.json({ message: 'تم نقل المطية إلى الشوط الجديد بنجاح' });
+    const message = currentRegistration 
+      ? 'تم نقل المطية إلى الشوط الجديد بنجاح'
+      : 'تم تسجيل المطية في الشوط بنجاح';
+
+    return NextResponse.json({ message });
 
   } catch (error) {
     console.error('Error transferring camel to new loop:', error);
+    
+    // Handle unique constraint violation
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'المطية مسجلة مسبقاً في هذا الشوط' },
+        { status: 409 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'حدث خطأ أثناء نقل المطية إلى الشوط الجديد' },
       { status: 500 }
