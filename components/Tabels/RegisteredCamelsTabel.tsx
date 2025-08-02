@@ -18,6 +18,7 @@ interface Camel {
   age: string;
   sex: string;
   ownerName: string;
+  registeredDate: Date;
   camelID: string; // إضافة خاصية رقم الشريحة هنا
 }
 
@@ -228,7 +229,9 @@ export const RegisteredCamelsTable = () => {
                 </TableCell>
               </TableRow>
               {loop.camels && loop.camels.length > 0 ? (
-                loop.camels.map((camel, index) => (
+                loop.camels.slice()
+                .sort((a, b) => new Date(a.registeredDate).getTime() - new Date(b.registeredDate).getTime())
+                .map((camel, index) => (
                   <TableRow key={camel.id}>
                     <TableCell className="text-right">{index + 1}</TableCell>
                     <TableCell className="text-right">{camel.camelID}</TableCell> {/* عرض رقم الشريحة */}
