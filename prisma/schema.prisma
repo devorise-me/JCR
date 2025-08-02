@@ -71,11 +71,12 @@ model Loop {
 }
 
 model CamelLoop {
-  id      String @id @default(cuid())
-  camelId Int
-  loopId  String
-  camel   Camel  @relation(fields: [camelId], references: [id], onDelete: Cascade)
-  loop    Loop   @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  id             String    @id @default(cuid())
+  camelId        Int
+  loopId         String
+  registeredDate DateTime? @default(now()) @db.Timestamp(6)
+  camel          Camel     @relation(fields: [camelId], references: [id], onDelete: Cascade)
+  loop           Loop      @relation(fields: [loopId], references: [id], onDelete: Cascade)
 
   @@unique([camelId, loopId], name: "camel_unique_in_event")
 }
