@@ -64,7 +64,7 @@ export async function POST(req: Request) {
                   sex: camel.sex,
                   ownerId: camel.ownerId,
                   Date: new Date(),
-                  typeOfMethode: `نشر نتيجة السباق - الحدث: ${loop.event.name}, الرتبة: ${createdResult.rank}, المالك: ${camel.owner?.FirstName || 'غير محدد'} ${camel.owner?.FamilyName || ''}`,
+                  typeOfMethode: `نشر نتيجة السباق - الحدث: ${loop.event.name}, الرتبة: ${createdResult.rank}}`,
                 },
               });
             }

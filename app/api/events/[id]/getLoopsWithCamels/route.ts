@@ -23,6 +23,7 @@ export async function GET(
                 eventId: true,
                 CamelLoop: {
                     select: {
+                        registeredDate:true,
                         camel: {
                             select: {
                                 id: true,
@@ -61,6 +62,7 @@ export async function GET(
                 camelID: camelLoop.camel.camelID,
                 ownerName: `${camelLoop.camel.owner.FirstName} ${camelLoop.camel.owner.FatherName ?? ''} ${camelLoop.camel.owner.GrandFatherName ?? ''} ${camelLoop.camel.owner.FamilyName ?? ''}`,
                 ownerId: camelLoop.camel.owner.id,
+                registeredDate: camelLoop.registeredDate,
             })),
         }));
 

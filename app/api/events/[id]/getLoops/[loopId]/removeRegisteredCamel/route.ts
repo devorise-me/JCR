@@ -75,7 +75,7 @@ export async function DELETE(req: NextRequest) {
         sex: camel.sex,
         ownerId: camel.ownerId,
         Date: new Date(),
-        typeOfMethode: `إزالة تسجيل المطية من الحدث: ${loop.event.name}, المالك: ${camel.owner?.FirstName || 'غير محدد'} ${camel.owner?.FamilyName || ''}`,
+        typeOfMethode: `إزالة تسجيل المطية من الحدث: ${loop.event.name}}`,
       },
     });
 

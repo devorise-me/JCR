@@ -64,7 +64,7 @@ export async function POST(
         sex: camel.sex,
         ownerId: camel.ownerId,
         Date: new Date(),
-        typeOfMethode: `تسجيل المطية في الحدث: ${loop.event.name}: , المالك: ${camel.owner?.FirstName || 'غير محدد'} ${camel.owner?.FamilyName || ''}`,
+        typeOfMethode: `تسجيل المطية في الحدث: ${loop.event.name}}`,
       },
     });
 
