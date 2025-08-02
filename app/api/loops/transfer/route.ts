@@ -198,7 +198,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message });
 
-  } catch (error) {
+  } catch (error : any ) {
     console.error('Error transferring camel to new loop:', error);
     
     // Handle unique constraint violation
