@@ -48,45 +48,51 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
 
   return (
     <div className="flex flex-1 w-full">
-      <div className="p-2 sm:p-4 md:p-5 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-6 flex-1 w-full h-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          <Card className="h-full w-full">
-            <CardHeader />
-            <CardContent>
-              <div className="flex flex-col gap-4 w-full">
-                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full">
-                  <RedirectButton path="/auth/register">
-                    <Button size="sm" variant="default" className="w-full sm:w-auto">
-                      <FaPlus /> انشاء مستخدم
-                    </Button>
-                  </RedirectButton>
-                  <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="ابحث عن المستخدمين..." className="w-full" />
-                </div>
-                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4 mt-2">
-                  <h2 className="w-full flex justify-end text-lg font-semibold my-2">المستخدمين</h2>
-                  <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
-                    <ShowUsers searchTerm={searchTerm} />
+      <div className="p-2 sm:p-4 md:p-5 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 w-full">
+          {/* Left Column - Users and Supervisors */}
+          <div className="flex flex-col gap-2">
+            {/* Users Section */}
+            <Card className="h-full w-full">
+              <CardHeader />
+              <CardContent>
+                <div className="flex flex-col gap-4 w-full">
+                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full">
+                    <RedirectButton path="/auth/register">
+                      <Button size="sm" variant="default" className="w-full sm:w-auto">
+                        <FaPlus /> انشاء مستخدم
+                      </Button>
+                    </RedirectButton>
+                    <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="ابحث عن المستخدمين..." className="w-full" />
+                  </div>
+                  <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4 mt-2">
+                    <h2 className="w-full flex justify-end text-lg font-semibold my-2">المستخدمين</h2>
+                    <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
+                      <ShowUsers searchTerm={searchTerm} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="h-full w-full">
-            <CardHeader />
-            <CardContent>
-              <div className="flex flex-col gap-4 w-full">
-                <SearchBar value={supervisorSearch} onChange={setSupervisorSearch} placeholder="ابحث عن المشرفين..." className="w-full" />
-                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4">
-                  <h2 className="w-full flex justify-end text-lg font-semibold my-2">المشرفين</h2>
-                  <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
-                    <ShowSupers searchTerm={supervisorSearch} />
+              </CardContent>
+            </Card>
+
+            {/* Supervisors Section */}
+            <Card className="h-full w-full">
+              <CardHeader />
+              <CardContent>
+                <div className="flex flex-col gap-4 w-full">
+                  <SearchBar value={supervisorSearch} onChange={setSupervisorSearch} placeholder="ابحث عن المشرفين..." className="w-full" />
+                  <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4">
+                    <h2 className="w-full flex justify-end text-lg font-semibold my-2">المشرفين</h2>
+                    <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
+                      <ShowSupers searchTerm={supervisorSearch} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Events Section */}
           <Card className="h-full w-full">
             <CardHeader />
             <CardContent>
@@ -102,9 +108,9 @@ const AdminDashboard: React.FC<DashboardProps> = ({ role }) => {
                     <CreateEventForm onClose={toggleEventForm} onEventAdded={handleEventAdded} />
                   </div>
                 )}
-                <div className="h-[20rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4 mt-2">
+                <div className="h-[42rem] w-full rounded-lg bg-gray-100 dark:bg-neutral-800 flex flex-col items-end py-1 px-2 sm:px-4 mt-2">
                   <h2 className="w-full flex justify-end text-lg font-semibold my-2">الفعاليات</h2>
-                  <div className="w-full h-full bg-gray-200 rounded-lg p-2 overflow-y-scroll">
+                  <div className="w-full h-full bg-gray-200 rounded-lg  overflow-y-scroll">
                     <ShowEvents eventAdded={eventAdded} setEventAdded={setEventAdded} searchTerm={eventSearch} />
                   </div>
                 </div>
