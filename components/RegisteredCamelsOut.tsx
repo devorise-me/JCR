@@ -33,6 +33,7 @@ interface Loop {
   name: string;
   date: string;
   eventId: string;
+  number: number;
 }
 
 export const RegisteredCamelsOut = () => {
@@ -176,7 +177,7 @@ export const RegisteredCamelsOut = () => {
                   <option value="">اختر شوط</option>
                   {filteredLoops.map((loop) => (
                     <option key={loop.id} value={loop.id}>
-                      {translateAge(loop.age) + ` - ` + translateSex(loop.sex)}
+                      {translateAge(loop.age) + ` - ` + translateSex(loop.sex) +  " رقم الشوط" + " " + loop.number}
                     </option>
                   ))}
                 </select>
