@@ -171,6 +171,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       ),
     },
     {
+      label: "تعديل تواصل معنا",
+      href: "/admin/contact",
+      icon: (
+        <FaPhoenixFramework className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
       label: "إدارة الإعلانات",
       href: "/admin/ads/manage",
       icon: (

@@ -84,6 +84,9 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
         </SelectContent>
       </Select>
       <ContactDropdown />
+      <li onClick={enablescroll}>
+        <Link href="/contact">تواصل معنا</Link>
+      </li>
       {hide && token && (
         <>
           <li onClick={enablescroll}>
