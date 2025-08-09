@@ -30,6 +30,7 @@ model User {
   news            news[]
   ads             ads[]
   contactPages    contactPage[]
+  adminActivities AdminActivity[]
 }
 
 model Camel {
@@ -145,6 +146,17 @@ model contactPage {
   updatedAt  DateTime @updatedAt
   author_id  String?  @db.VarChar(36)
   User       User?    @relation(fields: [author_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_contact_author")
+}
+
+model AdminActivity {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // page_view | click
+  path      String
+  element   String?
+  meta      Json?
+  createdAt DateTime @default(now()) @db.Timestamp(6)
 }
 
 enum Role {

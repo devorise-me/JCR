@@ -20,6 +20,7 @@ interface UserProfile {
   username: string;
   image?: string;
   role: string;
+  email: string;
 }
 
 interface AdminLayoutProps {
@@ -119,6 +120,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       ),
       disabled: user.role === 'RESULTS_EDITOR'
     },
+    ...(user.email === 'Omar_rum_jo@hotmail.com'
+      ? [{
+        label: "سجل النشاط",
+        href: "/admin/activity",
+        icon: (
+          <FaAmericanSignLanguageInterpreting className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        ),
+      }]
+      : []),
     {
       label: "المستخدمين",
       href: "/admin/users/",
