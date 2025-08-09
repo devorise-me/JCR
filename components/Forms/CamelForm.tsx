@@ -24,6 +24,7 @@ interface Props {
     age: Age;
     sex: Sex;
     ownerId: string;
+    disabled?: boolean;
   } | null;
 }
 
@@ -102,6 +103,7 @@ const AddCamelsForm: React.FC<Props> = ({
           onUpdateCamel({
             ...editingCamel,
             ...camelToSubmit,
+            disabled: editingCamel.disabled ?? false,
           });
         }
       } else {

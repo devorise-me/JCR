@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-
-const Editor = dynamic(() => import("@tinymce/tinymce-react").then(m => m.Editor), { ssr: false });
+const TinyEditor = dynamic(() => import("@/components/admin/TinyEditor"), { ssr: false });
 
 export default function AdminContactPage() {
   const [content, setContent] = useState<string>("");
@@ -47,10 +46,10 @@ export default function AdminContactPage() {
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-800">تعديل صفحة تواصل معنا</h1>
       <div className="bg-white rounded-xl border p-4 shadow-sm">
-        <Editor
+        <TinyEditor
           apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
           value={content}
-          onEditorChange={(v) => setContent(v)}
+          onEditorChange={(v: string) => setContent(v)}
           init={{
             height: 500,
             menubar: true,
