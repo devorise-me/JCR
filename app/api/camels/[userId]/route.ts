@@ -28,8 +28,9 @@ export async function GET(request: Request) {
 
 async function fetchCamels(userId: string) {
   try {
+    const where: any = { ownerId: userId, disabled: false };
     const camels = await db.camel.findMany({
-      where: { ownerId: userId },
+      where,
     });
     return camels;
   } catch (error) {

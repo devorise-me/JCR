@@ -22,6 +22,8 @@ interface Camel {
   camelID: string;
   age: string;
   sex: string;
+  ownerId?: string;
+  disabled?: boolean;
 }
 
 interface User {
@@ -158,6 +160,30 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
       }
     } catch (error) {
       console.error("Error deleting camel:", error);
+    }
+  };
+
+  const handleToggleCamelDisabled = async (camel: Camel) => {
+    try {
+      const payload = {
+        name: camel.name,
+        camelID: camel.camelID,
+        age: camel.age,
+        sex: camel.sex,
+        ownerId: camel.ownerId || user?.id,
+        disabled: !camel.disabled,
+      };
+
+      const response = await fetch(`/api/camels/${camel.id}/update`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        setCamels((prev) => prev.map((c) => c.id === camel.id ? { ...c, disabled: !camel.disabled } : c));
+      }
+    } catch (error) {
+      console.error("Error toggling camel disabled state:", error);
     }
   };
 
@@ -367,6 +393,13 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
                       <TableCell>{translateSex(camel.sex)}</TableCell>
                       <TableCell>{translateAge(camel.age)}</TableCell>
                       <TableCell className="flex items-center justify-end gap-2 flex-nowrap">
+                        <Button
+                          variant="outline"
+                          className="mr-2"
+                          onClick={() => handleToggleCamelDisabled(camel)}
+                        >
+                          {camel.disabled ? "تفعيل" : "تعطيل"}
+                        </Button>
                         <Button
                           variant="outline"
                           className="mr-2"
