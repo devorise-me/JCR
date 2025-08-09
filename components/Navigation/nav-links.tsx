@@ -98,7 +98,7 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
         <Link href="/news">الأخبار</Link>
       </li>
       <li onClick={enablescroll}>
-        <Link href="#">الإعلانات</Link>
+        <Link href="/ads">الإعلانات</Link>
       </li>
       <li onClick={enablescroll}>
         <Link href="/">الصفحة الرئيسية</Link>
