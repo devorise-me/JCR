@@ -1,10 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import TinyEditor from "@/components/admin/TinyEditor";
+import { Editor as TinyMCEEditor } from 'tinymce';
 
 export default function CreateNewsPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const editorRef = useRef<TinyMCEEditor | null>(null);
   const [date, setDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -69,7 +72,7 @@ export default function CreateNewsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-12">
+    <div className="max-w-4xl mx-auto mt-12">
       <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
         <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">إضافة خبر جديد</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -86,13 +89,28 @@ export default function CreateNewsPage() {
           </div>
           <div>
             <label className="block mb-1 font-semibold text-gray-700">الوصف</label>
-            <textarea
-              placeholder="الوصف"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-3 rounded-lg w-full min-h-[120px] transition"
-              required
-            />
+            <div className="border border-gray-300 rounded-lg overflow-hidden">
+              <TinyEditor
+                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                value={description}
+                onEditorChange={(content) => setDescription(content)}
+                init={{
+                  height: 300,
+                  menubar: true,
+                  directionality: 'rtl',
+                  plugins: [
+                    'advlist autolink lists link image charmap print preview anchor',
+                    'searchreplace visualblocks code fullscreen',
+                    'insertdatetime media table paste code help wordcount'
+                  ],
+                  toolbar:
+                    'undo redo | formatselect | bold italic backcolor | \
+                    alignleft aligncenter alignright alignjustify | \
+                    bullist numlist outdent indent | removeformat | help',
+                  content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                }}
+              />
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
