@@ -1,22 +1,28 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  startDate?: string;
-  endDate?: string;
-  isVisible?: boolean;
-}
+import { NewsItem } from "@/components/news/NewsItemCard";
+import NewsItemCard from "@/components/news/NewsItemCard";
 
 export default function ManageNewsPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = (item: NewsItem) => {
+    setSelectedNews(item);
+    setIsModalOpen(true);
+    if (typeof document !== 'undefined') document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    if (typeof document !== 'undefined') document.body.style.overflow = 'auto';
+  };
 
   useEffect(() => {
     fetch("/api/news")
@@ -31,18 +37,18 @@ export default function ManageNewsPage() {
       });
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (item: NewsItem) => {
     if (!confirm("هل أنت متأكد من حذف هذا الخبر؟")) return;
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/news/${id}`, {
+      const res = await fetch(`/api/news/${item.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (res.ok) {
-        setNews(news.filter((item) => item.id !== id));
+        setNews(news.filter((n) => n.id !== item.id));
       } else {
         setError("فشل في حذف الخبر");
       }
@@ -51,19 +57,19 @@ export default function ManageNewsPage() {
     }
   };
 
-  const handleToggleVisible = async (id: string, isVisible: boolean) => {
+  const handleToggleVisible = async (item: NewsItem) => {
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/news/${id}`, {
+      const res = await fetch(`/api/news/${item.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isVisible: !isVisible }),
+        body: JSON.stringify({ isVisible: !item.isVisible }),
       });
       if (res.ok) {
-        setNews(news.map((item) => item.id === id ? { ...item, isVisible: !isVisible } : item));
+        setNews(news.map((n) => n.id === item.id ? { ...n, isVisible: !n.isVisible } : n));
       } else {
         setError("فشل في تحديث حالة الظهور");
       }
@@ -80,69 +86,91 @@ export default function ManageNewsPage() {
         </h1>
         <p className="mt-2 text-sm text-gray-500">إنشاء، تعديل، إظهار وإخفاء الأخبار</p>
         <div className="mt-4 flex justify-center">
-              <button
-                className="px-4 py-2 rounded-lg font-semibold shadow border bg-blue-500 text-white hover:bg-blue-600 transition"
-                onClick={() => router.push('/admin/news/create')}
-              >
-                إضافة أخبار جديدة
-              </button>
-            </div>
+          <button
+            className="px-4 py-2 rounded-lg font-semibold shadow border bg-blue-500 text-white hover:bg-blue-600 transition"
+            onClick={() => router.push('/admin/news/create')}
+          >
+            إضافة أخبار جديدة
+          </button>
+        </div>
       </div>
-      {loading ? (
-        <div className="text-center text-gray-500">جاري التحميل...</div>
-      ) : error ? (
-        <div className="text-center text-red-600">{error}</div>
-      ) : news.length === 0 ? (
-        <div className="text-center text-gray-600">لا يوجد أخبار حالياً</div>
-      ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {news.map((item) => (
-            <li
-              key={item.id}
-              className="group relative rounded-2xl bg-white/80 backdrop-blur ring-1 ring-gray-100 hover:ring-blue-200 shadow-sm hover:shadow-lg transition-all duration-200"
-            >
-              <div className="p-6 flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors">
-                    {item.title}
-                  </h2>
-                  <div className="flex flex-col items-end text-xs text-gray-500">
-                    <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1">{new Date(item.date).toLocaleDateString()}</span>
-                    <div className="mt-1 text-[11px] text-gray-400">
-                      {item.startDate && <span className="ml-2">بداية: {new Date(item.startDate).toLocaleDateString()}</span>}
-                      {item.endDate && <span>نهاية: {new Date(item.endDate).toLocaleDateString()}</span>}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-gray-800 whitespace-pre-line leading-relaxed text-[15px]">
-                  {item.description}
-                </div>
-                <div className="flex gap-2 mt-2 self-end items-center">
-                  <button
-                    className="px-4 py-1 rounded-lg font-semibold shadow border bg-yellow-50 text-yellow-800 hover:bg-yellow-100 transition"
-                    onClick={() => router.push(`/admin/news/edit/${item.id}`)}
-                  >
-                    تعديل
-                  </button>
-                  <button
-                    className="px-4 py-1 rounded-lg font-semibold shadow border bg-red-50 text-red-700 hover:bg-red-100 transition"
-                    onClick={() => handleDelete(item.id)}
-                  >
-                    حذف
-                  </button>
-                  <button
-                    className={`px-4 py-1 rounded-lg font-semibold shadow border transition ${item.isVisible ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                    onClick={() => handleToggleVisible(item.id, !!item.isVisible)}
-                  >
-                    {item.isVisible ? 'إخفاء' : 'إظهار'}
-                  </button>
-                </div>
+      <div className="mt-8">
+        {loading ? (
+          <div className="text-center">جاري التحميل...</div>
+        ) : error ? (
+          <div className="text-center text-red-600">{error}</div>
+        ) : news.length === 0 ? (
+          <div className="text-center text-gray-600">لا يوجد أخبار حالياً</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {news.map((item) => (
+              <NewsItemCard
+                key={item.id}
+                item={item}
+                onItemClick={(item) => openModal(item)}
+                onDeleteClick={handleDelete}
+                onToggleVisibleClick={handleToggleVisible}
+                showAdminActions={true}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      {isModalOpen && selectedNews && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={closeModal}
+        >
+          <div
+            className="relative w-full max-w-3xl bg-white rounded-xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h2 className="text-lg font-semibold text-gray-800">{selectedNews.title}</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.push(`/admin/news/edit/${selectedNews.id}`)}
+                  className="rounded-md px-3 py-1 text-sm bg-blue-100 text-blue-800 hover:bg-blue-200"
+                >
+                  تعديل
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="rounded-full p-2 hover:bg-gray-100"
+                  aria-label="إغلاق"
+                >
+                  ✕
+                </button>
               </div>
-              <div className="absolute inset-x-0 bottom-0 h-1 rounded-b-2xl bg-gradient-to-l from-blue-600/70 to-indigo-600/70 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </li>
-          ))}
-        </ul>
+            </div>
+            <div className="px-5 py-4 flex-1 overflow-y-auto">
+              <div
+                className="prose max-w-none text-gray-800 leading-relaxed break-words"
+                dangerouslySetInnerHTML={{ __html: selectedNews.description }}
+              />
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-500">
+                <span>تاريخ النشر: {selectedNews.date ? new Date(selectedNews.date).toLocaleDateString('ar-EG') : '-'}</span>
+                <span>البداية: {selectedNews.startDate ? new Date(selectedNews.startDate).toLocaleDateString('ar-EG') : '-'}</span>
+                <span>النهاية: {selectedNews.endDate ? new Date(selectedNews.endDate).toLocaleDateString('ar-EG') : '-'}</span>
+              </div>
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  onClick={() => router.push(`/admin/news/edit/${selectedNews.id}`)}
+                  className="px-4 py-1 rounded-lg font-semibold shadow border bg-amber-50 text-amber-800 hover:bg-amber-100 transition"
+                >
+                  تعديل
+                </button>
+                <button
+                  onClick={() => { if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) handleDelete(selectedNews); }}
+                  className="px-4 py-1 rounded-lg font-semibold shadow border bg-red-50 text-red-700 hover:bg-red-100 transition"
+                >
+                  حذف
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
-} 
+}

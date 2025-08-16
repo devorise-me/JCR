@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import TinyEditor from "@/components/admin/TinyEditor";
 
 export default function EditAdPage() {
   const params = useParams();
@@ -79,13 +80,43 @@ export default function EditAdPage() {
           </div>
           <div>
             <label className="block mb-1 font-semibold text-gray-700">الوصف</label>
-            <textarea
-              placeholder="الوصف"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-3 rounded-lg w-full min-h-[120px] transition"
-              required
-            />
+            <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100">
+              <TinyEditor
+                value={description}
+                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY as string | undefined}
+                init={{
+                  height: 350,
+                  menubar: false,
+                  directionality: "rtl",
+                  language: "ar",
+                  plugins: [
+                    "advlist",
+                    "autolink",
+                    "lists",
+                    "link",
+                    "image",
+                    "charmap",
+                    "preview",
+                    "anchor",
+                    "searchreplace",
+                    "visualblocks",
+                    "code",
+                    "fullscreen",
+                    "insertdatetime",
+                    "media",
+                    "table",
+                    "help",
+                    "wordcount",
+                  ],
+                  toolbar:
+                    "undo redo | blocks | bold italic underline forecolor backcolor | " +
+                    "alignright aligncenter alignleft alignjustify | bullist numlist outdent indent | " +
+                    "removeformat | link image media table | code | help",
+                  content_style: "body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size:14px }",
+                }}
+                onEditorChange={(val) => setDescription(val)}
+              />
+            </div>
           </div>
           <div>
             <label className="block mb-1 font-semibold text-gray-700">تاريخ النشر</label>

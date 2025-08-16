@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import TinyEditor from "@/components/admin/TinyEditor";
 
 export default function EditNewsPage() {
   const router = useRouter();
@@ -84,28 +85,59 @@ export default function EditNewsPage() {
                 type="text"
                 placeholder="العنوان"
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.target.value)}
                 className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-3 rounded-lg w-full transition"
                 required
               />
             </div>
             <div>
               <label className="block mb-1 font-semibold text-gray-700">الوصف</label>
-              <textarea
-                placeholder="الوصف"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-3 rounded-lg w-full min-h-[120px] transition"
-                required
-              />
+              <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100">
+                <TinyEditor
+                  value={description}
+                  apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY as string | undefined}
+                  init={{
+                    height: 350,
+                    menubar: false,
+                    directionality: "rtl",
+                    language: "ar",
+                    plugins: [
+                      "advlist",
+                      "autolink",
+                      "lists",
+                      "link",
+                      "image",
+                      "charmap",
+                      "preview",
+                      "anchor",
+                      "searchreplace",
+                      "visualblocks",
+                      "code",
+                      "fullscreen",
+                      "insertdatetime",
+                      "media",
+                      "table",
+                      "help",
+                      "wordcount",
+                    ],
+                    toolbar:
+                      "undo redo | blocks | bold italic underline forecolor backcolor | " +
+                      "alignright aligncenter alignleft alignjustify | bullist numlist outdent indent | " +
+                      "removeformat | link image media table | code | help",
+                    content_style: "body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size:14px }",
+                  }}
+                  onEditorChange={(val) => setDescription(val)}
+                />
+              </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block mb-1 font-semibold text-gray-700">تاريخ النشر</label>
                 <input
                   type="date"
                   value={date}
-                  onChange={e => setDate(e.target.value)}
+                  onChange={(e) => setDate(e.target.value)}
                   className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-2 rounded-lg w-full transition"
                   required
                 />
@@ -115,7 +147,7 @@ export default function EditNewsPage() {
                 <input
                   type="date"
                   value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
+                  onChange={(e) => setStartDate(e.target.value)}
                   className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-2 rounded-lg w-full transition"
                   required
                 />
@@ -125,7 +157,7 @@ export default function EditNewsPage() {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={e => setEndDate(e.target.value)}
+                  onChange={(e) => setEndDate(e.target.value)}
                   className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 p-2 rounded-lg w-full transition"
                   required
                 />

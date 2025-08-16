@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import NewsItemCard from "@/components/news/NewsItemCard";
 
 interface NewsItem {
   id: string;
@@ -14,6 +15,19 @@ interface NewsItem {
 export default function NewsPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleItemClick = (item: NewsItem) => {
+    setSelectedNews(item);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    document.body.style.overflow = 'auto';
+  };
 
   useEffect(() => {
     fetch("/api/news")
@@ -37,33 +51,70 @@ export default function NewsPage() {
       ) : news.length === 0 ? (
         <div className="text-center text-gray-600">لا يوجد أخبار حالياً</div>
       ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {news.map((item) => (
-            <li
+            <NewsItemCard 
               key={item.id}
-              className="group relative rounded-2xl bg-white/80 backdrop-blur ring-1 ring-gray-100 hover:ring-blue-200 shadow-sm hover:shadow-lg transition-all duration-200"
-            >
-              <div className="p-6 flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors">
-                    {item.title}
-                  </h2>
-                  <span className="shrink-0 rounded-full bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 text-xs">
-                    {new Date(item.date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="text-gray-800 whitespace-pre-line leading-relaxed text-[15px]">
-                  {item.description}
-                </div>
-                {item.author && (
-                  <div className="text-xs text-gray-400 self-end">بواسطة: {item.author.username || "-"}</div>
-                )}
-              </div>
-              <div className="absolute inset-x-0 bottom-0 h-1 rounded-b-2xl bg-gradient-to-l from-blue-600/70 to-indigo-600/70 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </li>
+              item={item}
+              onItemClick={handleItemClick}
+            />
           ))}
-        </ul>
+        </div>
+      )}
+      {isModalOpen && selectedNews && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" 
+          onClick={closeModal}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedNews.title}
+                </h2>
+                <button 
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="text-gray-600 mb-4">
+                {new Date(selectedNews.date).toLocaleDateString('ar-EG', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </div>
+              
+              <div 
+                className="prose max-w-none text-gray-800"
+                dangerouslySetInnerHTML={{ __html: selectedNews.description }}
+              />
+              
+              {selectedNews.author && (
+                <div className="mt-6 text-sm text-gray-500 text-left">
+                  نشر بواسطة: {selectedNews.author.username || 'مجهول'}
+                </div>
+              )}
+              
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={closeModal}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  إغلاق
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
-} 
+}
