@@ -79,22 +79,31 @@ export default function ManageNewsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 px-4 sm:px-6">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-l from-blue-700 to-indigo-600">
-          إدارة الأخبار
-        </h1>
-        <p className="mt-2 text-sm text-gray-500">إنشاء، تعديل، إظهار وإخفاء الأخبار</p>
-        <div className="mt-4 flex justify-center">
+    <div className="min-h-[80vh]">
+      {/* Hero */}
+      <div className="relative h-40 sm:h-48 md:h-56 w-full overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(/Camel.png)" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+        <div className="relative h-full flex items-center justify-center text-center px-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg">إدارة الأخبار</h1>
+            <p className="mt-2 text-xs sm:text-sm text-white/80">إنشاء، تعديل، إظهار وإخفاء الأخبار</p>
+          </div>
+        </div>
+      </div>
+      <div className="max-w-6xl mx-auto -mt-6 px-4 sm:px-6 pb-10">
+        <div className="flex justify-center sm:justify-end">
           <button
-            className="px-4 py-2 rounded-lg font-semibold shadow border bg-blue-500 text-white hover:bg-blue-600 transition"
+            className="mt-4 px-4 py-2 rounded-lg font-semibold shadow border bg-blue-500 text-white hover:bg-blue-600 transition"
             onClick={() => router.push('/admin/news/create')}
           >
             إضافة أخبار جديدة
           </button>
         </div>
-      </div>
-      <div className="mt-8">
+      <div className="mt-6">
         {loading ? (
           <div className="text-center">جاري التحميل...</div>
         ) : error ? (
@@ -115,6 +124,7 @@ export default function ManageNewsPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
       {isModalOpen && selectedNews && (
         <div

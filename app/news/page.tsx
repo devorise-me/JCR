@@ -39,13 +39,22 @@ export default function NewsPage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 px-4 sm:px-6">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-l from-blue-700 to-indigo-600">
-          الأخبار
-        </h1>
-        <p className="mt-2 text-sm text-gray-500">آخر المستجدات والإعلانات</p>
+    <div className="min-h-[80vh]">
+      {/* Hero with background */}
+      <div className="relative h-48 sm:h-56 md:h-64 w-full overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center" 
+          style={{ backgroundImage: "url(/Camel.png)" }} 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+        <div className="relative h-full flex items-center justify-center text-center px-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-lg">الأخبار</h1>
+            <p className="mt-2 text-sm text-white/80">آخر المستجدات والإعلانات</p>
+          </div>
+        </div>
       </div>
+      <div className="max-w-6xl mx-auto -mt-8 px-4 sm:px-6 pb-10">
       {loading ? (
         <div className="text-center text-gray-500">جاري التحميل...</div>
       ) : news.length === 0 ? (
@@ -61,13 +70,14 @@ export default function NewsPage() {
           ))}
         </div>
       )}
+      </div>
       {isModalOpen && selectedNews && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50" 
           onClick={closeModal}
         >
           <div 
-            className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="p-6">
