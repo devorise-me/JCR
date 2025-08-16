@@ -59,7 +59,7 @@ export default function CreateNewsPage() {
         setDate("");
         setStartDate("");
         setEndDate("");
-        setTimeout(() => router.push("/admin/dashboard"), 1500);
+        setTimeout(() => router.push("/admin/news/manage"), 1500);
       }
     } catch (err) {
       setError("حدث خطأ ما");

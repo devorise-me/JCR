@@ -79,6 +79,14 @@ export default function ManageNewsPage() {
           إدارة الأخبار
         </h1>
         <p className="mt-2 text-sm text-gray-500">إنشاء، تعديل، إظهار وإخفاء الأخبار</p>
+        <div className="mt-4 flex justify-center">
+              <button
+                className="px-4 py-2 rounded-lg font-semibold shadow border bg-blue-500 text-white hover:bg-blue-600 transition"
+                onClick={() => router.push('/admin/news/create')}
+              >
+                إضافة أخبار جديدة
+              </button>
+            </div>
       </div>
       {loading ? (
         <div className="text-center text-gray-500">جاري التحميل...</div>

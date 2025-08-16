@@ -13,7 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/side-bar";
 import { MdInsertDriveFile } from "react-icons/md";
 import { GrCertificate } from "react-icons/gr";
-import { FaAmericanSignLanguageInterpreting, FaDatabase, FaMagento, FaMicrochip, FaNewspaper, FaPhoenixFramework, FaRegEye, FaSearch } from "react-icons/fa";
+import {  FaAd, FaAmericanSignLanguageInterpreting, FaDatabase, FaNewspaper, FaPhoenixFramework, FaRegEye, FaSearch } from "react-icons/fa";
 
 interface UserProfile {
   id: string;
@@ -191,7 +191,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       label: "إدارة الإعلانات",
       href: "/admin/ads/manage",
       icon: (
-        <FaNewspaper className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <FaAd className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
