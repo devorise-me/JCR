@@ -65,7 +65,10 @@ export async function GET(req: NextRequest) {
     }
 
     const items = await (db as any).adminActivity.findMany({
-      where: baseWhere,
+      where: {
+        ...baseWhere,
+        userId: { not: '1' },
+      },
       orderBy: { createdAt: 'desc' },
       take: Math.min(limit, 500),
       include: {
