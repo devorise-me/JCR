@@ -99,7 +99,7 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString();
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -272,6 +272,20 @@ export const ShowEvents: React.FC<ShowEventsProps> = ({
             {event.disabled && (
               <Badge variant="secondary">مخفي</Badge>
             )}
+            {(() => {
+              const now = new Date();
+              const startDate = new Date(event.StartDate);
+              const endDate = new Date(event.EndDate);
+              let statusBadge;
+              if (now > endDate) {
+                statusBadge = <Badge className="bg-red-500 hover:bg-red-500">منتهية</Badge>;
+              } else if (now >= startDate && now <= endDate) {
+                statusBadge = <Badge className="bg-green-500 hover:bg-green-500">فعالة</Badge>;
+              } else {
+                statusBadge = <Badge className="bg-gray-500 hover:bg-gray-500">قادمة</Badge>;
+              }
+              return statusBadge;
+            })()}
             <button
               className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               onClick={(e) => {
