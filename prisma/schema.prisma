@@ -38,6 +38,8 @@ model AdsConfig {
   apiKey    String
   apiSecret String
   cloudName String
+  apiEndpoint String
+
   updatedAt DateTime @updatedAt
 }
 
