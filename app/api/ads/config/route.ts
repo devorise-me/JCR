@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { apiKey, apiEndpoint, isEnabled } = await req.json();
+    const { apiKey, apiEndpoint, isEnabled, cloudName } = await req.json();
     
     if (!apiKey || !apiEndpoint) {
       return NextResponse.json({ error: 'API key and endpoint are required' }, { status: 400 });
@@ -31,22 +31,24 @@ export async function POST(req: NextRequest) {
 
     // In a real application, you would store these securely
     // For now, we'll create a configuration record in the database
-    const config = await db.adsConfig.upsert({
-      where: { id: 1 },
-      update: {
-        apiKey: apiKey,
-        apiEndpoint: apiEndpoint,
-        isEnabled: isEnabled !== undefined ? isEnabled : true,
-        updatedAt: new Date(),
-      },
-      create: {
-        id: 1,
-        apiKey: apiKey,
-        apiEndpoint: apiEndpoint,
-        isEnabled: isEnabled !== undefined ? isEnabled : true,
-      },
-    });
-
+    const config = await db.adsConfig.
+    upsert({
+  where: { id: 1 },
+  update: {
+    apiKey,
+    apiEndpoint,
+    isEnabled: isEnabled ?? true,
+    updatedAt: new Date(),
+  },
+  create: {
+    id: 1,
+    apiKey,
+    apiSecret: "",   // <-- required, replace "" with the actual value or fetch from req/json/env
+    cloudName: cloudName,   // <-- required
+    apiEndpoint,
+    isEnabled: isEnabled ?? true,
+  },
+});
     // Test the API connection
     let testResult = { success: false, message: "API key saved but not tested" };
     

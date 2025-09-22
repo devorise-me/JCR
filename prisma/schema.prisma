@@ -33,18 +33,6 @@ model User {
   news            news[]
 }
 
-model AdsConfig {
-  id        Int      @id @default(1) // A fixed ID since there's likely only one config row
-  apiKey    String
-  apiSecret String
-  cloudName String
-  apiEndpoint String
-  isEnabled   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-}
-
 model Camel {
   id         Int          @id @default(autoincrement())
   name       String
@@ -161,19 +149,30 @@ model contactPage {
 }
 
 model AdminActivity {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
   userId    String
   type      String
-  timestamp DateTime @default(now())
-
   path      String
-    // Add this line
-  action    String 
-  details   String?  
   element   String?
   meta      Json?
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  action    String[]  @db.Char(1)
+  details   String[]  @db.Char
+  timestamp DateTime? @db.Date
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model adsconfig {
+  id          Int       @default(autoincrement())
+  apikey      String?   @db.Char(1)
+  apisecret   String?   @db.Char(1)
+  cloudname   String?   @db.Char(1)
+  apiendpoint String?   @db.Char(1)
+  updatedat   DateTime? @db.Date
+  isEnabled   Boolean   @default(true)
+
+  @@ignore
 }
 
 enum Role {
