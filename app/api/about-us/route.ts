@@ -6,20 +6,26 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const aboutUs = await db.aboutUs.findFirst({
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        author: {
-          select: {
-            FirstName: true,
-            FamilyName: true,
-            username: true,
-          },
-        },
-      },
-    });
+  //   const aboutUs = await db.aboutUs.findFirst({
+  //     orderBy: { updatedAt: 'desc' },
+  //     include: {
+  //       author: {
+  //         select: {
+  //           FirstName: true,
+  //           FamilyName: true,
+  //           username: true,
+  //         },
+  //       },
+  //     },
+  //   });
 
-    return NextResponse.json(aboutUs);
+    // return NextResponse.json(aboutUs);
+ const aboutUs = {
+     content: "This is temporary content.",
+      author: { name: "Admin" },
+      updatedAt: new Date()
+ };
+  // 
   } catch (error) {
     console.error('Error fetching about us:', error);
     return NextResponse.json({ error: 'Failed to fetch about us' }, { status: 500 });
