@@ -27,7 +27,7 @@ const exportToExcel = async () => {
     const worksheet = workbook.addWorksheet("Sheet1");
 
     // 3. Parse headers from <thead>
-    const headers = Array.from(table.querySelectorAll('thead tr th')).map(th => th.innerText);
+    const headers = Array.from(table.querySelectorAll('thead tr th')).map(th => (th as HTMLElement).innerText);
     if (headers.length === 0) {
       throw new Error("Table has no headers (<thead>). Cannot generate a valid Excel file.");
     }
@@ -46,9 +46,11 @@ const exportToExcel = async () => {
 
     // 6. Add the data to the worksheet
     rows.forEach(rowData => {
-      const rowObject = {};
+      const rowObject: Record<string, any> = {};
       worksheet.columns.forEach((column, index) => {
-        rowObject[column.key] = rowData[index];
+        if (typeof column.key === "string") {
+          rowObject[column.key] = rowData[index];
+        }
       });
       worksheet.addRow(rowObject);
     });
@@ -74,7 +76,11 @@ const exportToExcel = async () => {
   } catch (err) {
     // Catch any error from the process and display it
     console.error("Error exporting to Excel:", err);
-    setError(err.message || "An error occurred while exporting to Excel.");
+    if (err instanceof Error) {
+      setError(err.message || "An error occurred while exporting to Excel.");
+    } else {
+      setError("An error occurred while exporting to Excel.");
+    }
   }
 };
 

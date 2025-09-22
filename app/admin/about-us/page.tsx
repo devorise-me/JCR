@@ -112,7 +112,7 @@ export default function AboutUsPage() {
     }
   };
 
-  const previewStyle = {
+  const previewStyle :React.CSSProperties= {
     direction: formData.isRTL ? 'rtl' : 'ltr',
     textAlign: formData.textAlign as 'left' | 'right' | 'center' | 'justify',
     fontSize: formData.fontSize === 'small' ? '14px' : 
