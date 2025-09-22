@@ -12,7 +12,6 @@ export async function GET(
   const { searchParams } = new URL(req.url);
   const { loopId } = params;
   const userId = searchParams.get("userId");
-  const includeDisabled = searchParams.get("includeDisabled") === "true";
 
   try {
     let registeredCamels;
@@ -23,7 +22,6 @@ export async function GET(
           loopId: String(loopId),
           camel: {
             ownerId: String(userId),
-            disabled: includeDisabled ? undefined : false, // Filter out disabled camels unless explicitly requested
           },
         },
         include: {
@@ -44,18 +42,12 @@ export async function GET(
               },
             },
           },
-        },
-        orderBy: {
-          registeredDate: 'asc', // Order by registration time, earliest first
         },
       });
     } else {
       registeredCamels = await db.camelLoop.findMany({
         where: {
           loopId: String(loopId),
-          camel: {
-            disabled: includeDisabled ? undefined : false, // Filter out disabled camels unless explicitly requested
-          },
         },
         include: {
           camel: {
@@ -75,9 +67,6 @@ export async function GET(
               },
             },
           },
-        },
-        orderBy: {
-          registeredDate: 'asc', // Order by registration time, earliest first
         },
       });
     }

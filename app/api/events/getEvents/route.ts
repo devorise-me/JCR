@@ -4,20 +4,19 @@ import { NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const includeDisabled = searchParams.get("includeDisabled") === "true";
-
-    const events = await db.event.findMany({
-      where: includeDisabled ? {} : { disabled: false },
+    const users = await db.event.findMany({
+      where: {
+        disabled: false,
+      }
     });
 
-    return NextResponse.json(events);
+    return NextResponse.json(users);
   } catch (error) {
-    console.error("Error fetching events:", error);
+    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Error fetching events" },
+      { error: "Error fetching users" },
       { status: 500 }
     );
   }

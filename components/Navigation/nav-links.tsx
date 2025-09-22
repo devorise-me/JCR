@@ -2,8 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "../ui/select";
-import ContactDropdown from "./ContactDropdown";
-
+import { ChevronDown, Home, Trophy, Users, Phone, User, Newspaper, Megaphone, Settings } from "lucide-react";
 
 interface Props {
   className?: string;
@@ -40,71 +39,95 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
     }
   }, []);
 
+  const navItems = [
+    { href: "/", label: "الصفحة الرئيسية", icon: Home },
+    { href: "/ads", label: "الإعلانات", icon: Megaphone },
+    { href: "/news", label: "الأخبار", icon: Newspaper },
+    { href: "/contact", label: "تواصل معنا", icon: Phone },
+  ];
+
+  const adminItems = [
+    { href: "/admin/dashboard", label: "لائحة المسؤول", icon: Settings, roles: ["ADMIN", "SUPERVISOR"] },
+    { href: "/admin/Results", label: "لائحة محرر النتائج", icon: Trophy, roles: ["RESULTS_EDITOR"] },
+  ];
+
+  const userItems = token ? [
+    { href: "/profile", label: "الملف الشخصي", icon: User },
+  ] : [];
+
   return (
-    <ul className={className || `flex items-center text-nowrap gap-5 max-lg:hidden`}>
-      {hide &&
-        user &&
-        (user.role === "ADMIN" || user.role === "SUPERVISOR") && (
-          <li onClick={enablescroll}>
-            <Link href="/admin/dashboard">لائحة المسؤول</Link>
+    <ul className={className || `flex items-center text-nowrap gap-2 max-lg:hidden`}>
+      {/* Admin Links */}
+      {hide && user && adminItems.map((item) => (
+        item.roles.includes(user.role) && (
+          <li key={item.href} onClick={enablescroll}>
+            <Link 
+              href={item.href}
+              className="nav-link flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 group"
+            >
+              <item.icon size={18} className="group-hover:scale-110 transition-transform duration-300" />
+              <span>{item.label}</span>
+            </Link>
           </li>
-        )}
-      {hide &&
-        user &&
-        (user.role === "RESULTS_EDITOR") && (
-          <li onClick={enablescroll}>
-            <Link href="/admin/Results">لائحة محرر النتائج</Link>
-          </li>
-        )}
-      <li onClick={enablescroll}>
-        <Link href="/Results"></Link>
+        )
+      ))}
+
+      {/* User Profile Links */}
+      {hide && userItems.map((item) => (
+        <li key={item.href} onClick={enablescroll}>
+          <Link 
+            href={item.href}
+            className="nav-link flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 group"
+          >
+            <item.icon size={18} className="group-hover:scale-110 transition-transform duration-300" />
+            <span>{item.label}</span>
+          </Link>
+        </li>
+      ))}
+
+      {/* Racing Dropdown */}
+      <li className="relative">
+        <Select dir="rtl" open={open} onOpenChange={setOpen}>
+          <SelectTrigger className="nav-link flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 bg-transparent border-none shadow-none outline-none group min-w-[140px]">
+            <Trophy size={18} className="group-hover:scale-110 transition-transform duration-300" />
+            <SelectValue placeholder="سباقات الهجن" />
+            <ChevronDown size={16} className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+          </SelectTrigger>
+          <SelectContent className="dropdown-modern min-w-[200px] border-none shadow-2xl">
+            <SelectGroup className="p-2">
+              <Link 
+                href="/Results" 
+                onClick={enablescroll}
+                className="dropdown-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 group"
+              >
+                <Trophy size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                <span>نتائج السباق</span>
+              </Link>
+              <Link 
+                href="/registeredCamels" 
+                onClick={enablescroll}
+                className="dropdown-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 group"
+              >
+                <Users size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                <span>الهجن المشاركة في السباق</span>
+              </Link>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </li>
-      {/* <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>النتائج</NavigationMenuTrigger>
-            <NavigationMenuContent className="min-w-[150px]">
-              <div className="flex flex-col gap-4 w-full text-right p-4">
-                <NavigationMenuLink href="/Results">النتائج</NavigationMenuLink>
-                <NavigationMenuLink href="/profile/myCamels">المطايا المسجلة</NavigationMenuLink>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu> */}
-      <Select dir="rtl" open={open} onOpenChange={setOpen}>
-        <SelectTrigger className='bg-transparent  !outline-none border-none shadow-none lg:text-base '>
-          <SelectValue placeholder="سباقات الهجن" />
-        </SelectTrigger>
-        <SelectContent className='mx-4 outline-none border-none'>
-          <SelectGroup className='mx-4 flex flex-col gap-2'>
-            <Link href="/Results">نتائج السباق</Link>
-            <Link href="/registeredCamels">الهجن المشاركة في السباق</Link>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <li onClick={enablescroll}>
-        <Link href="/contact">تواصل معنا</Link>
-      </li>
-      {hide && token && (
-        <>
-          <li onClick={enablescroll}>
-            <Link href="/profile">الملف الشخصي</Link>
-          </li>
-        </>
-      )}
-      {/* <li onClick={enablescroll}>
-        <Link href="/registeredCamels">المطايا المشاركة</Link>
-      </li> */}
-      <li onClick={enablescroll}>
-        <Link href="/news">الأخبار</Link>
-      </li>
-      <li onClick={enablescroll}>
-        <Link href="/ads">الإعلانات</Link>
-      </li>
-      <li onClick={enablescroll}>
-        <Link href="/">الصفحة الرئيسية</Link>
-      </li>
+
+      {/* Regular Navigation Items */}
+      {navItems.map((item) => (
+        <li key={item.href} onClick={enablescroll}>
+          <Link 
+            href={item.href}
+            className="nav-link flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600 group"
+          >
+            <item.icon size={18} className="group-hover:scale-110 transition-transform duration-300" />
+            <span>{item.label}</span>
+          </Link>
+        </li>
+      ))}
     </ul>
   );
 };

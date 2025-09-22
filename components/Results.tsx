@@ -56,7 +56,7 @@ const ResultsTabel = () => {
   const RESULTS_PER_PAGE = 10;
 
   useEffect(() => {
-    fetch("/api/events/getEvents?includeDisabled=false")
+    fetch("/api/events/getEvents")
       .then((response) => response.json())
       .then((data) => {
         setEvents(data);

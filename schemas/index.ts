@@ -3,7 +3,7 @@ import * as z from "zod";
 export const LoginSchema = z.object({
   email: z.string().email({
     message: "البريد الالكتروني مطلوب",
-  }),
+  }).toLowerCase(),
   password: z.string().min(1, {
     message: "كلمة المرور مطلوبة",
   }),
@@ -53,7 +53,7 @@ export const RegisterSchema = z
       .toLowerCase(),
     email: z.string().email({
       message: "البريد الالكتروني مطلوب",
-    }),
+    }).toLowerCase(),
     NationalID: z
       .string()
       .min(10, {
@@ -77,21 +77,13 @@ export const RegisterSchema = z
     MobileNumber: z
       .string()
       .min(9, {
-        message: "رقم الهاتف يجب أن يتكون من 9 أرقام على الأقل",
+        message: "رقم الهاتف يجب أن يتكون من 10 ارقام",
       })
       .max(15, {
         message: "رقم الهاتف يجب ألا يتجاوز 15 رقمًا",
       })
-      .regex(/^(\+966|966|0)?[5][0-9]{8}$/, {
-        message: "صيغة رقم الهاتف السعودي غير صحيحة (يجب أن يبدأ بـ 05 أو +9665)",
-      })
-      .transform((val) => {
-        // Normalize phone number to Saudi format
-        if (val.startsWith('+966')) return val;
-        if (val.startsWith('966')) return '+' + val;
-        if (val.startsWith('05')) return '+966' + val.substring(1);
-        if (val.startsWith('5')) return '+966' + val;
-        return val;
+      .regex(/^\+?[0-9]\d{1,14}$/, {
+        message: "صيغة رقم الهاتف غير صحيحة",
       })
       .optional(),
     role: z.enum(["USER", "ADMIN", "SUPERVISOR", "RESULTS_EDITOR"]).default("USER"),
@@ -128,7 +120,7 @@ export const UpdateUserSchema = z.object({
   GrandFatherName: z.string().optional(),
   FamilyName: z.string().optional(),
   username: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email().toLowerCase().optional(),
   NationalID: z.string().optional(),
   BDate: z.string().optional(),
   MobileNumber: z.string().optional(),
@@ -172,13 +164,7 @@ export const EventsSchema = z
 
 export const camelSchema = z.object({
   name: z.string().min(1, "اسم الجمل مطلوب"),
-  camelID: z
-    .string()
-    .min(1, "رقم الشريحة مطلوب")
-    .regex(/^[A-Za-z0-9]{6,20}$/, {
-      message: "رقم الشريحة يجب أن يتكون من 6-20 حرف أو رقم باللغة الإنجليزية",
-    })
-    .transform((val) => val.toUpperCase()), // Normalize to uppercase
+  camelID: z.string().min(1, "رقم الشريحة مطلوب"),
   age: z.enum(
     [
       "GradeOne",

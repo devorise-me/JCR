@@ -46,7 +46,7 @@ export const RegisteredCamelsOut = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/events/getEvents?includeDisabled=false")
+    fetch("/api/events/getEvents")
       .then((response) => response.json())
       .then((data) => {
         const currentDate = new Date();
