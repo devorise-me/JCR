@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { auth } from '@/auth';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -154,9 +155,22 @@ export async function PUT(req: NextRequest) {
         // }
     // const existing = await db.aboutUs.findFirst();  
     // Log the action
+
+const session = await auth();
+const sessionAuthorId = session?.user?.id;
+
+// ... later in the code ...
+
+// FIX: Add this check right before creating the activity log
+if (!sessionAuthorId) {
+  // If for some reason there is no authorId, log an error and stop.
+  console.error("Cannot log admin activity: authorId is missing.");
+  // You might want to return an error response here as well.
+  return new NextResponse("Authentication error: User ID not found.", { status: 401 });
+}
     await db.adminActivity.create({
       data: {
-        userId: authorId,
+        userId: sessionAuthorId,
         action: "تحديث صفحة من نحن",
         details: "تم تحديث محتوى صفحة من نحن",
         timestamp: new Date(),
