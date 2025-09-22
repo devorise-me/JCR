@@ -53,24 +53,24 @@ export async function POST(req: NextRequest) {
     // Delete existing about us content (since we only want one)
     // await db.aboutUs.deleteMany({});
 
-    const aboutUs = await db.aboutUs.create({
-      data: {
-        content,
-        authorId,
-        isRTL: isRTL !== undefined ? isRTL : true,
-        fontSize: fontSize || 'medium',
-        textAlign: textAlign || 'right',
-      },
-      include: {
-        author: {
-          select: {
-            FirstName: true,
-            FamilyName: true,
-            username: true,
-          },
-        },
-      },
-    });
+    // const aboutUs = await db.aboutUs.create({
+    //   data: {
+    //     content,
+    //     authorId,
+    //     isRTL: isRTL !== undefined ? isRTL : true,
+    //     fontSize: fontSize || 'medium',
+    //     textAlign: textAlign || 'right',
+    //   },
+    //   include: {
+    //     author: {
+    //       select: {
+    //         FirstName: true,
+    //         FamilyName: true,
+    //         username: true,
+    //       },
+    //     },
+    //   },
+    // });
 
     // Log the action
     // await db.adminActivity.create({
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       // },
     // });
 
-    return NextResponse.json(aboutUs, { status: 201 });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating/updating about us:', error);
     return NextResponse.json({ error: 'Failed to create/update about us' }, { status: 500 });
