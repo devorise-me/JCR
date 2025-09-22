@@ -24,7 +24,7 @@ const NavLinks = ({ className, enablescroll, hide }: Props) => {
     setToken(storedToken);
 
     if (storedToken) {
-      fetch("/api/user/profile", {
+      fetch("/api/users/profile", {
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },
