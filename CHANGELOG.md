@@ -16,3 +16,8 @@
 - **Glass Morphism**: Implemented glass morphism effects for cards and other components.
 - **Enhanced Forms**: Modernized login and registration forms with improved styling and user experience.
 
+
+
+### Fixed (Routing)
+- **Build Error**: Resolved Next.js routing conflict between `/api/user/[userId]` and `/api/users/[id]` by consolidating all user-related routes under `/api/users/` with consistent parameter naming.
+- **API Consistency**: Updated all API endpoint references throughout the codebase to use the standardized routing structure.
