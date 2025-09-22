@@ -153,6 +153,8 @@ model AdminActivity {
   userId    String
   type      String
   path      String
+    // Add this line
+  action    String   
   element   String?
   meta      Json?
   createdAt DateTime @default(now()) @db.Timestamp(6)
