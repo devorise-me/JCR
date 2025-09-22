@@ -46,6 +46,7 @@
     "clsx": "^2.1.1",
     "css-loader": "^7.1.2",
     "date-fns": "^3.6.0",
+    "exceljs": "^4.4.0",
     "framer-motion": "^11.11.17",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
@@ -66,7 +67,6 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "tinymce": "^8.0.1",
-    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
