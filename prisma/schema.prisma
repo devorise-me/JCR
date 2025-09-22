@@ -152,6 +152,8 @@ model AdminActivity {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
   userId    String
   type      String
+  timestamp DateTime @default(now())
+
   path      String
     // Add this line
   action    String 
