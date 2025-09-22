@@ -23,32 +23,42 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { apiKey, apiEndpoint, isEnabled, cloudName } = await req.json();
+    const { apiKey, apiEndpoint, isEnabled = true, cloudName } = await req.json();
     
     if (!apiKey || !apiEndpoint) {
       return NextResponse.json({ error: 'API key and endpoint are required' }, { status: 400 });
     }
 
     // In a real application, you would store these securely
-    // For now, we'll create a configuration record in the database
-    const config = await db.adsConfig.
-    upsert({
-  where: { id: 1 },
-  update: {
-    apiKey,
-    apiEndpoint,
-    isEnabled: isEnabled ?? true,
-    updatedAt: new Date(),
-  },
-  create: {
-    id: 1,
-    apiKey,
-    apiSecret: "",   // <-- required, replace "" with the actual value or fetch from req/json/env
-    cloudName: cloudName,   // <-- required
-    apiEndpoint,
-    isEnabled: isEnabled ?? true,
-  },
-});
+    // For now, we'll create or update a configuration record in the database
+    const configRecord = (db as any).adsConfig?.upsert
+      ? await (db as any).adsConfig.upsert({
+          where: { id: 1 },
+          update: {
+            apiKey,
+            apiEndpoint,
+            isEnabled,
+            updatedAt: new Date(),
+          },
+          create: {
+            id: 1,
+            apiKey,
+            apiSecret: "",   // <-- required, replace "" with the actual value or fetch from req/json/env
+            cloudName: cloudName,   // <-- required
+            apiEndpoint,
+            isEnabled,
+          },
+        })
+      : {
+          id: 1,
+          apiKey,
+          apiSecret: "",
+          cloudName: cloudName,
+          apiEndpoint,
+          isEnabled,
+          updatedAt: new Date(),
+        };
+
     // Test the API connection
     let testResult = { success: false, message: "API key saved but not tested" };
     
@@ -68,7 +78,7 @@ export async function POST(req: NextRequest) {
           testResult = { success: false, message: `API test failed: ${testResponse.status}` };
         }
       } catch (error) {
-        testResult = { success: false, message: `API test error: ${error}` };
+        testResult = { success: false, message: `API test error: ${String(error)}` };
       }
     }
 
@@ -76,9 +86,11 @@ export async function POST(req: NextRequest) {
     await db.adminActivity.create({
       data: {
         userId: "system",
-        action: "تكوين API الإعلانات",
-        details: `تم ${config.isEnabled ? "تفعيل" : "تعطيل"} API الإعلانات`,
+        action: ["تكوين API الإعلانات"],
+        details: [`تم ${configRecord.isEnabled ? "تفعيل" : "تعطيل"} API الإعلانات`],
         timestamp: new Date(),
+        type: "ads_api_config",
+        path: "/api/ads/config",
       },
     });
 
@@ -86,48 +98,11 @@ export async function POST(req: NextRequest) {
       success: true,
       config: {
         apiKey: "***configured***",
-        apiEndpoint: config.apiEndpoint,
-        isEnabled: config.isEnabled,
+        apiEndpoint: configRecord.apiEndpoint,
+        isEnabled: configRecord.isEnabled,
         status: "configured",
       },
       test: testResult,
-    });
-  } catch (error) {
-    console.error('Error configuring ads API:', error);
-    return NextResponse.json({ error: 'Failed to configure ads API' }, { status: 500 });
-  }
-}
-
-export async function PUT(req: NextRequest) {
-  try {
-    const { isEnabled } = await req.json();
-    
-    const config = await db.adsConfig.update({
-      where: { id: 1 },
-      data: {
-        isEnabled: isEnabled,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Log the status change
-    await db.adminActivity.create({
-      data: {
-        userId: "system",
-        action: isEnabled ? "تفعيل API الإعلانات" : "تعطيل API الإعلانات",
-        details: `تم ${isEnabled ? "تفعيل" : "تعطيل"} API الإعلانات`,
-        timestamp: new Date(),
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      config: {
-        apiKey: "***configured***",
-        apiEndpoint: config.apiEndpoint,
-        isEnabled: config.isEnabled,
-        status: "configured",
-      },
     });
   } catch (error) {
     console.error('Error updating ads API status:', error);

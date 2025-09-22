@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
         userId,
         type: "CREATE",
         path: "/api/about-us",
-        action: "إنشاء صفحة من نحن",
-        details: `تم إنشاء محتوى صفحة من نحن (length=${String(content.length)})`,
+        action: ["إنشاء صفحة من نحن"],
+        details: [`تم إنشاء محتوى صفحة من نحن (length=${String(content.length)})`],
       },
     });
 
@@ -161,8 +161,8 @@ export async function PUT(req: NextRequest) {
         userId,
         type: "UPDATE",
         path: "/api/about-us",
-        action: "تحديث صفحة من نحن",
-        details: `تم تحديث محتوى صفحة من نحن (length=${String(content.length)})`,
+        action: ["تحديث صفحة من نحن"],
+        details:[ `تم تحديث محتوى صفحة من نحن (length=${String(content.length)})`],
       },
     });
 

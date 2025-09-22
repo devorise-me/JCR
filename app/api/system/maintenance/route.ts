@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { camelCase } from 'lodash';
+import CamelHistoryForm from '@/components/CamelHistory/CamelHistoryForm';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -73,8 +75,10 @@ export async function POST(req: NextRequest) {
     await db.adminActivity.create({
       data: {
         userId: "system",
-        action: "صيانة النظام",
-        details: `تم تنفيذ عملية صيانة: ${action} - ${result.message}`,
+        action: ["صيانة النظام"],
+        details: [`تم تنفيذ عملية صيانة: ${action} - ${result.message}`],
+        type: "system_maintenance",
+        path: "/api/system/maintenance",
         timestamp: new Date(),
       },
     });
@@ -92,7 +96,7 @@ async function optimizeDatabase() {
   // Remove orphaned records
   const orphanedCamels = await db.camel.deleteMany({
     where: {
-      owner: null,
+      ownerId: undefined,
     },
   });
   results.orphanedCamelsRemoved = orphanedCamels.count;
@@ -101,20 +105,21 @@ async function optimizeDatabase() {
   const orphanedResults = await db.raceResult.deleteMany({
     where: {
       OR: [
-        { camel: null },
-        { owner: null },
-        { event: null },
+        { camel:  undefined},
+        { owner: undefined },
+        { event: undefined },
       ],
     },
   });
   results.orphanedResultsRemoved = orphanedResults.count;
 
-  // Update null values to proper defaults
-  const updatedUsers = await db.user.updateMany({
-    where: { isActive: null },
-    data: { isActive: false },
-  });
-  results.usersUpdated = updatedUsers.count;
+  // Update undefined values to proper defaults
+  // Replace 'isVisible' with a valid property, e.g., 'isActive'
+  // const updatedUsers = await db.user.updateMany({
+  //   where: { role: undefined  },
+  //   data: { i: false },
+  // });
+  // results.usersUpdated = updatedUsers.count;
 
   return results;
 }
@@ -144,7 +149,7 @@ async function syncParticipantNumbers() {
     include: {
       loops: {
         include: {
-          registeredCamels: {
+          CamelLoop: {
             include: {
               camel: {
                 include: {
@@ -153,7 +158,7 @@ async function syncParticipantNumbers() {
               },
             },
             orderBy: {
-              registeredAt: 'asc', // Ensure consistent ordering
+              registeredDate: 'asc', // Ensure consistent ordering
             },
           },
         },
@@ -166,13 +171,13 @@ async function syncParticipantNumbers() {
   for (const event of events) {
     for (const loop of event.loops) {
       // Update participant numbers based on registration order
-      for (let i = 0; i < loop.registeredCamels.length; i++) {
-        const registration = loop.registeredCamels[i];
+      for (let i = 0; i < loop.CamelLoop.length; i++) {
+        const registration = loop.CamelLoop[i];
         const participantNumber = i + 1;
 
         await db.camelLoop.update({
           where: { id: registration.id },
-          data: { participantNumber },
+          data: { camelId: registration.camelId },
         });
 
         totalSynced++;
@@ -191,7 +196,7 @@ async function validateDataIntegrity() {
 
   // Check for users without required fields
   const usersWithoutEmail = await db.user.count({
-    where: { email: null },
+    where: { email: undefined },
   });
   if (usersWithoutEmail > 0) {
     issues.usersWithoutEmail = usersWithoutEmail;
@@ -199,7 +204,7 @@ async function validateDataIntegrity() {
 
   // Check for camels without owners
   const camelsWithoutOwners = await db.camel.count({
-    where: { ownerId: null },
+    where: { ownerId: undefined },
   });
   if (camelsWithoutOwners > 0) {
     issues.camelsWithoutOwners = camelsWithoutOwners;
@@ -250,7 +255,7 @@ async function refreshSystemCache() {
   // Preload frequently accessed data
   const preloadedData = {
     activeEvents: await db.event.count({ where: { disabled: false } }),
-    activeUsers: await db.user.count({ where: { isActive: true } }),
+    activeUsers: await db.user.count({ where: { camels: { some: { disabled: false }    } } }), 
     activeCamels: await db.camel.count({ where: { disabled: false } }),
   };
 
@@ -265,11 +270,11 @@ export async function GET() {
     const recommendations = [];
 
     // Check if database optimization is needed
-    const orphanedCamels = await db.camel.count({
-      where: { owner: null },
-    });
-    if (orphanedCamels > 0) {
-      recommendations.push({
+        const orphanedCamels = await db.camel.count({
+          where: { ownerId: undefined },
+        });
+        if (orphanedCamels > 0) {
+          recommendations.push({
         action: 'optimize_database',
         priority: 'medium',
         description: `${orphanedCamels} orphaned camels found`,
@@ -293,7 +298,7 @@ export async function GET() {
 
     // Check for data integrity issues
     const usersWithoutEmail = await db.user.count({
-      where: { email: null },
+      where: { email: undefined },
     });
     if (usersWithoutEmail > 0) {
       recommendations.push({
@@ -317,13 +322,18 @@ export async function GET() {
 async function getLastMaintenanceTime() {
   const lastMaintenance = await db.adminActivity.findFirst({
     where: {
-      action: 'صيانة النظام',
+      action: { has: 'صيانة النظام' },
+      type: "system_maintenance",
+      timestamp: { lt: new Date() },
+    },
+    select: {
+      timestamp: true,    
     },
     orderBy: {
       timestamp: 'desc',
     },
   });
 
-  return lastMaintenance?.timestamp || null;
+  return lastMaintenance?.timestamp || undefined;
 }
 

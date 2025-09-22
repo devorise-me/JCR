@@ -102,8 +102,11 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: userIds[0], // Use first user ID for logging
-          action: "تحديد حسابات تجريبية",
-          details: `تم تحديد ${userIds.length} حساب كحسابات تجريبية`,
+          action: ["تحديد حسابات تجريبية"],
+          details:[ `تم تحديد ${userIds.length} حساب كحسابات تجريبية`],
+          type:"test_accounts",
+          path: "/api/users/test-accounts",
+          
           timestamp: new Date(),
         },
       });
@@ -144,8 +147,10 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: userIds[0],
-          action: "حذف حسابات تجريبية",
-          details: `تم حذف ${deletedCount} حساب تجريبي من أصل ${userIds.length}`,
+          action:[ "حذف حسابات تجريبية"],
+          details: [`تم حذف ${deletedCount} حساب تجريبي من أصل ${userIds.length}`],
+          type:"test_accounts",
+          path: "/api/users/test-accounts",
           timestamp: new Date(),
         },
       });

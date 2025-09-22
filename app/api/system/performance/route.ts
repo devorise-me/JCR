@@ -41,6 +41,12 @@ export async function GET() {
     });
 
     // Calculate performance metrics
+    type Recommendation = {
+      type: string;
+      severity: string;
+      message: string;
+    };
+
     const metrics = {
       database: {
         queryTime: dbQueryTime,
@@ -66,7 +72,7 @@ export async function GET() {
         averagePerHour: Math.round(recentActivity.length / 24),
         lastActivity: recentActivity[0]?.timestamp || null,
       },
-      recommendations: [],
+      recommendations: [] as Recommendation[],
     };
 
     // Generate performance recommendations
@@ -147,13 +153,14 @@ export async function POST(req: NextRequest) {
         // Mark expired ads as inactive
         const expiredAds = await db.ads.updateMany({
           where: {
-            isActive: true,
+            isVisible: true,
+
             endDate: {
               lt: new Date(),
             },
           },
           data: {
-            isActive: false,
+            isVisible: false,
           },
         });
 
@@ -176,8 +183,10 @@ export async function POST(req: NextRequest) {
         await db.adminActivity.create({
           data: {
             userId: "system",
-            action: "تحسين قاعدة البيانات",
-            details: "تم تشغيل عملية تحسين قاعدة البيانات",
+            action: ["تحسين قاعدة البيانات"],
+            details:[ "تم تشغيل عملية تحسين قاعدة البيانات"],
+            type:"database_optimization",
+            path: "/api/system/performance",
             timestamp: new Date(),
           },
         });

@@ -156,7 +156,7 @@ model AdminActivity {
   element   String?
   meta      Json?
   createdAt DateTime  @default(now()) @db.Timestamp(6)
-  action    String[]  @db.Char(1)
+  action    String[]  @default([])
   details   String[]  @db.Char
   timestamp DateTime? @db.Date
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

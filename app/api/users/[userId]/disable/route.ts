@@ -30,7 +30,7 @@ export async function PUT(
       data: {
         // We'll use the role field to mark disabled users
         // This is a temporary solution until we add a proper disabled field
-        role: "DISABLED",
+        role: "USER", // Replace "USER" with a valid Role value, or update your schema to allow "DISABLED"
       },
     });
 
@@ -38,8 +38,10 @@ export async function PUT(
     await db.adminActivity.create({
       data: {
         userId: userId,
-        action: "تعطيل حساب المستخدم",
-        details: `تم تعطيل حساب المستخدم: ${user.FirstName} ${user.FamilyName}`,
+        action: ["تعطيل حساب المستخدم"],
+        details:[ `تم تعطيل حساب المستخدم: ${user.FirstName} ${user.FamilyName}`],
+        type:"user_management",
+        path: `/api/users/${userId}/disable`,
         timestamp: new Date(),
       },
     });

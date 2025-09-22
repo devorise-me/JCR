@@ -58,8 +58,10 @@ export async function DELETE(
     await db.adminActivity.create({
       data: {
         userId: userId,
-        action: "حذف حساب المستخدم",
-        details: `تم حذف حساب المستخدم: ${user.FirstName} ${user.FamilyName} (${user.email})`,
+        action:[ "حذف حساب المستخدم"],
+        details:[ `تم حذف حساب المستخدم: ${user.FirstName} ${user.FamilyName} (${user.email})`],
+        type:"user_management",
+        path:"/api/users/[userId]/delete",
         timestamp: new Date(),
       },
     });

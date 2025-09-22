@@ -35,8 +35,11 @@ export async function PUT(
     await db.adminActivity.create({
       data: {
         userId: userId,
-        action: "تفعيل حساب المستخدم",
-        details: `تم تفعيل حساب المستخدم: ${user.FirstName} ${user.FamilyName}`,
+        action:[ "تفعيل حساب المستخدم"],
+        details:[ `تم تفعيل حساب المستخدم: ${user.FirstName} ${user.FamilyName}`],
+        type:"user_management",
+        path: `/api/users/${userId}/enable`,
+      
         timestamp: new Date(),
       },
     });
