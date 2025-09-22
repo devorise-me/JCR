@@ -12,33 +12,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
 
-     authorize: async (credentials) => {
-  const email = credentials.email?.toLowerCase() as string;
-  const password = credentials.password as string;
+      authorize: async (credentials) => {
+        const email = credentials.email as string;
 
-  if (!email || !password) {
-    throw new Error("يرجى تعبئة الخانات المطلوبة");
-  }
+        const password = credentials.password as string;
 
-  const user = await getUserByEmail(email);
+        if (!email || !password) {
+          throw new Error("يرجى تعبئة الخانات المطلوبة");
+        }
 
-  if (!user) {
-    throw new Error("كلمة المرور او البريد الالكتروني غير صحيح");
-  }
+        const user = await getUserByEmail(email);
 
-  const isMatched = await compare(password, user.password);
+        if (!user) {
+          throw new Error("كلمة المرور او البريد الالكتروني غير صحيح");
+        }
 
-  if (!isMatched) {
-    throw new Error("كلمة المرور غير صحيحة");
-  }
+        const isMatched = await compare(password, user.password);
 
-  return {
-    FirstName: user.FirstName,
-    LastName: user.FamilyName,
-    Email: user.email,
-    id: user.id,
-  };
-},
+        if (!isMatched) {
+          throw new Error("كلمة المرور غير صحيحة");
+        }
+
+        const userData = {
+          FirstName: user.FirstName,
+          LastName: user.FamilyName,
+          Email: user.email,
+          id: user.id,
+        };
+
+        return userData;
+      },
     }),
   ],
 

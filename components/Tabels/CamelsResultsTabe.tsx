@@ -66,9 +66,11 @@ const ReportForm = () => {
   const [publishLoading, setPublishLoading] = useState(false);
   const [editingRankId, setEditingRankId] = useState<string | null>(null);
   const [rankInputValue, setRankInputValue] = useState<string>("");
+  const [publishedResults, setPublishedResults] = useState<RankedCamel[]>([]);
+  const [showPublishedResults, setShowPublishedResults] = useState(false);
 
   useEffect(() => {
-    fetch("/api/events/getEvents")
+    fetch("/api/events/getEvents?includeDisabled=true")
       .then((response) => response.json())
       .then(setEvents)
       .catch(() => setError("Error fetching events"));
@@ -92,7 +94,8 @@ const ReportForm = () => {
 
   useEffect(() => {
     if (selectedLoop && selectedEvent) {
-      fetch(`/api/events/${selectedEvent}/getLoops/${selectedLoop}/registeredCamels`)
+      // Fetch registered camels
+      fetch(`/api/events/${selectedEvent}/getLoops/${selectedLoop}/registeredCamels?includeDisabled=true`)
         .then((response) => response.json())
         .then((data) => {
           const rankedCamels = data.map((camel: Camel, index: number) => ({
@@ -103,8 +106,120 @@ const ReportForm = () => {
           setCamels(rankedCamels);
         })
         .catch(() => setError("Error fetching camels"));
+
+      // Fetch published results
+      fetch(`/api/results/${selectedEvent}/getLoops/${selectedLoop}/getRes`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.length > 0) {
+            const publishedCamels = data.map((result: any) => ({
+              id: result.camelId.toString(),
+              name: result.camelName,
+              ownerName: result.ownerName,
+              camelID: result.camelID,
+              rank: result.rank,
+              IBAN: result.IBAN || "N/A",
+              bankName: result.bankName || "N/A",
+              swiftCode: result.SwiftCode || "N/A",
+              NationalID: result.NationalID || "N/A",
+              age: "",
+              sex: "",
+              ownerId: "",
+            }));
+            setPublishedResults(publishedCamels);
+            setShowPublishedResults(true);
+          } else {
+            setPublishedResults([]);
+            setShowPublishedResults(false);
+          }
+        })
+        .catch(() => {
+          setPublishedResults([]);
+          setShowPublishedResults(false);
+        });
     }
   }, [selectedLoop, selectedEvent]);
+
+  // Handle manual result editing for published results
+  const handlePublishedResultEdit = async (camelId: string, newRank: number) => {
+    if (!newRank || newRank < 1 || newRank > publishedResults.length) return;
+    
+    try {
+      const response = await fetch(`/api/results/${selectedEvent}/getLoops/${selectedLoop}/updateResult`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ camelId: parseInt(camelId), newRank }),
+      });
+
+      if (!response.ok) throw new Error("Error updating result");
+
+      // Refresh published results
+      const updatedResults = await fetch(`/api/results/${selectedEvent}/getLoops/${selectedLoop}/getRes`);
+      const data = await updatedResults.json();
+      
+      const publishedCamels = data.map((result: any) => ({
+        id: result.camelId.toString(),
+        name: result.camelName,
+        ownerName: result.ownerName,
+        camelID: result.camelID,
+        rank: result.rank,
+        IBAN: result.IBAN || "N/A",
+        bankName: result.bankName || "N/A",
+        swiftCode: result.SwiftCode || "N/A",
+        NationalID: result.NationalID || "N/A",
+        age: "",
+        sex: "",
+        ownerId: "",
+      }));
+      setPublishedResults(publishedCamels);
+      
+    } catch (error) {
+      setError("Error updating result");
+    }
+  };
+
+  // Handle deleting a published result
+  const handleDeletePublishedResult = async (camelId: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذه النتيجة؟")) return;
+    
+    try {
+      const response = await fetch(`/api/results/${selectedEvent}/getLoops/${selectedLoop}/deleteResult`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ camelId: parseInt(camelId) }),
+      });
+
+      if (!response.ok) throw new Error("Error deleting result");
+
+      // Refresh published results
+      const updatedResults = await fetch(`/api/results/${selectedEvent}/getLoops/${selectedLoop}/getRes`);
+      const data = await updatedResults.json();
+      
+      if (data.length > 0) {
+        const publishedCamels = data.map((result: any) => ({
+          id: result.camelId.toString(),
+          name: result.camelName,
+          ownerName: result.ownerName,
+          camelID: result.camelID,
+          rank: result.rank,
+          IBAN: result.IBAN || "N/A",
+          bankName: result.bankName || "N/A",
+          swiftCode: result.SwiftCode || "N/A",
+          NationalID: result.NationalID || "N/A",
+          age: "",
+          sex: "",
+          ownerId: "",
+        }));
+        setPublishedResults(publishedCamels);
+      } else {
+        setPublishedResults([]);
+        setShowPublishedResults(false);
+      }
+      
+    } catch (error) {
+      setError("Error deleting result");
+    }
+  };
 
   const handleReorder = (newOrder: RankedCamel[]) => {
     const updatedCamels = newOrder.map((camel, index) => ({
@@ -370,6 +485,86 @@ const ReportForm = () => {
                 </Button>
               </div>
             </div>
+          )}
+
+          {/* Published Results Section */}
+          {selectedLoop && showPublishedResults && publishedResults.length > 0 && (
+            <Card className="mt-6 p-4 bg-green-50 border-green-200">
+              <h3 className="text-xl font-bold mb-4 text-center text-green-800">النتائج المنشورة</h3>
+              <div className="space-y-2">
+                {publishedResults.map((result) => (
+                  <div
+                    key={result.id}
+                    className={cn(
+                      "flex flex-col sm:flex-row items-start sm:items-center justify-between border shadow-sm transition-all duration-200 hover:shadow-md group w-full px-2 sm:px-4 py-2 sm:py-4 rounded-lg",
+                      result.rank === 1 && "bg-yellow-100 border-yellow-300",
+                      result.rank === 2 && "bg-gray-200 border-gray-300",
+                      result.rank === 3 && "bg-amber-200 border-amber-300",
+                      result.rank > 3 && "bg-white border-gray-200"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0 w-full">
+                      {/* Rank badge or input for published results */}
+                      {editingRankId === `published-${result.id}` ? (
+                        <input
+                          type="number"
+                          min={1}
+                          max={publishedResults.length}
+                          value={rankInputValue}
+                          autoFocus
+                          onChange={e => setRankInputValue(e.target.value.replace(/[^0-9]/g, ""))}
+                          onKeyDown={e => {
+                            if (e.key === "Enter") {
+                              const newRank = Number(rankInputValue);
+                              handlePublishedResultEdit(result.id, newRank);
+                              setEditingRankId(null);
+                            } else if (e.key === "Escape") {
+                              setEditingRankId(null);
+                            }
+                          }}
+                          onBlur={() => setEditingRankId(null)}
+                          className="w-14 h-8 flex items-center justify-center text-lg font-bold mr-2 border rounded text-center focus:ring-2 focus:ring-primary outline-none transition-all"
+                          title="تعديل ترتيب النتيجة"
+                        />
+                      ) : (
+                        <Badge
+                          className={cn(
+                            "w-8 h-8 flex items-center justify-center text-lg font-bold mr-2 cursor-pointer",
+                            result.rank === 1 && "bg-yellow-400 text-white",
+                            result.rank === 2 && "bg-gray-300 text-gray-800",
+                            result.rank === 3 && "bg-amber-600 text-white"
+                          )}
+                          variant={result.rank > 3 ? "secondary" : "default"}
+                          onClick={() => {
+                            setEditingRankId(`published-${result.id}`);
+                            setRankInputValue(String(result.rank));
+                          }}
+                          tabIndex={0}
+                          role="button"
+                          aria-label="تعديل ترتيب النتيجة"
+                        >
+                          {result.rank}
+                        </Badge>
+                      )}
+                      {result.rank <= 3 && <Trophy className={cn("w-6 h-6", result.rank === 1 ? "text-yellow-500" : result.rank === 2 ? "text-gray-400" : "text-amber-700")} />}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-slate-800 group-hover:text-primary transition-colors truncate text-sm sm:text-base">{result.name}</p>
+                        <p className="text-xs sm:text-sm text-slate-500 truncate">{result.ownerName}</p>
+                        <p className="text-xs text-slate-400">رقم الشريحة: {result.camelID}</p>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeletePublishedResult(result.id)}
+                        className="ml-2"
+                      >
+                        حذف
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           )}
         </Card>
 

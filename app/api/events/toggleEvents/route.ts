@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(request: Request) {
     try {
         const { eventIds, action } = await request.json();
@@ -28,6 +31,16 @@ export async function POST(request: Request) {
                 })
             )
         );
+
+        // Log the action
+        await db.adminActivity.create({
+            data: {
+                userId: "system", // System action
+                action: action === 'disable' ? "إخفاء فعاليات" : "إظهار فعاليات",
+                details: `تم ${action === 'disable' ? "إخفاء" : "إظهار"} ${eventIds.length} فعالية`,
+                timestamp: new Date(),
+            },
+        });
 
         return NextResponse.json({
             success: true,

@@ -20,6 +20,9 @@ export async function GET(
         camel: true,
         owner: true,
       },
+      orderBy: {
+        rank: 'asc', // Order by rank, lowest first
+      },
     });
 
     const formattedResults = results.map((result) => ({
