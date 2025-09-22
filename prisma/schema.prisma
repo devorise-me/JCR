@@ -33,6 +33,14 @@ model User {
   news            news[]
 }
 
+model AdsConfig {
+  id        Int      @id @default(1) // A fixed ID since there's likely only one config row
+  apiKey    String
+  apiSecret String
+  cloudName String
+  updatedAt DateTime @updatedAt
+}
+
 model Camel {
   id         Int          @id @default(autoincrement())
   name       String
