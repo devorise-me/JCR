@@ -39,6 +39,8 @@ model AdsConfig {
   apiSecret String
   cloudName String
   apiEndpoint String
+  isEnabled   Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
   updatedAt DateTime @updatedAt
 }
