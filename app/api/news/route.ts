@@ -4,11 +4,35 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'defualt-secret-key';
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const limit = searchParams.get("limit");
+    const includeHidden = searchParams.get("includeHidden") === "true";
+
+    let whereClause = {};
+    if (!includeHidden) {
+      whereClause = { isVisible: true };
+    }
+
     const news = await db.news.findMany({
-      orderBy: { date: 'desc' },
+      where: whereClause,
+      orderBy: { date: 'desc' }, // Newest first
+      take: limit ? parseInt(limit) : undefined, // No limit by default
+      include: {
+        author: {
+          select: {
+            FirstName: true,
+            FamilyName: true,
+            username: true,
+          },
+        },
+      },
     });
+
     return NextResponse.json(news);
   } catch (error) {
     console.error('Error fetching news:', error);
@@ -18,19 +42,55 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, description, date, authorId } = await req.json();
-    if (!title || !description || !date || !authorId) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    const { title, description, summary, image, date, startDate, endDate, authorId, isVisible } = await req.json();
+    
+    if (!title || !description || !authorId) {
+      return NextResponse.json({ error: 'Missing required fields: title, description, authorId' }, { status: 400 });
     }
-    // Optionally: check if the user is admin here
+
+    // Verify the author exists and has permission
+    const author = await db.user.findUnique({
+      where: { id: authorId },
+      select: { role: true },
+    });
+
+    if (!author || (author.role !== 'ADMIN' && author.role !== 'SUPERVISOR')) {
+      return NextResponse.json({ error: 'Unauthorized to create news' }, { status: 403 });
+    }
+
     const news = await db.news.create({
       data: {
         title,
         description,
-        date: new Date(date),
+        summary: summary || null,
+        image: image || null,
+        date: date ? new Date(date) : new Date(),
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
         author_id: authorId,
+        isVisible: isVisible !== undefined ? isVisible : true,
+      },
+      include: {
+        author: {
+          select: {
+            FirstName: true,
+            FamilyName: true,
+            username: true,
+          },
+        },
       },
     });
+
+    // Log the action
+    await db.adminActivity.create({
+      data: {
+        userId: authorId,
+        action: "إنشاء خبر جديد",
+        details: `تم إنشاء خبر جديد: ${title}`,
+        timestamp: new Date(),
+      },
+    });
+
     return NextResponse.json(news, { status: 201 });
   } catch (error) {
     console.error('Error creating news:', error);

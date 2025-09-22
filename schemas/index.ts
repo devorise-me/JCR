@@ -77,13 +77,21 @@ export const RegisterSchema = z
     MobileNumber: z
       .string()
       .min(9, {
-        message: "رقم الهاتف يجب أن يتكون من 10 ارقام",
+        message: "رقم الهاتف يجب أن يتكون من 9 أرقام على الأقل",
       })
       .max(15, {
         message: "رقم الهاتف يجب ألا يتجاوز 15 رقمًا",
       })
-      .regex(/^\+?[0-9]\d{1,14}$/, {
-        message: "صيغة رقم الهاتف غير صحيحة",
+      .regex(/^(\+966|966|0)?[5][0-9]{8}$/, {
+        message: "صيغة رقم الهاتف السعودي غير صحيحة (يجب أن يبدأ بـ 05 أو +9665)",
+      })
+      .transform((val) => {
+        // Normalize phone number to Saudi format
+        if (val.startsWith('+966')) return val;
+        if (val.startsWith('966')) return '+' + val;
+        if (val.startsWith('05')) return '+966' + val.substring(1);
+        if (val.startsWith('5')) return '+966' + val;
+        return val;
       })
       .optional(),
     role: z.enum(["USER", "ADMIN", "SUPERVISOR", "RESULTS_EDITOR"]).default("USER"),
@@ -164,7 +172,13 @@ export const EventsSchema = z
 
 export const camelSchema = z.object({
   name: z.string().min(1, "اسم الجمل مطلوب"),
-  camelID: z.string().min(1, "رقم الشريحة مطلوب"),
+  camelID: z
+    .string()
+    .min(1, "رقم الشريحة مطلوب")
+    .regex(/^[A-Za-z0-9]{6,20}$/, {
+      message: "رقم الشريحة يجب أن يتكون من 6-20 حرف أو رقم باللغة الإنجليزية",
+    })
+    .transform((val) => val.toUpperCase()), // Normalize to uppercase
   age: z.enum(
     [
       "GradeOne",
