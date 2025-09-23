@@ -40,16 +40,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    if (user.isActive) {
-      return NextResponse.json({ message: 'Account is already activated' });
-    }
+    // if (user.activa) {
+    //   return NextResponse.json({ message: 'Account is already activated' });
+    // }
 
     // Activate the user account
     await db.user.update({
       where: { id: targetUserId },
       data: {
-        isActive: true,
-        activatedAt: new Date(),
+        // isActive: true,
+        // activatedAt: new Date(),
       },
     });
 
@@ -57,8 +57,10 @@ export async function POST(req: NextRequest) {
     await db.adminActivity.create({
       data: {
         userId: targetUserId,
-        action: "تفعيل حساب",
-        details: `تم تفعيل حساب المستخدم: ${user.email}`,
+        action: ["تفعيل حساب"],
+        details:[ `تم تفعيل حساب المستخدم: ${user.email}`],
+        type: "account_activation",
+        path: "/api/auth/activate",
         timestamp: new Date(),
       },
     });
@@ -112,9 +114,9 @@ export async function GET(req: NextRequest) {
         id: true,
         email: true,
         username: true,
-        isActive: true,
-        createdAt: true,
-        activatedAt: true,
+        // isActive: true,
+        // : true,
+        // activatedAt: true,
       },
     });
 
@@ -124,7 +126,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       user,
-      needsActivation: !user.isActive,
+      // needsActivation: !user.isActive,
     });
   } catch (error) {
     console.error('Error checking activation status:', error);
