@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     try {
       const response = await fetch(config.apiendpoint, {
         headers: {
-          'Authorization': `Bearer ${config.apiKey}`,
+          'Authorization': `Bearer ${config.apikey}`,
           'Content-Type': 'application/json',
         },
       });
@@ -91,8 +91,10 @@ export async function POST(req: NextRequest) {
     await db.adminActivity.create({
       data: {
         userId: "system",
-        action: "مزامنة إعلانات خارجية",
-        details: `تم مزامنة ${syncedCount} إعلان من API خارجي`,
+        action: ["مزامنة إعلانات خارجية"],
+        details:[ `تم مزامنة ${syncedCount} إعلان من API خارجي`],
+        type: "ads_sync",
+        path: "/api/ads/sync",
         timestamp: new Date(),
       },
     });
