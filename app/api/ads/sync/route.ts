@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Fetch ads from external API
     let externalAds = [];
     try {
-      const response = await fetch(config.apiEndpoint, {
+      const response = await fetch(config.apiendpoint, {
         headers: {
           'Authorization': `Bearer ${config.apiKey}`,
           'Content-Type': 'application/json',
