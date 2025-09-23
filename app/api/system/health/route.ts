@@ -24,7 +24,7 @@ export async function GET() {
     const stats = {
       users: {
         total: await db.user.count(),
-        active: await db.user.count({ where: { isActive: true } }),
+        active: await db.user.count({ where: { role: 'USER' } }),
         admins: await db.user.count({ where: { role: 'ADMIN' } }),
       },
       events: {
@@ -50,11 +50,11 @@ export async function GET() {
       },
       news: {
         total: await db.news.count(),
-        published: await db.news.count({ where: { isPublished: true } }),
+        published: await db.news.count({ where: { isVisible: true } }),
       },
       ads: {
         total: await db.ads.count(),
-        active: await db.ads.count({ where: { isActive: true } }),
+        active: await db.ads.count({ where: { isVisible: true } }),
       },
     };
 
@@ -78,11 +78,11 @@ export async function GET() {
     // Check for inactive users waiting for activation
     const pendingActivations = await db.user.count({
       where: {
-        isActive: false,
+        
         role: 'USER',
-        createdAt: {
-          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-        },
+        // createdAt: {
+        //   gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+        // },
       },
     });
     if (pendingActivations > 0) {
