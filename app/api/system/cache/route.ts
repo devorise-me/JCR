@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
       case "ads":
         freshData = await db.ads.findMany({
           where: { 
-            isActive: true,
+            isVisible: true,
             endDate: { gte: new Date() },
           },
           orderBy: { date: 'desc' },
@@ -143,14 +143,16 @@ export async function POST(req: NextRequest) {
         const clearedCount = clearCache(pattern);
         
         // Log the cache clear action
-        await db.adminActivity.create({
-          data: {
-            userId: "system",
-            action: "مسح ذاكرة التخزين المؤقت",
-            details: `تم مسح ${clearedCount} عنصر من ذاكرة التخزين المؤقت${pattern ? ` (نمط: ${pattern})` : ''}`,
-            timestamp: new Date(),
-          },
-        });
+                await db.adminActivity.create({
+                  data: {
+                    userId: "system",
+                    action: ["مسح ذاكرة التخزين المؤقت"],
+                    details: [`تم مسح ${clearedCount} عنصر من ذاكرة التخزين المؤقت${pattern ? ` (نمط: ${pattern})` : ''}`],
+                    path: "/api/system/cache",
+                    type: "cache_clear",
+                    timestamp: new Date(),
+                  },
+                });
 
         return NextResponse.json({
           success: true,
@@ -163,7 +165,7 @@ export async function POST(req: NextRequest) {
         const preloadTasks = [
           { type: "events", data: await db.event.findMany({ where: { disabled: false }, take: 50 }) },
           { type: "news", data: await db.news.findMany({ where: { isVisible: true }, take: 20 }) },
-          { type: "ads", data: await db.ads.findMany({ where: { isActive: true }, take: 20 }) },
+          { type: "ads", data: await db.ads.findMany({ where: { isVisible: true }, take: 20 }) },
         ];
 
         let preloadedCount = 0;
@@ -211,14 +213,16 @@ export async function DELETE() {
     cache.clear();
 
     // Log the cache clear action
-    await db.adminActivity.create({
-      data: {
-        userId: "system",
-        action: "مسح جميع ذاكرة التخزين المؤقت",
-        details: `تم مسح جميع ${totalEntries} عنصر من ذاكرة التخزين المؤقت`,
-        timestamp: new Date(),
-      },
-    });
+        await db.adminActivity.create({
+          data: {
+            userId: "system",
+            action: ["مسح جميع ذاكرة التخزين المؤقت"],
+            details: [`تم مسح جميع ${totalEntries} عنصر من ذاكرة التخزين المؤقت`],
+            path: "/api/system/cache",
+            type: "cache_clear",
+            timestamp: new Date(),
+          },
+        });
 
     return NextResponse.json({
       success: true,
