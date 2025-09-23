@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
         news: await db.news.findMany(),
         ads: await db.ads.findMany(),
         // announcements: await db.announcement.findMany(),
-        aboutUs: await db.aboutUs.findMany(),
+        // aboutUs: await db.aboutUs.findMany(),
         adminActivity: await db.adminActivity.findMany({
           where: {
             timestamp: {
@@ -204,8 +204,8 @@ export async function PUT(req: NextRequest) {
           await tx.event.deleteMany();
           await tx.news.deleteMany();
           await tx.ads.deleteMany();
-          await tx.announcement.deleteMany();
-          await tx.aboutUs.deleteMany();
+          // await tx.announcement.deleteMany();
+          // await tx.aboutUs.deleteMany();
           await tx.adsConfig.deleteMany();
           await tx.user.deleteMany({ where: { role: { not: 'ADMIN' } } });
         }
