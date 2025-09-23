@@ -163,7 +163,7 @@ model AdminActivity {
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model adsConfig {
+model AdsConfig {
   id          Int       @default(autoincrement())
   apikey      String?   @db.Char(1)
   apisecret   String?   @db.Char(1)
