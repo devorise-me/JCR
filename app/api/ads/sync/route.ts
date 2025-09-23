@@ -75,9 +75,9 @@ export async function POST(req: NextRequest) {
           });
         } else {
           // Create new ad
-          await db.ads.create({
-            data: adData,
-          });
+          // await db.ads.create({
+          //   data: adData,
+          // });
         }
 
         syncedCount++;
@@ -118,7 +118,7 @@ export async function GET() {
     });
 
     const lastSyncActivity = await db.adminActivity.findFirst({
-      where: { action: "مزامنة إعلانات خارجية" },
+      where: { action: { has: "مزامنة إعلانات خارجية" } },
       orderBy: { timestamp: 'desc' },
     });
 
