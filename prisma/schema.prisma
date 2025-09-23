@@ -31,6 +31,17 @@ model User {
   ads             ads[]
   contactPages    contactPage[]
   news            news[]
+  PasswordReset   PasswordReset[]
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Camel {
@@ -162,17 +173,14 @@ model AdminActivity {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model adsconfig {
-  id          Int       @default(autoincrement())
-  apikey      String?   @db.Char(1)
+model AdsConfig {
+  id          Int       @id @default(autoincrement())
+  apikey      String    @db.Char(1)
   apisecret   String?   @db.Char(1)
   cloudname   String?   @db.Char(1)
-  apiendpoint String?   @db.Char(1)
+  apiendpoint String    @db.Char(1)
   updatedat   DateTime? @db.Date
   isEnabled   Boolean   @default(true)
-
-  @@ignore
 }
 
 enum Role {

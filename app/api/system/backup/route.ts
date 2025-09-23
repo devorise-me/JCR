@@ -82,26 +82,26 @@ export async function POST(req: NextRequest) {
       const filename = `backup-${timestamp}.json`;
 
       // Collect all data
-      const backupData = {
+      const backupData: any = {
         metadata: {
           version: "1.0",
           created: new Date().toISOString(),
           includeTestData: includeTestData || false,
         },
         users: await db.user.findMany({
-          where: includeTestData ? {} : { role: { not: 'TEST' } },
+          where: includeTestData ? undefined : { role: { not: 'TEST' as any } },
         }),
         events: await db.event.findMany(),
         camels: await db.camel.findMany({
-          where: includeTestData ? {} : { owner: { role: { not: 'TEST' } } },
+          where: includeTestData ? undefined : { owner: { role: { not: 'TEST' as any } } },
           include: { owner: true },
         }),
         camelLoops: await db.camelLoop.findMany(),
         raceResults: await db.raceResult.findMany(),
         news: await db.news.findMany(),
         ads: await db.ads.findMany(),
-        announcements: await db.announcement.findMany(),
-        aboutUs: await db.aboutUs.findMany(),
+        // announcements: await db.announcement.findMany(),
+        // aboutUs: await db.aboutUs.findMany(),
         adminActivity: await db.adminActivity.findMany({
           where: {
             timestamp: {
@@ -134,8 +134,10 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: "system",
-          action: "إنشاء نسخة احتياطية",
-          details: `تم إنشاء نسخة احتياطية: ${filename} (${stats.totalUsers} مستخدم، ${stats.totalEvents} فعالية)`,
+          action: ["إنشاء نسخة احتياطية"],
+          details: [`تم إنشاء نسخة احتياطية: ${filename} (${stats.totalUsers} مستخدم، ${stats.totalEvents} فعالية)`],
+          type: "backup_creation",
+          path: "/api/system/backup",
           timestamp: new Date(),
         },
       });
@@ -202,8 +204,8 @@ export async function PUT(req: NextRequest) {
           await tx.event.deleteMany();
           await tx.news.deleteMany();
           await tx.ads.deleteMany();
-          await tx.announcement.deleteMany();
-          await tx.aboutUs.deleteMany();
+          // await tx.announcement.deleteMany();
+          // await tx.aboutUs.deleteMany();
           await tx.adsConfig.deleteMany();
           await tx.user.deleteMany({ where: { role: { not: 'ADMIN' } } });
         }
@@ -293,8 +295,10 @@ export async function PUT(req: NextRequest) {
     await db.adminActivity.create({
       data: {
         userId: "system",
-        action: "استعادة نسخة احتياطية",
-        details: `تم استعادة البيانات (${restoreMode}): ${restoredStats.users} مستخدم، ${restoredStats.events} فعالية`,
+        action: ["استعادة نسخة احتياطية"],
+        details:[ `تم استعادة البيانات (${restoreMode}): ${restoredStats.users} مستخدم، ${restoredStats.events} فعالية`],
+        type: "backup_restore",
+        path: "/api/system/backup",
         timestamp: new Date(),
       },
     });

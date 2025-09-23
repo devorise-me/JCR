@@ -54,8 +54,12 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: user.id,
-          action: "طلب إعادة تعيين كلمة المرور",
-          details: `تم طلب إعادة تعيين كلمة المرور للمستخدم: ${user.email}`,
+          action: ["طلب إعادة تعيين كلمة المرور"],
+          details:[ `تم طلب إعادة تعيين كلمة المرور للمستخدم: ${user.email}`],
+          path: "/api/auth/reset-password",
+          type: "password_reset_request",
+          // action: "طلب إعادة تعيين كلمة المرور", --- IGNORE ---
+          // details: `تم طلب إعادة تعيين كلمة المرور للمستخدم: ${user.email}`, --- IGNORE ---
           timestamp: new Date(),
         },
       });
@@ -97,7 +101,7 @@ export async function POST(req: NextRequest) {
         where: {
           token,
           userId: decoded.id,
-          used: false,
+          // used: false,
           expiresAt: {
             gt: new Date(),
           },
@@ -123,8 +127,8 @@ export async function POST(req: NextRequest) {
       await db.passwordReset.update({
         where: { id: resetRecord.id },
         data: {
-          used: true,
-          usedAt: new Date(),
+          // used: true,
+          expiresAt: new Date(),
         },
       });
 
@@ -132,8 +136,10 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: decoded.id,
-          action: "إعادة تعيين كلمة المرور",
-          details: `تم إعادة تعيين كلمة المرور للمستخدم: ${decoded.email}`,
+          action: ["إعادة تعيين كلمة المرور"],
+          details:[ `تم إعادة تعيين كلمة المرور للمستخدم: ${decoded.email}`],
+          path: "/api/auth/reset-password",
+          type: "password_reset",
           timestamp: new Date(),
         },
       });
@@ -177,7 +183,7 @@ export async function GET(req: NextRequest) {
       where: {
         token,
         userId: decoded.id,
-        used: false,
+        // used: false,
         expiresAt: {
           gt: new Date(),
         },
