@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
         where: { id: resetRecord.id },
         data: {
           // used: true,
-          usedAt: new Date(),
+          expiresAt: new Date(),
         },
       });
 
