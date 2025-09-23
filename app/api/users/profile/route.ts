@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 // ✅ Force Serverless runtime (not Edge)
 export const runtime = "nodejs";
-
+export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
