@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -113,13 +114,35 @@ const ReportForm = () => {
         .catch(() => setError("Error fetching race results"));
     }
   }, [selectedEvent, selectedLoop]);
+// The function should be async to use 'await' for file generation.
+const handleExport = async () => {
+  // 1. Create a new workbook and a worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Race Results");
 
-  const handleExport = () => {
-    const ws = XLSX.utils.json_to_sheet(results);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Race Results");
-    XLSX.writeFile(wb, "race_results.xlsx");
-  };
+  // 2. Define columns based on the keys of the objects in the 'results' array
+  // This prevents errors if 'results' is empty and makes the code more robust.
+  if (results.length > 0) {
+    worksheet.columns = Object.keys(results[0]).map(key => ({
+      header: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'), // Format key for readability (e.g., 'camelName' -> 'Camel Name')
+      key: key,
+      width: 25 // Optional: Adjust column width for better readability
+    }));
+  }
+
+  // 3. Add the data from the 'results' array to the worksheet
+  worksheet.addRows(results);
+
+  // 4. Generate the .xlsx file and trigger a download in the browser
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = "race_results.xlsx";
+  document.body.appendChild(link); // Required for Firefox
+  link.click();
+  document.body.removeChild(link); // Clean up the DOM
+};
 
   return (
     <div className="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow-lg">

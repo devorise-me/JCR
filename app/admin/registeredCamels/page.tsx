@@ -2,7 +2,7 @@
 import { RegisteredCamelsTable } from "@/components/Tabels/RegisteredCamelsTabel";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 
 const Page = () => {
   const [error, setError] = useState<string | null>(null);
@@ -31,12 +31,16 @@ const Page = () => {
       }
   
       // Create a worksheet from the new data
-      const worksheet = XLSX.utils.aoa_to_sheet(newData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-  
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Sheet1");
+
+      // Add the data to the worksheet
+      newData.forEach((row) => {
+        worksheet.addRow(row);
+      });
+ 
       // Export the workbook to a file
-      XLSX.writeFile(workbook, "registered-camels-data.xlsx");
+      workbook.xlsx.writeFile(  "registered-camels-data.xlsx");
     } catch (err) {
       console.error("Error exporting to Excel:", err);
       setError("An error occurred while exporting to Excel.");

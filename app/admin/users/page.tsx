@@ -5,28 +5,84 @@ import { RedirectButton } from "@/components/auth/redirect-button";
 import { ShowUsers } from "@/components/Tabels/usersTabel";
 import { Button } from "@/components/ui/button";
 import { FaPlus } from "react-icons/fa";
-import * as XLSX from "xlsx";
+ import ExcelJS from 'exceljs';
 
 const UsersPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchType, setSearchType] = useState<'general' | 'camelId'>('general');
 
-  const exportToExcel = () => {
+ // The function must be async to handle file generation
+const exportToExcel = async () => {
+  try {
+    // 1. Find the table element in the DOM
     const table = document.getElementById("myUsers");
     if (!table) {
-      setError("Table element not found.");
-      return;
+      // Use 'throw' to be caught by the catch block for consistent error handling
+      throw new Error("Table element with ID 'myUsers' not found.");
     }
 
-    try {
-      const workbook = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-      XLSX.writeFile(workbook, "users-data.xlsx");
-    } catch (err) {
-      console.error("Error exporting to Excel:", err);
+    // 2. Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    // 3. Parse headers from <thead>
+    const headers = Array.from(table.querySelectorAll('thead tr th')).map(th => (th as HTMLElement).innerText);
+    if (headers.length === 0) {
+      throw new Error("Table has no headers (<thead>). Cannot generate a valid Excel file.");
+    }
+
+    // 4. Define columns in the worksheet
+    worksheet.columns = headers.map(header => ({
+      header: header,
+      key: header.toLowerCase().replace(/[^a-z0-9]/gi, ''), // Create a safe key
+      width: 25 // Adjust width as needed
+    }));
+
+    // 5. Parse data rows from <tbody>
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr =>
+      Array.from(tr.querySelectorAll('td')).map(td => td.innerText)
+    );
+
+    // 6. Add the data to the worksheet
+    rows.forEach(rowData => {
+      const rowObject: Record<string, any> = {};
+      worksheet.columns.forEach((column, index) => {
+        if (typeof column.key === "string") {
+          rowObject[column.key] = rowData[index];
+        }
+      });
+      worksheet.addRow(rowObject);
+    });
+
+    // 7. Style the header row to make it stand out
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF007BFF' } // A nice blue color
+    };
+
+    // 8. Generate the file and trigger the download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "users-data.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (err) {
+    // Catch any error from the process and display it
+    console.error("Error exporting to Excel:", err);
+    if (err instanceof Error) {
+      setError(err.message || "An error occurred while exporting to Excel.");
+    } else {
       setError("An error occurred while exporting to Excel.");
     }
-  };
+  }
+};
 
   return (
     <div className="flex flex-1 h-screen">

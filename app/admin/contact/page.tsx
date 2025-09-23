@@ -12,7 +12,7 @@ export default function AdminContactPage() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      fetch("/api/user/profile", { headers: { Authorization: `Bearer ${token}` } })
+      fetch("/api/users/profile", { headers: { Authorization: `Bearer ${token}` } })
         .then(r => r.json())
         .then(d => setAuthorId(d?.id || null));
     }
