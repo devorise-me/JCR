@@ -54,8 +54,12 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: user.id,
-          action: "طلب إعادة تعيين كلمة المرور",
-          details: `تم طلب إعادة تعيين كلمة المرور للمستخدم: ${user.email}`,
+          action: ["طلب إعادة تعيين كلمة المرور"],
+          details:[ `تم طلب إعادة تعيين كلمة المرور للمستخدم: ${user.email}`],
+          path: "/api/auth/reset-password",
+          type: "password_reset_request",
+          // action: "طلب إعادة تعيين كلمة المرور", --- IGNORE ---
+          // details: `تم طلب إعادة تعيين كلمة المرور للمستخدم: ${user.email}`, --- IGNORE ---
           timestamp: new Date(),
         },
       });
