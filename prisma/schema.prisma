@@ -163,7 +163,7 @@ model AdminActivity {
 }
 model AdsConfig {
   id          Int       @id @default(autoincrement())
-  apikey      String?   @db.Char(1)
+  apikey      String   @db.Char(1)
   apisecret   String?   @db.Char(1)
   cloudname   String?   @db.Char(1)
   apiendpoint String   @db.Char(1)
