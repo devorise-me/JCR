@@ -161,19 +161,16 @@ model AdminActivity {
   timestamp DateTime? @db.Date
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model AdsConfig {
-  id          Int       @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   apikey      String?   @db.Char(1)
   apisecret   String?   @db.Char(1)
   cloudname   String?   @db.Char(1)
   apiendpoint String?   @db.Char(1)
   updatedat   DateTime? @db.Date
   isEnabled   Boolean   @default(true)
-
-  @@ignore
 }
+
 
 enum Role {
   ADMIN
