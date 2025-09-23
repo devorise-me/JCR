@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
         where: {
           token,
           userId: decoded.id,
-          used: false,
+          // used: false,
           expiresAt: {
             gt: new Date(),
           },
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       await db.passwordReset.update({
         where: { id: resetRecord.id },
         data: {
-          used: true,
+          // used: true,
           usedAt: new Date(),
         },
       });
@@ -136,8 +136,10 @@ export async function POST(req: NextRequest) {
       await db.adminActivity.create({
         data: {
           userId: decoded.id,
-          action: "إعادة تعيين كلمة المرور",
-          details: `تم إعادة تعيين كلمة المرور للمستخدم: ${decoded.email}`,
+          action: ["إعادة تعيين كلمة المرور"],
+          details:[ `تم إعادة تعيين كلمة المرور للمستخدم: ${decoded.email}`],
+          path: "/api/auth/reset-password",
+          type: "password_reset",
           timestamp: new Date(),
         },
       });
@@ -181,7 +183,7 @@ export async function GET(req: NextRequest) {
       where: {
         token,
         userId: decoded.id,
-        used: false,
+        // used: false,
         expiresAt: {
           gt: new Date(),
         },
