@@ -46,8 +46,11 @@ export async function POST(
     await db.adminActivity.create({
       data: {
         userId: "system",
-        action: "إكمال فعالية تلقائياً",
-        details: `تم إكمال الفعالية تلقائياً: ${event.name} (انتهت في ${endDate.toLocaleDateString()})`,
+        action: ["إكمال فعالية تلقائياً"],
+        details:[ `تم إكمال الفعالية تلقائياً: ${event.name} (انتهت في ${endDate.toLocaleDateString()})`],
+        
+        path: "/api/events/[id]/complete",
+        type: "event_completion",
         timestamp: new Date(),
       },
     });
@@ -105,8 +108,10 @@ export async function GET() {
     await db.adminActivity.create({
       data: {
         userId: "system",
-        action: "إكمال فعاليات منتهية تلقائياً",
-        details: `تم إكمال ${expiredEvents.length} فعالية منتهية تلقائياً`,
+        action: ["إكمال فعاليات منتهية تلقائياً"],
+        details: [`تم إكمال ${expiredEvents.length} فعالية منتهية تلقائياً`],
+        path: "/api/events/complete",
+        type: "event_completion",
         timestamp: new Date(),
       },
     });
