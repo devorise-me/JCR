@@ -166,7 +166,7 @@ model AdsConfig {
   apikey      String?   @db.Char(1)
   apisecret   String?   @db.Char(1)
   cloudname   String?   @db.Char(1)
-  apiendpoint String?   @db.Char(1)
+  apiendpoint String   @db.Char(1)
   updatedat   DateTime? @db.Date
   isEnabled   Boolean   @default(true)
 }
