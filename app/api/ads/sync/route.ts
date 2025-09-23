@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         const adData = {
           title: externalAd.title || externalAd.name || 'Untitled Ad',
           description: externalAd.description || externalAd.content || '',
-          imageUrl: externalAd.imageUrl || externalAd.image || null,
+          image: externalAd.imageUrl || externalAd.image || null,
           startDate: externalAd.startDate ? new Date(externalAd.startDate) : new Date(),
           endDate: externalAd.endDate ? new Date(externalAd.endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           isActive: externalAd.isActive !== undefined ? externalAd.isActive : true,
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
         // Check if ad already exists
         const existingAd = await db.ads.findFirst({
-          where: { externalId: adData.externalId },
+          where: { title: adData.title },
         });
 
         if (existingAd) {
@@ -67,11 +67,10 @@ export async function POST(req: NextRequest) {
             data: {
               title: adData.title,
               description: adData.description,
-              imageUrl: adData.imageUrl,
               startDate: adData.startDate,
               endDate: adData.endDate,
-              isActive: adData.isActive,
-              updatedAt: new Date(),
+              isVisible: adData.isActive,
+              // upd/atedAt: new Date(),
             },
           });
         } else {
