@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         raceResults: await db.raceResult.findMany(),
         news: await db.news.findMany(),
         ads: await db.ads.findMany(),
-        announcements: await db.announcement.findMany(),
+        // announcements: await db.announcement.findMany(),
         aboutUs: await db.aboutUs.findMany(),
         adminActivity: await db.adminActivity.findMany({
           where: {
