@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -125,7 +125,7 @@ const ReportForm = () => {
     fetchCamelHistory(chipNumber, 1);
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (camelHistories.length === 0) return;
 
     const exportData = camelHistories.map(history => ({
@@ -139,11 +139,32 @@ const ReportForm = () => {
       "اسم المستخدم": history.User?.username || "غير محدد",
       "البريد الإلكتروني": history.User?.email || "غير محدد"
     }));
+ const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Camel History");
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Camel History");
-    XLSX.writeFile(wb, `camel_history_${chipNumber}.xlsx`);
+  // 1. Define Columns
+  // exceljs needs to know the headers and the keys to map from your data.
+  // It automatically infers this from the first object in your `exportData` array.
+  if (exportData.length > 0) {
+    worksheet.columns = Object.keys(exportData[0]).map(key => ({
+      header: key.charAt(0).toUpperCase() + key.slice(1), // Capitalize first letter for header
+      key: key,
+      width: 20 // Optional: set a default column width
+    }));
+  }
+
+  // 2. Add Data Rows
+  // This adds all the objects from your `exportData` array to the worksheet.
+  worksheet.addRows(exportData);
+
+  // 3. Write to File
+  // This generates the file and triggers a download in the browser.
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `camel_history_${chipNumber}.xlsx`;
+  link.click();
   };
 
   return (

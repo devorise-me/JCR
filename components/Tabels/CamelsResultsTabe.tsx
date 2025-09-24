@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import * as XLSX from "xlsx";
+ import ExcelJS from 'exceljs';
 
 interface Camel {
   id: string;
@@ -207,9 +207,17 @@ const ReportForm = () => {
   };
 
   // Export camels to Excel
-  const handleExportExcel = () => {
-    if (!camels.length) return;
-    const data = camels.map(camel => ({
+ // The function should be async to handle file generation
+const handleExportExcel = async () => {
+  try {
+    // 1. Check if there is data to export
+    if (!camels || camels.length === 0) {
+      console.log("No camel data to export.");
+      return; // Exit if there's nothing to do
+    }
+
+    // 2. Map the original data to the desired structure with Arabic keys
+    const dataToExport = camels.map(camel => ({
       الترتيب: camel.rank,
       "اسم الجمل": camel.name,
       "اسم المالك": camel.ownerName,
@@ -219,11 +227,51 @@ const ReportForm = () => {
       "اسم البنك": camel.bankName,
       SWIFT: camel.swiftCode,
     }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "النتائج");
-    XLSX.writeFile(wb, "camel_results.xlsx");
-  };
+
+    // 3. Initialize workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("النتائج"); // Sheet name in Arabic
+
+    // 4. Define the columns for the worksheet
+    // The keys must match the keys in your 'dataToExport' objects
+    worksheet.columns = [
+      { header: "الترتيب", key: "الترتيب", width: 10 },
+      { header: "اسم الجمل", key: "اسم الجمل", width: 30 },
+      { header: "اسم المالك", key: "اسم المالك", width: 30 },
+      { header: "رقم الشريحة", key: "رقم الشريحة", width: 25 },
+      { header: "الرقم الوطني", key: "الرقم الوطني", width: 25 },
+      { header: "IBAN", key: "IBAN", width: 35 },
+      { header: "اسم البنك", key: "اسم البنك", width: 20 },
+      { header: "SWIFT", key: "SWIFT", width: 15 },
+    ];
+
+    // 5. Add the data to the worksheet
+    worksheet.addRows(dataToExport);
+
+    // 6. Style the header and set Right-to-Left direction for the sheet
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.views = [
+      { rightToLeft: true } // This is crucial for Arabic sheets
+    ];
+
+    // 7. Generate the file and trigger the download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "camel_results.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (err) {
+    console.error("Error exporting camel results to Excel:", err);
+    // Optionally, call a state setter to show an error message in the UI
+    // setError("An error occurred during the Excel export.");
+  }
+  
+};
+
 
   function translateAge(age: string) {
     const ageMap: Record<string, string> = {

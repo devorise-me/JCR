@@ -20,7 +20,7 @@ export default function CreateNewsPage() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      fetch("/api/user/profile", {
+      fetch("/api/users/profile", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

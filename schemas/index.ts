@@ -3,7 +3,7 @@ import * as z from "zod";
 export const LoginSchema = z.object({
   email: z.string().email({
     message: "البريد الالكتروني مطلوب",
-  }),
+  }).toLowerCase(),
   password: z.string().min(1, {
     message: "كلمة المرور مطلوبة",
   }),
@@ -53,7 +53,7 @@ export const RegisterSchema = z
       .toLowerCase(),
     email: z.string().email({
       message: "البريد الالكتروني مطلوب",
-    }),
+    }).toLowerCase(),
     NationalID: z
       .string()
       .min(10, {
@@ -120,7 +120,7 @@ export const UpdateUserSchema = z.object({
   GrandFatherName: z.string().optional(),
   FamilyName: z.string().optional(),
   username: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email().toLowerCase().optional(),
   NationalID: z.string().optional(),
   BDate: z.string().optional(),
   MobileNumber: z.string().optional(),

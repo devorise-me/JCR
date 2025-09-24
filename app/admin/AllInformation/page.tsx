@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-import { Button } from "@/components/ui/button";
 
 interface Camel {
   id: number;
@@ -39,7 +38,7 @@ function translateAge(age: string) {
   }
 }
 
-export const AllInformationPage = () => {
+export default function AllInformationPage() {
   const [data, setData] = useState<Camel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,7 +74,6 @@ export const AllInformationPage = () => {
         header: "البريد الإلكتروني",
         Cell: ({ row }) => row.original.owner?.email ?? "",
       },
-
     ],
     []
   );
@@ -94,12 +92,7 @@ export const AllInformationPage = () => {
         muiTablePaperProps={{ sx: { borderRadius: 2 } }}
         muiTableContainerProps={{ sx: { maxHeight: "80vh" } }}
         initialState={{ pagination: { pageIndex: 0, pageSize: 20 } }}
-        localization={{
-          // You can add Arabic localization here if you want
-        }}
       />
     </div>
   );
-};
-
-export default AllInformationPage;
+}

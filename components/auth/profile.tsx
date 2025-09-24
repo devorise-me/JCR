@@ -76,7 +76,7 @@ const Profile = () => {
           return;
         }
 
-        const userResponse = await fetch("/api/user/profile", {
+        const userResponse = await fetch("/api/users/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -133,7 +133,7 @@ const Profile = () => {
   const fetchRegisteredCamels = async (userId: string) => {
     try {
       setFetchingRegisteredCamels(true);
-      const response = await fetch(`/api/user/${userId}/registeredCamels`);
+      const response = await fetch(`/api/users/${userId}/registeredCamels`);
       if (!response.ok) {
         throw new Error('Failed to fetch registered camels');
       }
@@ -164,7 +164,7 @@ const Profile = () => {
         formData.append('image', file);
 
         const token = localStorage.getItem("authToken");
-        const response = await fetch('/api/user/updateImage', {
+        const response = await fetch('/api/users/updateImage', {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,

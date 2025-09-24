@@ -14,7 +14,8 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   }
 
   const { password, email } = validatedFields.data;
-  const existingUser = await getUserByEmail(email);
+  const normalizedEmail = email.toLowerCase();
+  const existingUser = await getUserByEmail(normalizedEmail);
 
   if (!existingUser) {
     return { error: "! المستخدم غير موجود" };

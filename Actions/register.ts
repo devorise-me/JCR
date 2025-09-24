@@ -32,7 +32,8 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   const hashedPassword = await bcryptjs.hash(password, 10);
 
-  const existingUser = await getUserByEmail(email);
+  const normalizedEmail = email.toLowerCase();
+  const existingUser = await getUserByEmail(normalizedEmail);
 
   if (existingUser) {
     return { error: "المستخدم موجود بالفعل" };
@@ -45,7 +46,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       GrandFatherName,
       FamilyName,
       username,
-      email,
+      email: normalizedEmail,
       NationalID,
       BDate,
       MobileNumber,

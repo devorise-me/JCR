@@ -8,29 +8,40 @@ datasource db {
 }
 
 model User {
-  id              String         @id @default(cuid())
+  id              String          @id @default(cuid())
   FirstName       String?
   FatherName      String?
   GrandFatherName String?
   FamilyName      String?
-  username        String         @unique
-  email           String         @unique
-  NationalID      String?        @unique
+  username        String          @unique
+  email           String          @unique
+  NationalID      String?         @unique
   BDate           DateTime?
   MobileNumber    String?
   password        String
   image           String?
-  role            Role?          @default(USER)
+  role            Role?           @default(USER)
   swiftCode       String?
   bankName        String?
-  IBAN            String?        @unique
+  IBAN            String?         @unique
+  adminActivities AdminActivity[]
   camels          Camel[]
   CamelHistory    CamelHistory[]
   RaceResult      RaceResult[]
-  news            news[]
   ads             ads[]
   contactPages    contactPage[]
-  adminActivities AdminActivity[]
+  news            news[]
+  PasswordReset   PasswordReset[]
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Camel {
@@ -40,10 +51,10 @@ model Camel {
   age        Age
   sex        Sex
   ownerId    String
+  disabled   Boolean      @default(false)
   owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   loops      CamelLoop[]
   RaceResult RaceResult[]
-  disabled   Boolean      @default(false)
 }
 
 model Event {
@@ -141,22 +152,35 @@ model ads {
 }
 
 model contactPage {
-  id         String   @id @db.VarChar(36)
-  content    String
-  updatedAt  DateTime @updatedAt
-  author_id  String?  @db.VarChar(36)
-  User       User?    @relation(fields: [author_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_contact_author")
+  id        String   @id @db.VarChar(36)
+  content   String
+  updatedAt DateTime @updatedAt
+  author_id String?  @db.VarChar(36)
+  User      User?    @relation(fields: [author_id], references: [id], onUpdate: NoAction, map: "fk_contact_author")
 }
 
 model AdminActivity {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // page_view | click
+  type      String
   path      String
   element   String?
   meta      Json?
-  createdAt DateTime @default(now()) @db.Timestamp(6)
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  action    String[]  @default([])
+  details   String[]  @db.Char
+  timestamp DateTime? @db.Date
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdsConfig {
+  id          Int       @id @default(autoincrement())
+  apikey      String    @db.Char(1)
+  apisecret   String?   @db.Char(1)
+  cloudname   String?   @db.Char(1)
+  apiendpoint String    @db.Char(1)
+  updatedat   DateTime? @db.Date
+  isEnabled   Boolean   @default(true)
 }
 
 enum Role {
