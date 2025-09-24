@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from "next-auth";
+// import type { NextAuthConfig } from "next-auth/config";
 import GitHub from "next-auth/providers/github";
 
 export default {
@@ -6,4 +6,5 @@ export default {
   pages: {
     signIn: "/auth/login",
   },
-} satisfies NextAuthConfig;
+}
+
