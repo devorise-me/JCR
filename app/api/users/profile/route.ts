@@ -1,6 +1,6 @@
 // app/api/users/profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -8,26 +8,26 @@ const prisma = new PrismaClient();
 // ✅ Force Serverless runtime (not Edge)
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json({ message: "No token provided" }, { status: 401 });
+    // Use NextAuth session instead of JWT token verification
+    const session = await auth();
+    
+    if (!session?.user) {
+      return NextResponse.json({ message: "Unauthorized - No valid session" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1];
-    const secret = process.env.JWT_SECRET!;
-    let decoded: any;
-
-    try {
-      decoded = jwt.verify(token, secret);
-    } catch (err) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+    // Get user ID from session
+    const userId = session.user.id;
+    
+    if (!userId) {
+      return NextResponse.json({ message: "Unauthorized - No user ID in session" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: { id: true, username: true, email: true, role: true },
+      where: { id: userId },
+      select: { id: true, username: true, email: true, role: true, FirstName: true, FamilyName: true },
     });
 
     if (!user) {
