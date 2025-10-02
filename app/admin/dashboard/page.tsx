@@ -1,10 +1,11 @@
-import AdminDashboard from "@/components/admin/Dashboard";
+import { auth } from "@/auth";
 
-export default function DashboardPage() {
-  const role = "ADMIN";
-  return (
-    <div>
-      <AdminDashboard role={role} />
-    </div>
-  );
+export default async function DashboardPage() {
+  const session = await auth();
+
+  if (!session) {
+    return <div>Please log in</div>;
+  }
+
+  return <div>Welcome {session.user?.name}</div>;
 }

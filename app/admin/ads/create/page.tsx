@@ -18,7 +18,7 @@ export default function CreateAdPage() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      fetch("/api/user/profile", {
+      fetch("/api/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())

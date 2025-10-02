@@ -1,29 +1,29 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { EventsSchema } from "@/schemas"; 
+import { EventsSchema } from "@/schemas";
+
 // تعطيل التخزين المؤقت وجعل الاستجابة ديناميكية
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export async function POST(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "العملية غير مسموح بها" });
-  }
 
-  const validation = EventsSchema.safeParse(req.body);
-
-  if (!validation.success) {
-    return res.status(400).json({
-      error: "فشل التحقق من البيانات",
-      details: validation.error.errors,
-    });
-  }
-
-  const { name, StartDate, EndDate } = validation.data;
-
+export async function POST(req: Request) {
   try {
+    const body = await req.json();
+
+    // validate with Zod schema
+    const validation = EventsSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "فشل التحقق من البيانات",
+          details: validation.error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { name, StartDate, EndDate } = validation.data;
+
     const event = await db.event.create({
       data: {
         name,
@@ -32,13 +32,18 @@ export async function POST(
       },
     });
 
-    res.status(201).json({
-      message: "تم إنشاء الفعالية بنجاح",
-      event,
-    });
+    return NextResponse.json(
+      {
+        message: "تم إنشاء الفعالية بنجاح",
+        event,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("لم يتم انشاء الفعالية:", error);
-
-    res.status(500).json({ error: "لم يتم انشاء الفعالية" });
+    return NextResponse.json(
+      { error: "لم يتم انشاء الفعالية" },
+      { status: 500 }
+    );
   }
 }
