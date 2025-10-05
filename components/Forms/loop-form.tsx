@@ -182,6 +182,12 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
             >
               <option value="Morning">صباحي</option>
               <option value="Evening">مسائي</option>
+              <option value="Local">محلي</option>
+              <option value="General">عام</option>
+              <option value="International">دولي</option>
+              <option value="GeneralSymbolRound">شوط رمز عام</option>
+              <option value="InternationalCodeRound">شوط رمز دولي</option>
+              <option value="SymbolRun">شوط رمز</option>
             </select>
           </div>
           <div className="mb-4 text-end">

@@ -93,7 +93,12 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
           // Do NOT include password here!
         });
 
-        const camelResponse = await fetch(`/api/camels/${userData.id}`);
+        const storedToken = localStorage.getItem("authToken");
+        const camelResponse = await fetch(`/api/camels/${userData.id}`, {
+          headers: {
+            'Authorization': `Bearer ${storedToken}`
+          }
+        });
         const camelData = await camelResponse.json();
         if (camelData.error) {
           setError(camelData.error);

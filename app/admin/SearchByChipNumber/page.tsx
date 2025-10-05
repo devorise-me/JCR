@@ -130,7 +130,17 @@ const ReportForm = () => {
 
     const exportData = camelHistories.map(history => ({
       "نوع الحركة": history.typeOfMethode || "غير محدد",
-      "التاريخ": history.Date ? new Date(history.Date).toLocaleDateString('ar-SA') : "غير محدد",
+      "التاريخ": history.Date
+          ? new Date(history.Date).toLocaleString('ar-SA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true // إذا بدك الوقت بصيغة 24 ساعة
+          })
+          : "غير محدد",
       "اسم المطية": history.name,
       "رقم الشريحة": history.camelID || "غير محدد",
       "النوع": translateSex(history.sex),
@@ -204,6 +214,7 @@ const ReportForm = () => {
                           day: "numeric",
                           hour: "numeric",
                           minute: "2-digit",
+                          second: '2-digit',
                           hour12: true,
                         })
                       : "غير محدد"}

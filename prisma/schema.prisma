@@ -184,4 +184,10 @@ enum Age {
 enum Time {
   Morning
   Evening
+  Local
+  General
+  International
+  GeneralSymbolRound
+  InternationalCodeRound
+  SymbolRun
 }

@@ -194,6 +194,18 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
         return "صباحي";
       case "Evening":
         return "مسائي";
+      case "Local":
+        return "محلي";
+      case "General":
+        return "عام";
+      case "International":
+        return "دولي";
+      case "GeneralSymbolRound":
+        return "شوط رمز عام";
+      case "InternationalCodeRound":
+        return "شوط رمز دولي";
+      case "SymbolRun":
+        return "شوط رمز";
       default:
         return "";
     }

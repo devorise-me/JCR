@@ -199,7 +199,7 @@ export const createLoopSchema = z
     ]),
     sex: z.enum(["Male", "Female"]),
     time: z
-      .enum(["Morning", "Evening", "صباحي", "مسائي"])
+      .enum(["Morning", "Evening", "Local", "General", "International", "GeneralSymbolRound", "InternationalCodeRound", "SymbolRun", "صباحي", "مسائي"])
       .transform((val) =>
         val === "صباحي" ? "Morning" : val === "مسائي" ? "Evening" : val
       ),
