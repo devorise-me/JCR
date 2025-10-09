@@ -60,6 +60,7 @@
     "react-intersection-observer": "^9.13.1",
     "react-select": "^5.10.2",
     "sass-loader": "^16.0.1",
+    "sonner": "^2.0.7",
     "style-loader": "^4.0.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",

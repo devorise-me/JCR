@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import { toast } from "sonner";
 import { Age, Camel, Sex } from "@prisma/client";
 import { Input } from "../ui/input";
 import {
@@ -106,6 +106,7 @@ const AddCamelsForm: React.FC<Props> = ({
             disabled: editingCamel.disabled ?? false,
           });
         }
+        onClose();
       } else {
         const response = await fetch("/api/camels/create", {
           method: "POST",
@@ -117,12 +118,16 @@ const AddCamelsForm: React.FC<Props> = ({
 
         const result = await response.json();
         if (response.ok) {
+          toast.success(result.success || "تم إضافة الجمل بنجاح");
           onAddCamel(result);
+          onClose();
+        } else {
+          toast.error(result.error || "حدث خطأ أثناء إضافة الجمل");
         }
       }
-      onClose();
     } catch (error) {
       console.error("Error adding/updating camel:", error);
+      toast.error("حدث خطأ أثناء معالجة الطلب");
     }
   };
 
