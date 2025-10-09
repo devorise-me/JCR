@@ -172,7 +172,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
           </div>
           <div className="mb-4">
             <label htmlFor="time" className="block text-sm font-bold mb-1 text-end">
-              الوقت
+              نوع الشوط
             </label>
             <select
               id="time"
