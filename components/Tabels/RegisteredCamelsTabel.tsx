@@ -34,6 +34,7 @@ interface Loop {
 interface Event {
   id: string;
   name: string;
+  hiddenFromAdmin: boolean;
 }
 
 // المكون الرئيسي للجدول
@@ -198,7 +199,7 @@ export const RegisteredCamelsTable = () => {
           onChange={(e) => setSelectedEvent(e.target.value)}
         >
           <option value="">اختر فعالية</option>
-          {events.map((event) => (
+          {events.filter(e => !e.hiddenFromAdmin).map((event) => (
             <option key={event.id} value={event.id}>
               {event.name}
             </option>

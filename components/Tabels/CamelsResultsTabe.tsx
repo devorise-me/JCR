@@ -49,6 +49,7 @@ interface Loop {
 interface Event {
   id: string;
   name: string;
+  hiddenFromAdmin: boolean;
 }
 
 interface RankedCamel extends Camel {
@@ -261,7 +262,7 @@ const ReportForm = () => {
                   <SelectValue placeholder="اختر فعالية" />
                 </SelectTrigger>
                 <SelectContent>
-                  {events.map((event) => (
+                  {events.filter(e => !e.hiddenFromAdmin).map((event) => (
                     <SelectItem key={event.id} value={event.id}>
                       {event.name}
                     </SelectItem>

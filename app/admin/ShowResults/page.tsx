@@ -21,6 +21,7 @@ import {
 interface Event {
   id: string;
   name: string;
+  hiddenFromAdmin: boolean;
 }
 
 interface Loop {
@@ -131,7 +132,7 @@ const ReportForm = () => {
             <SelectValue placeholder="Select Event" />
           </SelectTrigger>
           <SelectContent>
-            {events.map((event) => (
+            {events.filter(e => !e.hiddenFromAdmin).map((event) => (
               <SelectItem key={event.id} value={event.id}>
                 {event.name}
               </SelectItem>

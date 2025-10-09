@@ -18,6 +18,7 @@ interface Event {
   StartDate: string;
   EndDate: string;
   disabled: boolean;
+  hiddenFromAdmin: boolean;
   type: string;
 }
 

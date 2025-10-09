@@ -21,6 +21,7 @@ interface Event {
   EndDate: Date;
   type: string;
   disabled: boolean;
+  hiddenFromAdmin: boolean;
 }
 
 export interface Loop {
@@ -56,6 +57,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
   const [startTime, setStartTime] = useState<string>('00:00');
   const [endTime, setEndTime] = useState<string>('00:00');
   const [disabled, setDisabled] = useState<boolean>(false);
+  const [hiddenFromAdmin, setHiddenFromAdmin] = useState<boolean>(false);
   const [eventType, setEventType] = useState<string>('');
 
   useEffect(() => {
@@ -80,6 +82,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
       setStartTime(startDateTime.split('T')[1].slice(0, 5));
       setEndTime(endDateTime.split('T')[1].slice(0, 5));
       setDisabled(eventData.disabled);
+      setHiddenFromAdmin(eventData.hiddenFromAdmin);
       setEventType(eventData.type);
 
       // Fetch loops data
@@ -124,6 +127,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
           StartDate: startDateTime,
           EndDate: endDateTime,
           disabled,
+          hiddenFromAdmin,
           type: eventType,
         }),
       });
@@ -506,15 +510,27 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
                     />
                   </div>
                 </div>
-                <div className="mb-4 flex items-center justify-start gap-2 w-full">
-                  <label htmlFor="disabled" className="block text-sm font-medium text-gray-700">
-                    اخفاء
-                  </label>
-                  <Checkbox 
-                    id="disabled" 
-                    checked={disabled} 
-                    onCheckedChange={(checked) => setDisabled(!!checked)} 
-                  />
+                <div className="mb-4 flex items-center justify-start gap-4 w-full">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="disabled" className="block text-sm font-medium text-gray-700">
+                       اخفاء من صفحات المستخدمين
+                    </label>
+                    <Checkbox
+                      id="disabled"
+                      checked={disabled}
+                      onCheckedChange={(checked) => setDisabled(!!checked)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="hiddenFromAdmin" className="block text-sm font-medium text-gray-700">
+                      اخفاء من صفحات الادمن
+                    </label>
+                    <Checkbox
+                      id="hiddenFromAdmin"
+                      checked={hiddenFromAdmin}
+                      onCheckedChange={(checked) => setHiddenFromAdmin(!!checked)}
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <Button type="submit">

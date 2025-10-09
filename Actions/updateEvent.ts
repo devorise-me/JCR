@@ -6,6 +6,7 @@ interface UpdateEventData {
   StartDate?: string; // Assuming this is a string in ISO format
   EndDate?: string;   // Same as above
   disabled?: boolean;
+  hiddenFromAdmin?: boolean;
   type?: string;
 }
 
@@ -40,6 +41,10 @@ export const updateEvent = async (id: string, data: UpdateEventData) => {
 
     if (data.disabled !== undefined) {
       updatedData.disabled = data.disabled;
+    }
+
+    if (data.hiddenFromAdmin !== undefined) {
+      updatedData.hiddenFromAdmin = data.hiddenFromAdmin;
     }
 
     if (data.type !== undefined) {

@@ -47,14 +47,15 @@ model Camel {
 }
 
 model Event {
-  id         String       @id @default(cuid())
-  name       String
-  StartDate  DateTime
-  EndDate    DateTime
-  disabled   Boolean      @default(false)
-  type       String       @default("International")
-  loops      Loop[]
-  RaceResult RaceResult[]
+  id              String       @id @default(cuid())
+  name            String
+  StartDate       DateTime
+  EndDate         DateTime
+  disabled        Boolean      @default(false)
+  hiddenFromAdmin Boolean      @default(false)
+  type            String       @default("International")
+  loops           Loop[]
+  RaceResult      RaceResult[]
 }
 
 model Loop {
