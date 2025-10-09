@@ -38,6 +38,7 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
   const [time, setTime] = useState<string>(loop.time);
   const [error, setError] = useState<string | null>(null);
   const [number, setNumber] = useState<number>(loop.number);
+  const [numberOfResults, setNumberOfResults] = useState<number>((loop as any).numberOfResults || 10);
 
   const handleUpdateLoop = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +66,7 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
           startRegister: now,
           endRegister: endTime,
           number,
+          numberOfResults,
         }),
       });
       if (response.ok) {
@@ -177,6 +179,20 @@ const UpdateLoopForm: React.FC<UpdateLoopFormProps> = ({ loop, eventEndDate, onC
               min="1"
               value={timerMinutes}
               onChange={(e) => setTimerMinutes(Math.max(1, parseInt(e.target.value) || 0))}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4 text-end">
+            <label htmlFor="numberOfResults" className="block text-sm font-bold mb-1">
+              عدد النتائج المعروضة
+            </label>
+            <input
+              id="numberOfResults"
+              type="number"
+              min="1"
+              value={numberOfResults}
+              onChange={(e) => setNumberOfResults(Math.max(1, parseInt(e.target.value) || 10))}
               className="w-full p-2 border rounded"
               required
             />

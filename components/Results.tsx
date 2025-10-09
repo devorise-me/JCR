@@ -26,6 +26,7 @@ interface Loop {
   capacity: number;
   time: string;
   number: number;
+  numberOfResults?: number;
 }
 
 interface Event {
@@ -90,11 +91,16 @@ const ResultsTabel = () => {
             camelID: result.camelID,
           }));
 
-          setResults(formattedResults);
+          // Limit results based on loop's numberOfResults setting
+          const loop = loops.find((l) => l.id === selectedLoop);
+          const maxResults = loop?.numberOfResults || 10;
+          const limitedResults = formattedResults.slice(0, maxResults);
+
+          setResults(limitedResults);
         })
         .catch(() => setError("Error fetching results"));
     }
-  }, [selectedLoop, selectedEvent]);
+  }, [selectedLoop, selectedEvent, loops]);
 
   // Pagination logic
   const totalPages = Math.ceil(results.length / RESULTS_PER_PAGE);

@@ -59,20 +59,21 @@ model Event {
 }
 
 model Loop {
-  id            String       @id @default(cuid())
-  capacity      Int
-  registered    Int          @default(autoincrement())
-  age           Age
-  sex           Sex
-  time          Time
-  startRegister DateTime
-  endRegister   DateTime
-  eventId       String
-  number        Int
-  rank          Int?
-  CamelLoop     CamelLoop[]
-  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  RaceResult    RaceResult[]
+  id              String       @id @default(cuid())
+  capacity        Int
+  registered      Int          @default(autoincrement())
+  age             Age
+  sex             Sex
+  time            Time
+  startRegister   DateTime
+  endRegister     DateTime
+  eventId         String
+  number          Int
+  rank            Int?
+  numberOfResults Int          @default(10)
+  CamelLoop       CamelLoop[]
+  event           Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  RaceResult      RaceResult[]
 }
 
 model CamelLoop {

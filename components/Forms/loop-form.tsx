@@ -29,6 +29,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [number, setNumber] = useState<number>(0);
+  const [numberOfResults, setNumberOfResults] = useState<number>(10);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +50,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
     const now = new Date();
     const endTime = new Date(now.getTime() + timerMinutes * 60000);
 
-    const loopData: Loop = {
+    const loopData: any = {
       id: "", // id will be assigned by the server
       eventId,
       capacity,
@@ -59,6 +60,7 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
       startRegister: now,
       endRegister: endTime,
       number: number,
+      numberOfResults: numberOfResults,
     };
 
     setIsLoading(true);
@@ -200,6 +202,20 @@ const CreateLoopForm: React.FC<CreateLoopFormProps> = ({
               min="1"
               value={timerMinutes}
               onChange={(e) => setTimerMinutes(Math.max(1, parseInt(e.target.value) || 0))}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4 text-end">
+            <label htmlFor="numberOfResults" className="block text-sm font-bold mb-1">
+              عدد النتائج المعروضة
+            </label>
+            <input
+              id="numberOfResults"
+              type="number"
+              min="1"
+              value={numberOfResults}
+              onChange={(e) => setNumberOfResults(Math.max(1, parseInt(e.target.value) || 10))}
               className="w-full p-2 border rounded"
               required
             />
