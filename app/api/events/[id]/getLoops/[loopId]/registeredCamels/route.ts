@@ -24,6 +24,9 @@ export async function GET(
             ownerId: String(userId),
           },
         },
+        orderBy: {
+          registeredDate: 'asc',
+        },
         include: {
           camel: {
             include: {
@@ -48,6 +51,9 @@ export async function GET(
       registeredCamels = await db.camelLoop.findMany({
         where: {
           loopId: String(loopId),
+        },
+        orderBy: {
+          registeredDate: 'asc',
         },
         include: {
           camel: {
