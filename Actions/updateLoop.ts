@@ -9,7 +9,7 @@ export const updateLoop = async (id: string, updatedData: Partial<Loop>) => {
   if (typeof id !== "string" || typeof updatedData !== "object") {
     throw new Error("Invalid input: ID or data format is incorrect");
   }
-
+  // test commit
   if (!updatedData || Object.keys(updatedData).length === 0) {
     throw new Error("No data provided to update");
   }
