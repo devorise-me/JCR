@@ -2,29 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdItem } from "@/components/ads/AdItemCard";
 import AdItemCard from "@/components/ads/AdItemCard";
-
-interface AdItem {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-  author?: { id: string; username: string | null; role: string | null };
-}
 
 export default function ManageAdsPage() {
   const [ads, setAds] = useState<AdItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
-  const [selectedAd, setSelectedAd] = useState<AdItem | null>(null);
+  const [selectedAds, setSelectedAds] = useState<AdItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = (item: AdItem) => {
-    setSelectedAd(item);
+    setSelectedAds(item);
     setIsModalOpen(true);
     if (typeof document !== 'undefined') document.body.style.overflow = 'hidden';
   };
@@ -38,7 +28,11 @@ export default function ManageAdsPage() {
     fetch("/api/ads")
       .then((res) => res.json())
       .then((data) => {
-        setAds(data);
+        if (Array.isArray(data)) {
+          setAds(data);
+        } else {
+          setError("فشل في تحميل الإعلانات");
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -47,16 +41,18 @@ export default function ManageAdsPage() {
       });
   }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (item: AdItem) => {
     if (!confirm("هل أنت متأكد من حذف هذا الإعلان؟")) return;
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/ads/${id}`, {
+      const res = await fetch(`/api/ads/${item.id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (res.ok) {
-        setAds(ads.filter((item) => item.id !== id));
+        setAds(ads.filter((n) => n.id !== item.id));
       } else {
         setError("فشل في حذف الإعلان");
       }
@@ -65,108 +61,98 @@ export default function ManageAdsPage() {
     }
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
+  const handleToggleVisible = async (item: AdItem) => {
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/ads/${id}`, {
+      const res = await fetch(`/api/ads/${item.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isActive: !isActive }),
+        body: JSON.stringify({ isVisible: !item.isVisible }),
       });
       if (res.ok) {
-        setAds(ads.map((item) => 
-          item.id === id ? { ...item, isActive: !isActive } : item
-        ));
+        setAds(ads.map((n) => n.id === item.id ? { ...n, isVisible: !n.isVisible } : n));
       } else {
-        setError("فشل في تحديث حالة الإعلان");
+        setError("فشل في تحديث حالة الظهور");
       }
     } catch {
-      setError("فشل في تحديث حالة الإعلان");
+      setError("فشل في تحديث حالة الظهور");
     }
   };
 
   return (
     <div className="min-h-[80vh]">
-      {/* Hero with background */}
-      <div className="relative h-48 sm:h-56 md:h-64 w-full overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center" 
-          style={{ backgroundImage: "url(/desert2.jpg)" }} 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+      {/* Hero */}
+      <div className="relative h-48 sm:h-56 md:h-64 w-full overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700">
+        {/* Animated background patterns */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-10 right-20 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white rounded-full blur-2xl animate-pulse delay-500"></div>
+        </div>
+
+        {/* Adspaper icons decoration */}
+        <div className="absolute inset-0 overflow-hidden opacity-10">
+          <svg className="absolute top-8 right-12 w-16 h-16 text-white animate-float" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+          </svg>
+          <svg className="absolute bottom-12 left-16 w-20 h-20 text-white animate-float-delayed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         <div className="relative h-full flex items-center justify-center text-center px-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-lg">
-              إدارة الإعلانات
-            </h1>
-            <p className="mt-2 text-sm text-white/80">
-              إنشاء، تعديل، إظهار وإخفاء الإعلانات
-            </p>
-            <div className="mt-4">
-              <button
-                className="px-4 py-2 rounded-lg font-semibold shadow border bg-amber-500 text-white hover:bg-amber-600 transition"
-                onClick={() => router.push('/admin/ads/create')}
-              >
-                إضافة إعلان جديد
-              </button>
+          <div className="animate-fade-in">
+            <div className="inline-block p-3 bg-white/10 backdrop-blur-sm rounded-2xl mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
             </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow-2xl mb-2">إدارة الإعلانات</h1>
+            <p className="text-sm sm:text-base text-white/90 font-medium">إنشاء وتعديل وإدارة جميع الإعلانات</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto -mt-8 px-4 sm:px-6 pb-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
+        <div className="flex justify-center sm:justify-end -mt-6">
+          <button
+            className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+            onClick={() => router.push('/admin/ads/create')}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            إضافة إعلان جديد
+          </button>
+        </div>
+      <div className="mt-6">
         {loading ? (
-          <div className="text-center text-gray-500">جاري التحميل...</div>
+          <div className="text-center">جاري التحميل...</div>
         ) : error ? (
           <div className="text-center text-red-600">{error}</div>
         ) : ads.length === 0 ? (
-          <div className="text-center text-gray-600">لا توجد إعلانات حالياً</div>
+          <div className="text-center text-gray-600">لا يوجد إعلانات حالياً</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ads.map((ad) => (
-              <div key={ad.id} className="relative group">
-                <AdItemCard 
-                  item={ad}
-                  onItemClick={() => openModal(ad)}
-                  showAuthor={false}
-                />
-                <div className="absolute top-2 left-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/admin/ads/edit/${ad.id}`);
-                    }}
-                    className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    title="تعديل"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm('هل أنت متأكد من حذف هذا الإعلان؟')) {
-                        handleDelete(ad.id);
-                      }
-                    }}
-                    className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    title="حذف"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+            {ads.map((item) => (
+              <AdItemCard
+                key={item.id}
+                item={item}
+                onItemClick={(item) => openModal(item)}
+                onDeleteClick={handleDelete}
+                onToggleVisibleClick={handleToggleVisible}
+                showAdminActions={true}
+              />
             ))}
           </div>
         )}
       </div>
-      {isModalOpen && selectedAd && (
+      </div>
+      {isModalOpen && selectedAds && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
           onClick={closeModal}
@@ -176,10 +162,10 @@ export default function ManageAdsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b">
-              <h2 className="text-lg font-semibold text-gray-800">{selectedAd.title}</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{selectedAds.title}</h2>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => router.push(`/admin/ads/edit/${selectedAd.id}`)}
+                  onClick={() => router.push(`/admin/ads/edit/${selectedAds.id}`)}
                   className="rounded-md px-3 py-1 text-sm bg-blue-100 text-blue-800 hover:bg-blue-200"
                 >
                   تعديل
@@ -193,31 +179,47 @@ export default function ManageAdsPage() {
                 </button>
               </div>
             </div>
-            {selectedAd.imageUrl && (
-              <img
-                src={selectedAd.imageUrl}
-                alt={selectedAd.title}
-                className="w-full max-h-80 object-cover"
-              />
-            )}
             <div className="px-5 py-4 flex-1 overflow-y-auto">
               <div
                 className="prose max-w-none text-gray-800 leading-relaxed break-words"
-                dangerouslySetInnerHTML={{ __html: selectedAd.description }}
+                dangerouslySetInnerHTML={{ __html: selectedAds.description }}
               />
-              <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-                <span>من: {new Date(selectedAd.startDate).toLocaleDateString('ar-EG')}</span>
-                <span>إلى: {new Date(selectedAd.endDate).toLocaleDateString('ar-EG')}</span>
+              {selectedAds.image && (
+                <div className="mt-4 mb-4">
+                  <img
+                    src={selectedAds.image}
+                    alt={selectedAds.title}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-500">
+                <span>البداية: {selectedAds.startDate ? new Date(selectedAds.startDate).toLocaleDateString('ar-EG') : '-'}</span>
+                <span>النهاية: {selectedAds.endDate ? new Date(selectedAds.endDate).toLocaleDateString('ar-EG') : '-'}</span>
+              </div>
+              {selectedAds.isPinned && (
+                <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                  </svg>
+                  إعلان مثبت
+                </div>
+              )}
+              <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ml-2" style={{
+                backgroundColor: selectedAds.isVisible ? '#dcfce7' : '#fef3c7',
+                color: selectedAds.isVisible ? '#15803d' : '#a16207'
+              }}>
+                {selectedAds.isVisible ? 'ظاهر' : 'مخفي'}
               </div>
               <div className="mt-4 flex justify-end gap-2">
                 <button
-                  onClick={() => router.push(`/admin/ads/edit/${selectedAd.id}`)}
+                  onClick={() => router.push(`/admin/ads/edit/${selectedAds.id}`)}
                   className="px-4 py-1 rounded-lg font-semibold shadow border bg-amber-50 text-amber-800 hover:bg-amber-100 transition"
                 >
                   تعديل
                 </button>
                 <button
-                  onClick={() => { if (confirm('هل أنت متأكد من حذف هذا الإعلان؟')) handleDelete(selectedAd.id); }}
+                  onClick={() => { if (confirm('هل أنت متأكد من حذف هذا الإعلان؟')) handleDelete(selectedAds); }}
                   className="px-4 py-1 rounded-lg font-semibold shadow border bg-red-50 text-red-700 hover:bg-red-100 transition"
                 >
                   حذف

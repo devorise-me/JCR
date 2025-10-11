@@ -45,11 +45,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const check = await requireAdminOrSupervisor(req);
   if ('error' in check) return check.error;
   const { id } = params;
-  const { title, description, date } = await req.json();
-  if (!title || !description || !date) {
+  const { title, description, image, startDate, endDate, isPinned } = await req.json();
+  if (!title || !description || !startDate || !endDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
-  const updated = await db.ads.update({ where: { id }, data: { title, description, date: new Date(date) } });
+  const updated = await db.ads.update({
+    where: { id },
+    data: {
+      title,
+      description,
+      image,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      isPinned: isPinned || false,
+    },
+  });
   return NextResponse.json(updated);
 }
 

@@ -1,34 +1,46 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 
-interface AdItem {
+export interface AdItem {
   id: string;
   title: string;
   description: string;
-  imageUrl?: string;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
+  image?: string;
+  startDate?: string;
+  endDate?: string;
+  isPinned?: boolean;
+  isVisible?: boolean;
   author?: { id: string; username: string | null; role: string | null };
 }
+
+// Helper function to extract plain text from HTML
+const stripHtml = (html: string): string => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 interface AdItemCardProps {
   item: AdItem;
   onItemClick: (item: AdItem) => void;
+  onDeleteClick?: (item: AdItem) => void;
+  onToggleVisibleClick?: (item: AdItem) => void;
   showAuthor?: boolean;
+  showAdminActions?: boolean;
   className?: string;
 }
 
 export default function AdItemCard({ 
   item, 
   onItemClick,
+  onDeleteClick,
+  onToggleVisibleClick,
   showAuthor = true,
+  showAdminActions = false,
   className = '' 
 }: AdItemCardProps) {
   const [needsReadMore, setNeedsReadMore] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const isActive = new Date(item.startDate) <= new Date() && new Date() <= new Date(item.endDate);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -44,70 +56,116 @@ export default function AdItemCard({
       className={`group relative rounded-2xl bg-white/80 backdrop-blur ring-1 ring-gray-100 hover:ring-blue-200 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden ${className}`}
       onClick={() => onItemClick(item)}
     >
-      {item.imageUrl && (
-        <div className="h-40 w-full overflow-hidden">
+      {item.image && (
+        <div className="relative w-full h-48 overflow-hidden">
           <img
-            src={item.imageUrl}
+            src={item.image}
             alt={item.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          {item.isPinned && (
+            <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+              </svg>
+              مثبت
+            </div>
+          )}
         </div>
       )}
       <div className="p-6 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors">
-            {item.title}
-          </h2>
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              isActive 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              {isActive ? 'نشط' : 'غير نشط'}
-            </span>
-            <span className="shrink-0 rounded-full bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 text-xs">
-              {new Date(item.startDate).toLocaleDateString()}
-            </span>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors">
+              {item.title}
+            </h2>
+            {!item.image && item.isPinned && (
+              <span className="inline-flex items-center gap-1 mt-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                </svg>
+                مثبت
+              </span>
+            )}
           </div>
+          <span className="shrink-0 rounded-full bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 text-xs">
+            {item.startDate ? new Date(item.startDate).toLocaleDateString() : '-'}
+          </span>
         </div>
         <div className="relative">
-          <div
-            ref={contentRef}
-            className="text-gray-800 whitespace-pre-line leading-relaxed text-[15px] overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 5,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-            dangerouslySetInnerHTML={{ __html: item.description }}
-          />
-          {needsReadMore && (
-            <div className="mt-2 text-center">
+          {/* Auto-extract excerpt from description (first 200 characters) */}
+          <p className="text-gray-800 leading-relaxed text-[15px] line-clamp-3">
+            {stripHtml(item.description).slice(0, 200)}
+            {stripHtml(item.description).length > 200 && '...'}
+          </p>
+          <div className="mt-2 text-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onItemClick(item);
+              }}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
+            >
+              قراءة المزيد
+            </button>
+          </div>
+        </div>
+        {showAuthor && item.author && (
+          <div className="text-xs text-gray-400 self-end">
+            بواسطة: {item.author.username || "-"}
+          </div>
+        )}
+        {showAdminActions && (
+          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end gap-2">
+            {onToggleVisibleClick && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onItemClick(item);
+                  onToggleVisibleClick(item);
                 }}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
+                className={`px-3 py-1 text-sm rounded-md flex items-center gap-1 ${
+                  item.isVisible 
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                    : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                }`}
               >
-                قراءة المزيد
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                </svg>
+                {item.isVisible ? 'إخفاء' : 'إظهار'}
               </button>
-            </div>
-          )}
-        </div>
-        <div className="flex justify-between items-center mt-2">
-          {showAuthor && item.author && (
-            <div className="text-xs text-gray-400">
-              بواسطة: {item.author.username || "-"}
-            </div>
-          )}
-          <div className="text-xs text-gray-500">
-            ينتهي في: {new Date(item.endDate).toLocaleDateString()}
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onItemClick(item);
+              }}
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 flex items-center gap-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              تعديل
+            </button>
+            {onDeleteClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm('هل أنت متأكد من حذف هذا الإعلان؟')) {
+                    onDeleteClick(item);
+                  }
+                }}
+                className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200 flex items-center gap-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                حذف
+              </button>
+            )}
           </div>
-        </div>
+        )}
       </div>
       <div className="absolute inset-x-0 bottom-0 h-1 rounded-b-2xl bg-gradient-to-l from-blue-600/70 to-indigo-600/70 opacity-0 group-hover:opacity-100 transition-opacity" />
     </div>

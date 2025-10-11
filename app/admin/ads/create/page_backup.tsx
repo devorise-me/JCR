@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import TinyEditor from "@/components/admin/TinyEditor";
 import { Editor as TinyMCEEditor } from 'tinymce';
 
-export default function CreateAdsPage() {
+export default function CreateNewsPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
@@ -76,7 +76,7 @@ export default function CreateAdsPage() {
         setLoading(false);
         return;
       }
-      const res = await fetch("/api/ads", {
+      const res = await fetch("/api/news", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,14 +88,14 @@ export default function CreateAdsPage() {
       if (!res.ok) {
         setError(data.error || "حدث خطأ ما");
       } else {
-        setSuccess("تمت إضافة الإعلان بنجاح");
+        setSuccess("تمت إضافة الخبر بنجاح");
         setTitle("");
         setDescription("");
         setImage("");
         setStartDate("");
         setEndDate("");
         setIsPinned(false);
-        setTimeout(() => router.push("/admin/ads/manage"), 1500);
+        setTimeout(() => router.push("/admin/news/manage"), 1500);
       }
     } catch (err) {
       setError("حدث خطأ ما");
@@ -107,7 +107,7 @@ export default function CreateAdsPage() {
   return (
     <div className="max-w-4xl mx-auto mt-12">
       <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-        <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">إضافة إعلان جديد</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">إضافة خبر جديد</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div>
             <label className="block mb-1 font-semibold text-gray-700">العنوان</label>
@@ -121,7 +121,7 @@ export default function CreateAdsPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-semibold text-gray-700">صورة الإعلان</label>
+            <label className="block mb-1 font-semibold text-gray-700">صورة الخبر</label>
             <div className="relative group">
               {image ? (
                 <div className="relative rounded-xl overflow-hidden shadow-lg">
@@ -153,7 +153,7 @@ export default function CreateAdsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <p className="text-gray-700 font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors">اضغط لاختيار صورة الإعلان</p>
+                      <p className="text-gray-700 font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors">اضغط لاختيار صورة الخبر</p>
                       <p className="text-gray-500 text-sm mb-4">أو اسحب الصورة وأفلتها هنا</p>
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-xs text-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -229,7 +229,7 @@ export default function CreateAdsPage() {
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="isPinned" className="font-semibold text-gray-700 cursor-pointer">
-              تثبيت الإعلان في الأعلى
+              تثبيت الخبر في الأعلى
             </label>
           </div>
           <button
@@ -237,7 +237,7 @@ export default function CreateAdsPage() {
             className="bg-gradient-to-l from-blue-600 to-blue-400 text-white py-3 rounded-lg font-bold text-lg shadow hover:from-blue-700 hover:to-blue-500 transition disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? "جاري الإضافة..." : "إضافة الإعلان"}
+            {loading ? "جاري الإضافة..." : "إضافة الخبر"}
           </button>
           {error && <div className="text-red-600 text-center font-semibold">{error}</div>}
           {success && <div className="text-green-600 text-center font-semibold">{success}</div>}
