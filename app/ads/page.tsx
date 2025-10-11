@@ -39,9 +39,24 @@ export default function AdsPage() {
     fetch("/api/ads")
       .then((res) => res.json())
       .then((data) => {
-        // Filter only visible ads
-        const visibleAds = data.filter((item: AdItem) => item.isVisible !== false);
-        setAds(visibleAds);
+        const now = new Date();
+        // Filter only visible ads within date range
+        const activeAds = data.filter((item: AdItem) => {
+          if (item.isVisible === false) return false;
+
+          const startDate = item.startDate ? new Date(item.startDate) : null;
+          const endDate = item.endDate ? new Date(item.endDate) : null;
+
+          // If no dates set, show the item
+          if (!startDate && !endDate) return true;
+
+          // Check if current date is within range
+          if (startDate && now < startDate) return false; // Not started yet
+          if (endDate && now > endDate) return false; // Already ended
+
+          return true;
+        });
+        setAds(activeAds);
         setLoading(false);
       });
   }, []);
