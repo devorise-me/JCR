@@ -57,11 +57,11 @@ export default function AdItemCard({
       onClick={() => onItemClick(item)}
     >
       {item.image && (
-        <div className="relative w-full h-48 overflow-hidden">
+        <div className="relative w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
           <img
             src={item.image}
             alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
           {item.isPinned && (
             <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">

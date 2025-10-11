@@ -21,6 +21,7 @@ export default function AdsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedAds, setSelectedAds] = useState<AdItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImageEnlarged, setIsImageEnlarged] = useState(false);
 
   const handleItemClick = (item: AdItem) => {
     setSelectedAds(item);
@@ -30,6 +31,7 @@ export default function AdsPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setIsImageEnlarged(false);
     document.body.style.overflow = 'auto';
   };
 
@@ -111,12 +113,17 @@ export default function AdsPage() {
           >
             <div className="p-6">
               {selectedAds.image && (
-                <div className="mb-4 -mt-6 -mx-6">
+                <div className="mb-4 -mt-6 -mx-6 bg-gray-900 flex items-center justify-center overflow-hidden cursor-pointer group relative" onClick={() => setIsImageEnlarged(true)}>
                   <img
                     src={selectedAds.image}
                     alt={selectedAds.title}
-                    className="w-full h-64 object-cover"
+                    className="w-full h-auto object-cover"
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
                 </div>
               )}
               <div className="flex justify-between items-start mb-4">
@@ -161,6 +168,28 @@ export default function AdsPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Enlarged Image Modal */}
+      {isImageEnlarged && selectedAds?.image && (
+        <div
+          className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[60]"
+          onClick={() => setIsImageEnlarged(false)}
+        >
+          <button
+            onClick={() => setIsImageEnlarged(false)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl font-bold z-10"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+          <img
+            src={selectedAds.image}
+            alt={selectedAds.title}
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
