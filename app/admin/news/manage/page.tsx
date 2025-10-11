@@ -13,6 +13,9 @@ export default function ManageNewsPage() {
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImageEnlarged, setIsImageEnlarged] = useState(false);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<NewsItem | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   const openModal = (item: NewsItem) => {
     setSelectedNews(item);
@@ -39,8 +42,14 @@ export default function ManageNewsPage() {
       });
   }, []);
 
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   const handleDelete = async (item: NewsItem) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الخبر؟")) return;
+    setDeleteConfirmItem(null);
     try {
       const token = localStorage.getItem("authToken");
       const res = await fetch(`/api/news/${item.id}`, {
@@ -51,11 +60,12 @@ export default function ManageNewsPage() {
       });
       if (res.ok) {
         setNews(news.filter((n) => n.id !== item.id));
+        showToastMessage("تم حذف الخبر بنجاح ✓");
       } else {
-        setError("فشل في حذف الخبر");
+        showToastMessage("فشل في حذف الخبر ✗");
       }
     } catch {
-      setError("فشل في حذف الخبر");
+      showToastMessage("فشل في حذف الخبر ✗");
     }
   };
 
@@ -141,7 +151,7 @@ export default function ManageNewsPage() {
                 key={item.id}
                 item={item}
                 onItemClick={(item) => openModal(item)}
-                onDeleteClick={handleDelete}
+                onDeleteClick={(item) => setDeleteConfirmItem(item)}
                 onToggleVisibleClick={handleToggleVisible}
                 showAdminActions={true}
               />
@@ -222,7 +232,7 @@ export default function ManageNewsPage() {
                   تعديل
                 </button>
                 <button
-                  onClick={() => { if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) handleDelete(selectedNews); }}
+                  onClick={() => { setDeleteConfirmItem(selectedNews); closeModal(); }}
                   className="px-4 py-1 rounded-lg font-semibold shadow border bg-red-50 text-red-700 hover:bg-red-100 transition"
                 >
                   حذف
@@ -252,6 +262,47 @@ export default function ManageNewsPage() {
             className="max-w-full max-h-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmItem && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[70]" onClick={() => setDeleteConfirmItem(null)}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">تأكيد الحذف</h3>
+            <p className="text-gray-600 text-center mb-6">هل أنت متأكد من حذف هذا الخبر؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmItem(null)}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirmItem)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+              >
+                حذف
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed bottom-8 right-8 z-[80] animate-fade-in">
+          <div className="bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-medium">{toastMessage}</span>
+          </div>
         </div>
       )}
     </div>

@@ -152,9 +152,7 @@ export default function AdItemCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm('هل أنت متأكد من حذف هذا الإعلان؟')) {
-                    onDeleteClick(item);
-                  }
+                  onDeleteClick(item);
                 }}
                 className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200 flex items-center gap-1"
               >
