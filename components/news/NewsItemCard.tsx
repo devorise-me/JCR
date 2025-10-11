@@ -5,12 +5,20 @@ export interface NewsItem {
   id: string;
   title: string;
   description: string;
-  date: string;
+  image?: string;
   startDate?: string;
   endDate?: string;
+  isPinned?: boolean;
   isVisible?: boolean;
   author?: { id: string; username: string | null; role: string | null };
 }
+
+// Helper function to extract plain text from HTML
+const stripHtml = (html: string): string => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 interface NewsItemCardProps {
   item: NewsItem;
@@ -48,41 +56,59 @@ export default function NewsItemCard({
       className={`group relative rounded-2xl bg-white/80 backdrop-blur ring-1 ring-gray-100 hover:ring-blue-200 shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden ${className}`}
       onClick={() => onItemClick(item)}
     >
+      {item.image && (
+        <div className="relative w-full h-48 overflow-hidden">
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          {item.isPinned && (
+            <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+              </svg>
+              مثبت
+            </div>
+          )}
+        </div>
+      )}
       <div className="p-6 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors">
-            {item.title}
-          </h2>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-blue-800 transition-colors">
+              {item.title}
+            </h2>
+            {!item.image && item.isPinned && (
+              <span className="inline-flex items-center gap-1 mt-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                </svg>
+                مثبت
+              </span>
+            )}
+          </div>
           <span className="shrink-0 rounded-full bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 text-xs">
-            {new Date(item.date).toLocaleDateString()}
+            {item.startDate ? new Date(item.startDate).toLocaleDateString() : '-'}
           </span>
         </div>
         <div className="relative">
-          <div
-            ref={contentRef}
-            className="text-gray-800 whitespace-pre-line leading-relaxed text-[15px] overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 5,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-            dangerouslySetInnerHTML={{ __html: item.description }}
-          />
-          {needsReadMore && (
-            <div className="mt-2 text-center">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onItemClick(item);
-                }}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
-              >
-                قراءة المزيد
-              </button>
-            </div>
-          )}
+          {/* Auto-extract excerpt from description (first 200 characters) */}
+          <p className="text-gray-800 leading-relaxed text-[15px] line-clamp-3">
+            {stripHtml(item.description).slice(0, 200)}
+            {stripHtml(item.description).length > 200 && '...'}
+          </p>
+          <div className="mt-2 text-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onItemClick(item);
+              }}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-full hover:bg-blue-50 transition-colors"
+            >
+              قراءة المزيد
+            </button>
+          </div>
         </div>
         {showAuthor && item.author && (
           <div className="text-xs text-gray-400 self-end">

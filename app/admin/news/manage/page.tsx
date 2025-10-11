@@ -81,26 +81,48 @@ export default function ManageNewsPage() {
   return (
     <div className="min-h-[80vh]">
       {/* Hero */}
-      <div className="relative h-40 sm:h-48 md:h-56 w-full overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/Camel.png)" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+      <div className="relative h-48 sm:h-56 md:h-64 w-full overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700">
+        {/* Animated background patterns */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-10 right-20 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white rounded-full blur-2xl animate-pulse delay-500"></div>
+        </div>
+
+        {/* Newspaper icons decoration */}
+        <div className="absolute inset-0 overflow-hidden opacity-10">
+          <svg className="absolute top-8 right-12 w-16 h-16 text-white animate-float" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+          </svg>
+          <svg className="absolute bottom-12 left-16 w-20 h-20 text-white animate-float-delayed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         <div className="relative h-full flex items-center justify-center text-center px-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg">إدارة الأخبار</h1>
-            <p className="mt-2 text-xs sm:text-sm text-white/80">إنشاء، تعديل، إظهار وإخفاء الأخبار</p>
+          <div className="animate-fade-in">
+            <div className="inline-block p-3 bg-white/10 backdrop-blur-sm rounded-2xl mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow-2xl mb-2">إدارة الأخبار</h1>
+            <p className="text-sm sm:text-base text-white/90 font-medium">إنشاء وتعديل وإدارة جميع الأخبار</p>
           </div>
         </div>
       </div>
-      <div className="max-w-6xl mx-auto -mt-6 px-4 sm:px-6 pb-10">
-        <div className="flex justify-center sm:justify-end">
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
+        <div className="flex justify-center sm:justify-end -mt-6">
           <button
-            className="mt-4 px-4 py-2 rounded-lg font-semibold shadow border bg-blue-500 text-white hover:bg-blue-600 transition"
+            className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
             onClick={() => router.push('/admin/news/create')}
           >
-            إضافة أخبار جديدة
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            إضافة خبر جديد
           </button>
         </div>
       <div className="mt-6">
@@ -158,10 +180,32 @@ export default function ManageNewsPage() {
                 className="prose max-w-none text-gray-800 leading-relaxed break-words"
                 dangerouslySetInnerHTML={{ __html: selectedNews.description }}
               />
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-500">
-                <span>تاريخ النشر: {selectedNews.date ? new Date(selectedNews.date).toLocaleDateString('ar-EG') : '-'}</span>
+              {selectedNews.image && (
+                <div className="mt-4 mb-4">
+                  <img
+                    src={selectedNews.image}
+                    alt={selectedNews.title}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-500">
                 <span>البداية: {selectedNews.startDate ? new Date(selectedNews.startDate).toLocaleDateString('ar-EG') : '-'}</span>
                 <span>النهاية: {selectedNews.endDate ? new Date(selectedNews.endDate).toLocaleDateString('ar-EG') : '-'}</span>
+              </div>
+              {selectedNews.isPinned && (
+                <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                  </svg>
+                  خبر مثبت
+                </div>
+              )}
+              <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ml-2" style={{
+                backgroundColor: selectedNews.isVisible ? '#dcfce7' : '#fef3c7',
+                color: selectedNews.isVisible ? '#15803d' : '#a16207'
+              }}>
+                {selectedNews.isVisible ? 'ظاهر' : 'مخفي'}
               </div>
               <div className="mt-4 flex justify-end gap-2">
                 <button

@@ -56,13 +56,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { id } = params;
-    const { title, description, date } = await req.json();
-    if (!title || !description || !date) {
+    const { title, description, image, startDate, endDate, isPinned } = await req.json();
+    if (!title || !description || !startDate || !endDate) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
     const updated = await db.news.update({
       where: { id },
-      data: { title, description, date: new Date(date) },
+      data: {
+        title,
+        description,
+        image,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        isPinned: isPinned || false,
+      },
     });
     return NextResponse.json(updated);
   } catch (error) {
