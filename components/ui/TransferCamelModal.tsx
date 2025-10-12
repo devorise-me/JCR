@@ -47,20 +47,21 @@ export const TransferCamelModal = ({
     const [usersLoading, setUsersLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await fetch('/api/users');
-                const data = await response.json();
-                setUsers(data);
-                setUsersLoading(false);
-            } catch (err) {
-                setError("Failed to load users");
-            }
-        };
-
-        if (isOpen) {
+    const fetchUsers = async () => {
+        try {
             setUsersLoading(true);
+            const response = await fetch('/api/users');
+            const data = await response.json();
+            setUsers(data);
+            setUsersLoading(false);
+        } catch (err) {
+            setError("Failed to load users");
+            setUsersLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen) {
             fetchUsers();
         }
     }, [isOpen]);
@@ -94,7 +95,20 @@ export const TransferCamelModal = ({
                         <p className="p-2 bg-gray-100 rounded">{camel.camelID}</p>
                     </div>
                     <div className="grid gap-2">
-                        <label>المالك الجديد</label>
+                        <div className="flex items-center justify-between">
+                            <label>المالك الجديد</label>
+                            <button
+                                type="button"
+                                onClick={fetchUsers}
+                                disabled={usersLoading}
+                                className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 disabled:opacity-50"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 ${usersLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                تحديث
+                            </button>
+                        </div>
                         <Select
                             options={users.map(user => ({
                                 value: user.id,
