@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import ConfirmationDialog from "../Forms/CDCFL";
 import { useRouter } from "next/navigation";
+import { translateAge, translateSex, translateTime } from "@/lib/helper";
 
 interface Event {
   id: string;
@@ -175,49 +176,6 @@ const RegisterCamelsUsers = () => {
       setIsDialogOpen(false);
     }
   };
-
-  function translateAge(Age: string) {
-    switch (Age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return "";
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return "";
-    }
-  }
-
-  function translateTime(time: string) {
-    switch (time) {
-      case "Morning":
-        return "صباحي";
-      case "Evening":
-        return "مسائي";
-      default:
-        return "";
-    }
-  }
 
   return (
     <div className="bg-[url('/desert.jpg')] h-screen bg-center bg-no-repeat bg-cover flex items-center justify-center">

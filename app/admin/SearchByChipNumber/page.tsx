@@ -10,13 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface CamelHistory {
   id: number;
@@ -47,38 +41,6 @@ interface ApiResponse {
     totalPages: number;
   };
   error?: string;
-}
-
-function translateSex(sex: string) {
-  switch (sex) {
-    case "Male":
-      return "قعدان";
-    case "Female":
-      return "بكار";
-    default:
-      return sex;
-  }
-}
-
-function translateAge(age: string) {
-  switch (age) {
-    case "GradeOne":
-      return "مفرد";
-    case "GradeTwo":
-      return "حقايق";
-    case "GradeThree":
-      return "لقايا";
-    case "GradeFour":
-      return "جذاع";
-    case "GradeFive":
-      return "ثنايا";
-    case "GradeSixMale":
-      return "زمول";
-    case "GradeSixFemale":
-      return "حيل";
-    default:
-      return age;
-  }
 }
 
 const ReportForm = () => {

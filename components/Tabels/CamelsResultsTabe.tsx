@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface Camel {
   id: string;
@@ -225,23 +226,6 @@ const ReportForm = () => {
     XLSX.utils.book_append_sheet(wb, ws, "النتائج");
     XLSX.writeFile(wb, "camel_results.xlsx");
   };
-
-  function translateAge(age: string) {
-    const ageMap: Record<string, string> = {
-      "GradeOne": "مفرد",
-      "GradeTwo": "حقايق",
-      "GradeThree": "لقايا",
-      "GradeFour": "جذاع",
-      "GradeFive": "ثنايا",
-      "GradeSixMale": "زمول",
-      "GradeSixFemale": "حيل",
-    };
-    return ageMap[age] || "";
-  }
-
-  function translateSex(sex: string) {
-    return sex === "Male" ? "قعدان" : sex === "Female" ? "بكار" : "";
-  }
 
   return (
     <div className="w-full min-h-screen flex justify-center items-start bg-gradient-to-br from-slate-50 to-slate-200 py-10 px-2">

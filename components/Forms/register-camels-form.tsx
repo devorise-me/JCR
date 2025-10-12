@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import { translateAge, translateSex, translateTime } from "@/lib/helper";
 
 interface RegisterCamelFormProps {
   userId: string;
@@ -247,49 +248,6 @@ export default function RegisterCamelForm({
       setMessage("حدث خطأ اثناء تسجيل المطية");
     }
   };
-
-  function translateAge(Age: string) {
-    switch (Age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return "";
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return "";
-    }
-  }
-
-  function translateTime(time: string) {
-    switch (time) {
-      case "Morning":
-        return "صباحي";
-      case "Evening":
-        return "مسائي";
-      default:
-        return "";
-    }
-  }
 
   const getLoopLabel = (loop: Loop) => {
     const remaining = timeLeft[loop.id] || 0;

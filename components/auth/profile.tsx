@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import RegisterCamelForm from "../Forms/register-camels-form";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface UserProfile {
   id: string;
@@ -204,23 +205,6 @@ const Profile = () => {
       setError("Failed to cancel registration");
     }
   };
-
-  function translateAge(Age: string) {
-    const translations: { [key: string]: string } = {
-      "GradeOne": "مفرد",
-      "GradeTwo": "حقايق",
-      "GradeThree": "لقايا",
-      "GradeFour": "جذاع",
-      "GradeFive": "ثنايا",
-      "GradeSixMale": "زمول",
-      "GradeSixFemale": "حيل"
-    };
-    return translations[Age] || Age;
-  }
-
-  function translateSex(sex: string) {
-    return sex === "Male" ? "قعدان" : sex === "Female" ? "بكار" : sex;
-  }
 
   if (error) {
     return (

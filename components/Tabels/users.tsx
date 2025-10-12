@@ -133,10 +133,10 @@ export const ShowUsers = ({ searchTerm }: { searchTerm: string }) => {
 
       const normalizedSearch = searchTerm.trim().toLowerCase();
       const fullName = getFullName(user).toLowerCase();
-      const email = user.email.toLowerCase();
-      const username = user.username.toLowerCase();
-      const mobile = user.MobileNumber;
-      const nationalId = user.NationalID;
+      const email = (user.email || '').toLowerCase();
+      const username = (user.username || '').toLowerCase();
+      const mobile = user.MobileNumber || '';
+      const nationalId = user.NationalID || '';
 
       return (
         fullName.includes(normalizedSearch) ||

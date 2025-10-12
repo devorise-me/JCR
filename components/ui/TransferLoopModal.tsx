@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useState } from 'react';
+import { translateAge, translateSex } from '@/lib/helper';
 
 interface Loop {
     id: string;
@@ -62,23 +63,6 @@ export const TransferLoopModal = ({
             setLoading(false);
         }
     };
-
-    function translateAge(age: string) {
-        const translations: { [key: string]: string } = {
-            "GradeOne": "مفرد",
-            "GradeTwo": "حقايق",
-            "GradeThree": "لقايا",
-            "GradeFour": "جذاع",
-            "GradeFive": "ثنايا",
-            "GradeSixMale": "زمول",
-            "GradeSixFemale": "حيل"
-        };
-        return translations[age] || age;
-    }
-
-    function translateSex(sex: string) {
-        return sex === "Male" ? "قعدان" : "بكار";
-    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>

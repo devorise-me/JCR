@@ -13,6 +13,7 @@ import {
 } from "../ui/table";
 import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
 import CamelHistoryForm, { CamelHistory } from "./CamelHistoryForm";
+import { translateAge, translateSex } from "@/lib/helper";
 
 
 const CamelHistoryTable: React.FC = () => {
@@ -90,23 +91,6 @@ const CamelHistoryTable: React.FC = () => {
     } catch (error) {
       setError("An error occurred while deleting");
     }
-  };
-
-  const translateAge = (age: string) => {
-    const ageMap: Record<string, string> = {
-      "GradeOne": "مفرد",
-      "GradeTwo": "حقايق",
-      "GradeThree": "لقايا",
-      "GradeFour": "جذاع",
-      "GradeFive": "ثنايا",
-      "GradeSixMale": "زمول",
-      "GradeSixFemale": "حيل",
-    };
-    return ageMap[age] || age;
-  };
-
-  const translateSex = (sex: string) => {
-    return sex === "Male" ? "قعدان" : sex === "Female" ? "بكار" : sex;
   };
 
   const formatDate = (dateString?: string) => {

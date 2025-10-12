@@ -1,23 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { translateAge } from '@/lib/helper';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 const JWT_SECRET = process.env.JWT_SECRET || "defualt-secret-key";
-
-function translateAge(age: string) {
-    switch (age) {
-      case "GradeOne": return "مفرد";
-      case "GradeTwo": return "حقايق";
-      case "GradeThree": return "لقايا";
-      case "GradeFour": return "جذاع";
-      case "GradeFive": return "ثنايا";
-      case "GradeSixMale": return "زمول";
-      case "GradeSixFemale": return "حيل";
-      default: return age;
-    }
-}
 
 function translateSex(sex: string) {
     switch (sex) {

@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface Camel {
   id: string;
@@ -97,38 +98,6 @@ export const RegisteredCamelsOut = () => {
   }, [selectedEvent, selectedLoop]);
 
   if (error) return <p className="text-red-500 text-center p-4">{error}</p>;
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return "";
-    }
-  }
-
-  function translateAge(age: string) {
-    switch (age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return "";
-    }
-  }
 
   return (
     <div className="bg-[url('/desert.jpg')] pt-32 min-h-screen bg-center bg-no-repeat bg-cover py-8 px-4">

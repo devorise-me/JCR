@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import { TransferCamelModal } from "../ui/TransferCamelModal";
 import { useRouter } from "next/navigation";
 import { TransferLoopModal } from "../ui/TransferLoopModal";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface Camel {
   id: string;
@@ -87,38 +88,6 @@ export const RegisteredCamelsTable = () => {
   }, [selectedEvent]);
 
   if (error) return <p>{error}</p>;
-
-  function translateAge(age: string) {
-    switch (age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return age;
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return "";
-    }
-  }
 
   const handleTransfer = async (newOwnerId: string) => {
     try {

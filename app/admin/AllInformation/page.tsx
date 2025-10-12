@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { Button } from "@/components/ui/button";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface Camel {
   id: number;
@@ -19,25 +20,6 @@ interface Camel {
   };
 }
 
-function translateSex(sex: string) {
-  switch (sex) {
-    case "Male": return "قعدان";
-    case "Female": return "بكار";
-    default: return sex;
-  }
-}
-function translateAge(age: string) {
-  switch (age) {
-    case "GradeOne": return "مفرد";
-    case "GradeTwo": return "حقايق";
-    case "GradeThree": return "لقايا";
-    case "GradeFour": return "جذاع";
-    case "GradeFive": return "ثنايا";
-    case "GradeSixMale": return "زمول";
-    case "GradeSixFemale": return "حيل";
-    default: return age;
-  }
-}
 
 export const AllInformationPage = () => {
   const [data, setData] = useState<Camel[]>([]);

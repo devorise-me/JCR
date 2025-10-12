@@ -13,6 +13,7 @@ import UpdateLoopForm from "../Forms/UpdateLoopForm";
 import CreateLoopForm from "../Forms/loop-form";
 import { IoIosClose } from "react-icons/io";
 import { Checkbox } from "../ui/checkbox";
+import { translateAge, translateSex, translateTime } from "@/lib/helper";
 
 interface Event {
   id: string;
@@ -160,60 +161,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onClose }) => {
     }
   };
 
-  function translateAge(age: string) {
-    switch (age) {
-      case "GradeOne":
-        return "مفرد";
-      case "GradeTwo":
-        return "حقايق";
-      case "GradeThree":
-        return "لقايا";
-      case "GradeFour":
-        return "جذاع";
-      case "GradeFive":
-        return "ثنايا";
-      case "GradeSixMale":
-        return "زمول";
-      case "GradeSixFemale":
-        return "حيل";
-      default:
-        return "";
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-      case "Female":
-        return "بكار";
-      default:
-        return "";
-    }
-  }
-
-  function translateTime(time: string) {
-    switch (time) {
-      case "Morning":
-        return "صباحي";
-      case "Evening":
-        return "مسائي";
-      case "Local":
-        return "محلي";
-      case "General":
-        return "عام";
-      case "International":
-        return "دولي";
-      case "GeneralSymbolRound":
-        return "شوط رمز عام";
-      case "InternationalCodeRound":
-        return "شوط رمز دولي";
-      case "SymbolRun":
-        return "شوط رمز";
-      default:
-        return "";
-    }
-  }
 
   function getEventType(eventType: string) {
     switch (eventType) {

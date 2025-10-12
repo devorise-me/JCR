@@ -15,6 +15,7 @@ import AddCamelsForm from "../Forms/CamelForm";
 import bcryptjs from "bcryptjs";
 import { TransferCamelModal } from "../ui/TransferCamelModal";
 import { useRouter } from "next/navigation";
+import { translateAge, translateSex } from "@/lib/helper";
 
 interface Camel {
   id: number;
@@ -260,44 +261,6 @@ const UserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
       setError("حدث خطأ أثناء نقل ملكية الجمل");
     }
   };
-
-  function translateAge(Age: string) {
-    switch (Age) {
-      case "GradeOne":
-        return "مفرد";
-        break;
-      case "GradeTwo":
-        return "حقايق";
-        break;
-      case "GradeThree":
-        return "لقايا";
-        break;
-      case "GradeFour":
-        return "جذاع";
-        break;
-      case "GradeFive":
-        return "ثنايا";
-        break;
-      case "GradeSixMale":
-        return "زمول";
-        break;
-      case "GradeSixFemale":
-        return "حيل";
-    }
-  }
-
-  function translateSex(sex: string) {
-    switch (sex) {
-      case "Male":
-        return "قعدان";
-        break;
-      case "Female":
-        return "بكار";
-        break;
-      default:
-        return "";
-    }
-  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50 z-50">
