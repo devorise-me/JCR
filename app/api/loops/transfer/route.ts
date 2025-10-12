@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from "@/lib/db";
 import jwt from "jsonwebtoken";
-import { translateAge } from '@/lib/helper';
+import { translateAge, translateSex } from '@/lib/helper';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 const JWT_SECRET = process.env.JWT_SECRET || "defualt-secret-key";
-
-function translateSex(sex: string) {
-    switch (sex) {
-      case "Male": return "قعدان";
-      case "Female": return "بكار";
-      default: return sex;
-    }
-}
 
 export async function POST(req: Request) {
   const authHeader = req.headers.get("Authorization");
