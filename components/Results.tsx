@@ -85,17 +85,20 @@ const ResultsTabel = () => {
         .then((response) => response.json())
         .then((data) => {
           const formattedResults = data.map((result: any) => ({
-            rank: result.rank,
+            rank: Number(result.rank) || 0,
             camelId: result.camelId,
             camelName: result.camelName,
             ownerName: result.ownerName,
             camelID: result.camelID,
           }));
 
+          // Sort by rank first
+          const sortedResults = formattedResults.sort((a: any, b: any) => a.rank - b.rank);
+
           // Limit results based on loop's numberOfResults setting
           const loop = loops.find((l) => l.id === selectedLoop);
           const maxResults = loop?.numberOfResults || 10;
-          const limitedResults = formattedResults.slice(0, maxResults);
+          const limitedResults = sortedResults.slice(0, maxResults);
 
           setResults(limitedResults);
         })
