@@ -22,6 +22,9 @@ async function requireAdminOrSupervisor(req: NextRequest) {
   }
 }
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Single contact page by convention id 'default-contact'

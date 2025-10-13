@@ -8,7 +8,7 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/contact")
+    fetch("/api/contactPage")
       .then((r) => r.json())
       .then((data) => {
         setContent(data?.content || "");

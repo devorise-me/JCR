@@ -16,7 +16,7 @@ export default function AdminContactPage() {
         .then(r => r.json())
         .then(d => setAuthorId(d?.id || null));
     }
-    fetch("/api/contact").then(r => r.json()).then(d => setContent(d?.content || ""));
+    fetch("/api/contactPage").then(r => r.json()).then(d => setContent(d?.content || ""));
   }, []);
 
   const handleSave = async () => {
@@ -24,7 +24,7 @@ export default function AdminContactPage() {
     setMessage("");
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/api/contactPage", {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ content, authorId }),
