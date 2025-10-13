@@ -5,7 +5,11 @@ export async function GET() {
   try {
     // Single contact page by convention id 'default-contact'
     const page = await db.contactPage.findUnique({ where: { id: 'default-contact' } });
-    return NextResponse.json(page || { id: 'default-contact', content: '' });
+    return NextResponse.json(page || { id: 'default-contact', content: '' }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+    });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch contact page' }, { status: 500 });
   }
